@@ -606,7 +606,7 @@ sub {
 	}
 
 	.articleBody {
-		--reader-font-size: 17.5px;
+		--reader-font-size: 18.5px;
 		max-width: 100%;
 	}
 
