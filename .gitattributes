@@ -1,0 +1,6 @@
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.plist text eol=lf
+*.png binary
+*.zip binary

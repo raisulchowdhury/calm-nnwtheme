@@ -1,0 +1,40 @@
+name: Theme issue
+description: Report a rendering problem with Calm.
+title: "[Theme] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What looks wrong?
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS
+        - iOS
+        - Both
+    validations:
+      required: true
+  - type: input
+    id: netnewswire-version
+    attributes:
+      label: NetNewsWire version
+      placeholder: "Example: 6.1"
+  - type: dropdown
+    id: appearance
+    attributes:
+      label: Appearance
+      options:
+        - Light
+        - Dark
+        - Both
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Add a screenshot if possible.
