@@ -628,7 +628,7 @@ sub {
 	}
 
 	.articleBody {
-		font-size: [[font-size]]px;
+		font-size: calc([[font-size]]px + 1px);
 		line-height: 1.6;
 	}
 
