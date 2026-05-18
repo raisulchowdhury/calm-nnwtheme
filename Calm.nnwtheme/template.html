@@ -1,0 +1,191 @@
+<!-- Template Variables
+
+title: The title of the article
+preferred_link: The best link to associate with the article for linking out.
+
+external_link_label: A localized label for the external link.
+external_link_stripped: The external link minus the scheme. Useful for displaying the external link.
+external_link: The external link of the article if there is one provided by the author.
+
+feed_link_title: The name of the feed associated with this article.
+feed_link: The URL of the feed associated with this article.
+byline: HTML that combines all the authors and links to them if available.
+avatar_src: The image source URL for the feed icon / avatar.
+dateline_style: Either "articleDateline" or "articleDatelineTitle" depending on if the title was populated or not.
+
+datetime_long: Long version of a combined publish date and time.
+datetime_medium: Medium length version of a combined publish date and time.
+datetime_short: Short version of a combined publish date and time.
+
+date_long: Long version of the publish date.
+date_medium: Medium version of the publish date.
+date_short: Medium version of the publish date.
+
+time_long: Long version of the publish time.
+time_medium: Medium version of the publish time.
+time_short: Medium version of the publish time.
+
+text_size_class: The size class that the user has selected in Preferences for article text.
+body: The body of the article.
+
+-->
+
+<div class="readingProgress" aria-hidden="true"><div id="readingProgressBar"></div></div>
+
+<nav class="readerToc" aria-label="Article sections">
+	<ol id="readerTocList"></ol>
+</nav>
+
+<header class="articleHeader" id="readerTop">
+	<div class="articleTitle"><h1><a href="[[preferred_link]]">[[title]]</a></h1></div>
+	<div class="articleMeta">
+		<span class="byline">[[byline]]</span>
+		<span class="metaDate"><a href="[[preferred_link]]">[[date_medium]]</a></span>
+		<span class="feedName"><a href="[[feed_link]]">[[feed_link_title]]</a></span>
+	</div>
+	<div class="externalLink">[[external_link_label]] <a href="[[external_link]]">[[external_link_stripped]]</a></div>
+</header>
+
+<article>
+	<div id="bodyContainer" class="articleBody [[text_size_class]]">[[body]]</div>
+</article>
+
+<footer class="readerFooter">
+	<span id="readingStats"></span>
+</footer>
+
+<script>
+(function () {
+	var body = document.getElementById("bodyContainer");
+	var toc = document.querySelector(".readerToc");
+	var tocList = document.getElementById("readerTocList");
+	var readerFooter = document.querySelector(".readerFooter");
+	var readingStats = document.getElementById("readingStats");
+	var progressBar = document.getElementById("readingProgressBar");
+	var title = document.querySelector(".articleTitle h1");
+	var header = document.getElementById("readerTop");
+
+	if (!body) {
+		return;
+	}
+
+	var words = body.innerText.trim().split(/\s+/).filter(Boolean).length;
+	if (readingStats && words > 0) {
+		var minutes = Math.max(1, Math.ceil(words / 225));
+		readingStats.textContent =
+			words.toLocaleString() + " " + (words === 1 ? "word" : "words") +
+			" · " + minutes + " min read";
+	} else if (readerFooter) {
+		readerFooter.hidden = true;
+	}
+
+	function updateReadingProgress() {
+		if (!progressBar) {
+			return;
+		}
+		var root = document.documentElement;
+		var scrollTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
+		var scrollMax = Math.max(1, root.scrollHeight - window.innerHeight);
+		var progress = Math.max(0, Math.min(1, scrollTop / scrollMax));
+		progressBar.style.transform = "scaleX(" + progress + ")";
+	}
+
+	if (progressBar) {
+		updateReadingProgress();
+		window.addEventListener("scroll", updateReadingProgress, { passive: true });
+		window.addEventListener("resize", updateReadingProgress);
+	}
+
+	var headings = Array.prototype.slice.call(body.querySelectorAll("h2, h3"))
+		.filter(function (heading) {
+			return heading.textContent.trim().length > 0;
+		});
+
+	if (!toc || !tocList || headings.length < 1) {
+		if (toc) {
+			toc.hidden = true;
+		}
+		return;
+	}
+
+	var usedIds = {};
+	function slugify(text) {
+		var base = text.toLowerCase()
+			.replace(/[^a-z0-9\s-]/g, "")
+			.trim()
+			.replace(/\s+/g, "-") || "section";
+		var id = base;
+		var index = 2;
+		while (usedIds[id] || document.getElementById(id)) {
+			id = base + "-" + index;
+			index += 1;
+		}
+		usedIds[id] = true;
+		return id;
+	}
+
+	function addTocItem(text, href, className) {
+		var item = document.createElement("li");
+		var link = document.createElement("a");
+		item.className = className;
+		link.href = href;
+		link.textContent = text;
+		item.appendChild(link);
+		tocList.appendChild(item);
+	}
+
+	if (title && header && title.textContent.trim()) {
+		addTocItem(title.textContent.trim(), "#readerTop", "article");
+	}
+
+	headings.forEach(function (heading) {
+		if (!heading.id) {
+			heading.id = slugify(heading.textContent);
+		}
+
+		addTocItem(heading.textContent.trim(), "#" + heading.id, heading.tagName.toLowerCase());
+	});
+
+	var links = Array.prototype.slice.call(tocList.querySelectorAll("a"));
+	function setActiveSection(href) {
+		var activeIndex = -1;
+		links.forEach(function (link, index) {
+			if (link.getAttribute("href") === href) {
+				activeIndex = index;
+			}
+		});
+
+		links.forEach(function (link, index) {
+			var item = link.parentElement;
+			var isActive = index === activeIndex;
+			link.classList.toggle("active", isActive);
+			if (!item) {
+				return;
+			}
+			item.classList.toggle("is-before", activeIndex > -1 && index < activeIndex);
+			item.classList.toggle("is-after", activeIndex > -1 && index > activeIndex);
+		});
+	}
+
+	if (links[0]) {
+		setActiveSection(links[0].getAttribute("href"));
+	}
+	if ("IntersectionObserver" in window) {
+		var observer = new IntersectionObserver(function (entries) {
+			entries.forEach(function (entry) {
+				if (!entry.isIntersecting) {
+					return;
+				}
+				setActiveSection("#" + entry.target.id);
+			});
+		}, { rootMargin: "-18% 0px -72% 0px", threshold: 0.01 });
+
+		if (header) {
+			observer.observe(header);
+		}
+		headings.forEach(function (heading) {
+			observer.observe(heading);
+		});
+	}
+})();
+</script>
