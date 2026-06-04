@@ -188,7 +188,7 @@ article,
 	white-space: nowrap;
 }
 
-.externalLink:has(a[href=""]) {
+.externalLink[hidden] {
 	display: none;
 }
 
@@ -525,18 +525,34 @@ sub {
 }
 
 .readerToc {
-	position: fixed;
-	z-index: 1;
-	top: var(--reader-page-pad-y);
-	left: max(28px, calc(50vw - 42rem));
 	display: none;
-	width: 12.5rem;
-	max-height: calc(100vh - var(--reader-page-pad-y) - 3rem);
-	overflow: hidden;
+	width: min(100%, var(--reader-measure));
+	max-height: 14rem;
+	margin: 0 auto 2rem;
+	padding: 0 0 0.9rem;
+	overflow-x: hidden;
+	overflow-y: auto;
+	border-bottom: 1px solid var(--reader-rule);
 	color: var(--reader-muted);
 	font-family: var(--reader-sans);
 	font-size: 0.88rem;
 	line-height: 1.22;
+	-webkit-overflow-scrolling: touch;
+}
+
+.readerToc:not([hidden]) {
+	display: block;
+}
+
+.readerToc::before {
+	content: "Sections";
+	display: block;
+	margin-bottom: 0.5rem;
+	color: var(--reader-faint);
+	font-size: 0.72rem;
+	font-weight: 650;
+	letter-spacing: 0.055em;
+	text-transform: uppercase;
 }
 
 .readerToc[hidden] {
@@ -553,7 +569,11 @@ sub {
 	margin: 0;
 }
 
-.readerToc li.h3 {
+.readerToc li.h1,
+.readerToc li.h3,
+.readerToc li.h4,
+.readerToc li.h5,
+.readerToc li.h6 {
 	font-size: 0.92em;
 }
 
@@ -568,8 +588,18 @@ sub {
 	transition: color 0.1s ease;
 }
 
+.readerToc li.h1 a {
+	font-weight: 500;
+}
+
 .readerToc li.h3 a {
 	padding-left: 24px;
+}
+
+.readerToc li.h4 a,
+.readerToc li.h5 a,
+.readerToc li.h6 a {
+	padding-left: 36px;
 }
 
 .readerToc li.is-before a {
@@ -583,8 +613,20 @@ sub {
 }
 
 @media (min-width: 1180px) {
-	.readerToc:not([hidden]) {
-		display: block;
+	.readerToc {
+		position: fixed;
+		z-index: 1;
+		top: var(--reader-page-pad-y);
+		left: max(28px, calc(50vw - 42rem));
+		width: 12.5rem;
+		max-height: calc(100vh - var(--reader-page-pad-y) - 3rem);
+		margin: 0;
+		padding: 0;
+		border-bottom: 0;
+	}
+
+	.readerToc::before {
+		display: none;
 	}
 }
 
@@ -624,20 +666,10 @@ sub {
 		padding: 30px 20px 56px;
 		word-break: break-word;
 		-webkit-hyphens: auto;
-		-webkit-text-size-adjust: none;
 	}
 
 	.articleBody {
-		font-size: calc([[font-size]]px + 1px);
 		line-height: 1.6;
-	}
-
-	.readerToc {
-		display: none !important;
-	}
-
-	.readingProgress {
-		display: none;
 	}
 }
 
