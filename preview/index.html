@@ -7,15 +7,10 @@
 	<link rel="stylesheet" href="../Calm.nnwtheme/stylesheet.css">
 </head>
 <body>
-	<div class="readingProgress" aria-hidden="true"><div id="readingProgressBar" style="transform: scaleX(0.42);"></div></div>
+	<div class="readingProgress" aria-hidden="true"><div id="readingProgressBar"></div></div>
 
 	<nav class="readerToc" aria-label="Article sections">
-		<ol id="readerTocList">
-			<li class="article"><a class="active" href="#readerTop">Special moves and combos</a></li>
-			<li class="h2 is-after"><a href="#shortcuts">Special moves are shortcuts and patterns</a></li>
-			<li class="h2 is-after"><a href="#move-set">Developing your move set</a></li>
-			<li class="h2 is-after"><a href="#mastery">Mastery without mashing buttons</a></li>
-		</ol>
+		<ol id="readerTocList"></ol>
 	</nav>
 
 	<header class="articleHeader" id="readerTop">
@@ -43,8 +38,14 @@
 			<h2 id="shortcuts">Special moves are shortcuts and patterns</h2>
 			<p>The same grammar shows up far outside the arcade. The first time you string a few moves together without touching the menus, the action collapses in time. Six trips become one fluid motion.</p>
 
+			<h3>Remember the motion</h3>
+			<p>The lesson is not that every shortcut should be memorized. The lesson is that good interfaces reward a rhythm that becomes easier to repeat.</p>
+
 			<h2 id="move-set">Developing your move set</h2>
 			<p>The way you build a move set is the same way the arcade kids built theirs. You try things. You fail a lot. You watch people who are better than you and steal what they do.</p>
+
+			<h4>Keep what works</h4>
+			<p>Deeper headings should still appear in the generated section rail when the viewport has enough room for it.</p>
 
 			<h2 id="mastery">Mastery without mashing buttons</h2>
 			<p>Every fighting game player started by mashing buttons. Random inputs, hoping a fireball would come out, occasionally winning by accident. Mashing is how you find the inputs in the first place.</p>
@@ -52,7 +53,182 @@
 	</article>
 
 	<footer class="readerFooter">
-		<span id="readingStats">833 words - 4 min read</span>
+		<span id="readingStats"></span>
 	</footer>
+<script>
+(function () {
+	var body = document.getElementById("bodyContainer");
+	var toc = document.querySelector(".readerToc");
+	var tocList = document.getElementById("readerTocList");
+	var readerFooter = document.querySelector(".readerFooter");
+	var readingStats = document.getElementById("readingStats");
+	var progressBar = document.getElementById("readingProgressBar");
+	var title = document.querySelector(".articleTitle h1");
+	var header = document.getElementById("readerTop");
+	var externalLink = document.querySelector(".externalLink");
+	var externalLinkAnchor = externalLink ? externalLink.querySelector("a") : null;
+
+	function isPlaceholderValue(value) {
+		return /^\s*\[\[[^\]]+\]\]\s*$/.test(value || "");
+	}
+
+	function hideEmptyExternalLink() {
+		if (!externalLink) {
+			return;
+		}
+
+		var href = externalLinkAnchor ? externalLinkAnchor.getAttribute("href") || "" : "";
+		var label = externalLink.textContent.trim();
+		var linkText = externalLinkAnchor ? externalLinkAnchor.textContent.trim() : "";
+		if (!externalLinkAnchor || !href || !linkText || isPlaceholderValue(href) || isPlaceholderValue(linkText) || isPlaceholderValue(label)) {
+			externalLink.hidden = true;
+		}
+	}
+
+	function updateReadingStats() {
+		if (!body) {
+			if (readerFooter) {
+				readerFooter.hidden = true;
+			}
+			return;
+		}
+
+		var words = body.innerText.trim().split(/\s+/).filter(Boolean).length;
+		if (readingStats && words > 0) {
+			var minutes = Math.max(1, Math.ceil(words / 225));
+			readingStats.textContent =
+				words.toLocaleString() + " " + (words === 1 ? "word" : "words") +
+				" · " + minutes + " min read";
+		} else if (readerFooter) {
+			readerFooter.hidden = true;
+		}
+	}
+
+	function updateReadingProgress() {
+		if (!progressBar) {
+			return;
+		}
+		var root = document.documentElement;
+		var scrollTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
+		var scrollMax = Math.max(1, root.scrollHeight - window.innerHeight);
+		var progress = Math.max(0, Math.min(1, scrollTop / scrollMax));
+		progressBar.style.transform = "scaleX(" + progress + ")";
+	}
+
+	function initReadingProgress() {
+		if (!progressBar) {
+			return;
+		}
+		updateReadingProgress();
+		window.addEventListener("scroll", updateReadingProgress, { passive: true });
+		window.addEventListener("resize", updateReadingProgress);
+	}
+
+	function initToc() {
+		if (!body || !toc || !tocList) {
+			if (toc) {
+				toc.hidden = true;
+			}
+			return;
+		}
+
+		var headings = Array.prototype.slice.call(body.querySelectorAll("h2, h3, h4, h5, h6"))
+			.filter(function (heading) {
+				return heading.textContent.trim().length > 0;
+			});
+
+		if (headings.length < 1) {
+			toc.hidden = true;
+			return;
+		}
+
+		var usedIds = {};
+		function slugify(text) {
+			var base = text.toLowerCase()
+				.replace(/[^a-z0-9\s-]/g, "")
+				.trim()
+				.replace(/\s+/g, "-") || "section";
+			var id = base;
+			var index = 2;
+			while (usedIds[id] || document.getElementById(id)) {
+				id = base + "-" + index;
+				index += 1;
+			}
+			usedIds[id] = true;
+			return id;
+		}
+
+		function addTocItem(text, href, className) {
+			var item = document.createElement("li");
+			var link = document.createElement("a");
+			item.className = className;
+			link.href = href;
+			link.textContent = text;
+			item.appendChild(link);
+			tocList.appendChild(item);
+		}
+
+		tocList.textContent = "";
+		if (title && header && title.textContent.trim()) {
+			addTocItem(title.textContent.trim(), "#readerTop", "article");
+		}
+
+		headings.forEach(function (heading) {
+			if (!heading.id) {
+				heading.id = slugify(heading.textContent);
+			}
+
+			addTocItem(heading.textContent.trim(), "#" + heading.id, heading.tagName.toLowerCase());
+		});
+
+		var links = Array.prototype.slice.call(tocList.querySelectorAll("a"));
+		function setActiveSection(href) {
+			var activeIndex = -1;
+			links.forEach(function (link, index) {
+				if (link.getAttribute("href") === href) {
+					activeIndex = index;
+				}
+			});
+
+			links.forEach(function (link, index) {
+				var item = link.parentElement;
+				var isActive = index === activeIndex;
+				link.classList.toggle("active", isActive);
+				if (!item) {
+					return;
+				}
+				item.classList.toggle("is-before", activeIndex > -1 && index < activeIndex);
+				item.classList.toggle("is-after", activeIndex > -1 && index > activeIndex);
+			});
+		}
+
+		if (links[0]) {
+			setActiveSection(links[0].getAttribute("href"));
+		}
+		if ("IntersectionObserver" in window) {
+			var observer = new IntersectionObserver(function (entries) {
+				entries.forEach(function (entry) {
+					if (!entry.isIntersecting) {
+						return;
+					}
+					setActiveSection("#" + entry.target.id);
+				});
+			}, { rootMargin: "-18% 0px -72% 0px", threshold: 0.01 });
+
+			if (header) {
+				observer.observe(header);
+			}
+			headings.forEach(function (heading) {
+				observer.observe(heading);
+			});
+		}
+	}
+
+	hideEmptyExternalLink();
+	updateReadingStats();
+	initReadingProgress();
+	initToc();
+})();
+</script>
 </body>
 </html>
