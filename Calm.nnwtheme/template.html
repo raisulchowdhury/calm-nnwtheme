@@ -133,6 +133,13 @@ body: The body of the article.
 		}
 
 		var titleText = title ? title.textContent.trim() : "";
+		var markerCount = 5;
+		var root = document.documentElement;
+		var markerLabels = ["Top", "25%", "50%", "75%", "Bottom"];
+		function getScrollMax() {
+			return Math.max(0, root.scrollHeight - window.innerHeight);
+		}
+
 		function normalizeHeadingText(text) {
 			return text.replace(/\s+/g, " ").trim().toLowerCase();
 		}
@@ -155,35 +162,23 @@ body: The body of the article.
 			}
 			return hasTopLevelSection ? level <= 2 : level === fallbackLevel;
 		});
+		var useHeadingTargets = headings.length > 4;
 
-		if (headings.length < 1 && !titleText) {
+		if (getScrollMax() < 240) {
 			toc.hidden = true;
 			return;
 		}
 
-		var usedIds = {};
-		function slugify(text) {
-			var base = text.toLowerCase()
-				.replace(/[^a-z0-9\s-]/g, "")
-				.trim()
-				.replace(/\s+/g, "-") || "section";
-			var id = base;
-			var index = 2;
-			while (usedIds[id] || document.getElementById(id)) {
-				id = base + "-" + index;
-				index += 1;
-			}
-			usedIds[id] = true;
-			return id;
+		if (titleText) {
+			markerLabels[0] = titleText;
 		}
 
-		function addTocItem(text, href, className) {
+		function addTocItem(text, className) {
 			var item = document.createElement("li");
 			var control = document.createElement("button");
 			item.className = className;
 			control.type = "button";
 			control.setAttribute("aria-label", text);
-			control.setAttribute("data-href", href);
 			control.setAttribute("data-label", text);
 			control.textContent = text;
 			item.appendChild(control);
@@ -192,19 +187,24 @@ body: The body of the article.
 
 		tocList.textContent = "";
 		var sectionTargets = [];
-		if (titleText && header) {
-			addTocItem(titleText, "#readerTop", "article");
-			sectionTargets.push({ href: "#readerTop", element: header });
-		}
-
-		headings.forEach(function (heading) {
-			if (!heading.id) {
-				heading.id = slugify(heading.textContent);
+		if (useHeadingTargets) {
+			if (titleText && header) {
+				addTocItem(titleText, "article");
+				sectionTargets.push({ element: header, top: 0 });
 			}
-
-			addTocItem(heading.textContent.trim(), "#" + heading.id, heading.tagName.toLowerCase());
-			sectionTargets.push({ href: "#" + heading.id, element: heading });
-		});
+			headings.forEach(function (heading) {
+				addTocItem(heading.textContent.trim(), heading.tagName.toLowerCase());
+				sectionTargets.push({ element: heading });
+			});
+		} else {
+			for (var i = 0; i < markerCount; i++) {
+				var ratio = i / (markerCount - 1);
+				var label = markerLabels[i] || ("Section " + (i + 1));
+				var cssClass = i === 0 ? "article" : "section";
+				addTocItem(label, cssClass);
+				sectionTargets.push({ ratio: ratio });
+			}
+		}
 
 		if (tocList.children.length < 1) {
 			toc.hidden = true;
@@ -213,14 +213,7 @@ body: The body of the article.
 		toc.hidden = false;
 
 		var controls = Array.prototype.slice.call(tocList.querySelectorAll("button"));
-		function setActiveSection(href) {
-			var activeIndex = -1;
-			controls.forEach(function (control, index) {
-				if (control.getAttribute("data-href") === href) {
-					activeIndex = index;
-				}
-			});
-
+		function setActiveSection(activeIndex) {
 			controls.forEach(function (control, index) {
 				var item = control.parentElement;
 				var isActive = index === activeIndex;
@@ -234,7 +227,15 @@ body: The body of the article.
 		}
 
 		if (controls[0]) {
-			setActiveSection(controls[0].getAttribute("data-href"));
+			setActiveSection(0);
+		}
+
+		function getTargetTop(section) {
+			var scrollTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
+			if (section.element) {
+				return typeof section.top === "number" ? section.top : section.element.getBoundingClientRect().top + scrollTop;
+			}
+			return Math.round(getScrollMax() * section.ratio);
 		}
 
 		function updateActiveFromScroll() {
@@ -242,41 +243,32 @@ body: The body of the article.
 				return;
 			}
 
-			var threshold = Math.max(96, window.innerHeight * 0.28);
-			var activeHref = sectionTargets[0].href;
-			sectionTargets.forEach(function (section) {
-				if (section.element.getBoundingClientRect().top <= threshold) {
-					activeHref = section.href;
-				}
-			});
-
-			var root = document.documentElement;
+			var markerOffset = Math.max(72, Math.min(128, window.innerHeight * 0.12));
 			var scrollTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
-			var scrollMax = Math.max(0, root.scrollHeight - window.innerHeight);
-			if (scrollMax - scrollTop < Math.max(80, window.innerHeight * 0.12)) {
-				activeHref = sectionTargets[sectionTargets.length - 1].href;
-			}
-
-			setActiveSection(activeHref);
-		}
-
-		function getScrollOffset(href) {
-			if (href === "#readerTop") {
-				return Math.max(72, Math.min(128, window.innerHeight * 0.12));
-			}
-			return Math.max(72, Math.min(128, window.innerHeight * 0.12));
-		}
-
-		function scrollToSection(href) {
-			var target = href === "#readerTop" ? header : document.getElementById(href.slice(1));
-			if (!target) {
+			var scrollLimit = getScrollMax();
+			if (scrollLimit - scrollTop < markerOffset) {
+				setActiveSection(sectionTargets.length - 1);
 				return;
 			}
-			var root = document.documentElement;
-			var currentTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
-			var targetTop = href === "#readerTop" ? 0 : target.getBoundingClientRect().top + currentTop - getScrollOffset(href);
-			var scrollMax = Math.max(0, root.scrollHeight - window.innerHeight);
-			var nextTop = Math.max(0, Math.min(scrollMax, targetTop));
+
+			var activeIndex = 0;
+			sectionTargets.forEach(function (section, index) {
+				if (scrollTop + markerOffset >= getTargetTop(section)) {
+					activeIndex = index;
+				}
+			});
+			setActiveSection(activeIndex);
+		}
+
+		function scrollToSection(section) {
+			if (!section) {
+				return;
+			}
+			var markerOffset = Math.max(72, Math.min(128, window.innerHeight * 0.12));
+			var targetTop = getTargetTop(section);
+			var nextTop = targetTop <= 0 ? 0 : targetTop - markerOffset;
+			var scrollMax = getScrollMax();
+			nextTop = Math.max(0, Math.min(scrollMax, nextTop));
 			try {
 				window.scrollTo({ top: nextTop, left: 0, behavior: "smooth" });
 			} catch (error) {
@@ -284,12 +276,11 @@ body: The body of the article.
 			}
 		}
 
-		controls.forEach(function (control) {
+		controls.forEach(function (control, index) {
 			control.addEventListener("click", function (event) {
 				event.preventDefault();
-				var href = control.getAttribute("data-href");
-				scrollToSection(href);
-				setActiveSection(href);
+				scrollToSection(sectionTargets[index]);
+				setActiveSection(index);
 			});
 		});
 

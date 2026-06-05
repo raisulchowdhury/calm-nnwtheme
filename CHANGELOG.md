@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.2 - 2026-06-05
+
+- Changed the section rail to use major headings only when an article has five or more filtered headings.
+- Added a five-marker scroll-depth rail for articles with four or fewer filtered headings.
+- Kept marker jumps inside the reader view with top breathing room.
+- Bumped the internal theme version to `5`.
+
 ## 1.1.1 - 2026-06-05
 
 - Updated the installer author website to `https://raisul.xyz`.
