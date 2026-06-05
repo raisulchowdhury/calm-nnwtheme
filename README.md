@@ -43,8 +43,8 @@ The theme includes:
 
 - system light and dark mode
 - iOS Dynamic Type support with a small Calm-specific size bump
-- desktop table of contents for articles with headings
-- reading progress line on wider article views
+- responsive table of contents for articles with headings
+- reading progress line across reader views
 - word count and estimated read time footer
 - image blending in light mode
 - restrained code, table, blockquote, and figure styling

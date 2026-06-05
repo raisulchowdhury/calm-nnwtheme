@@ -35,6 +35,8 @@
 				<figcaption>A media block should feel like part of the page, not a framed widget.</figcaption>
 			</figure>
 
+			<h1 id="overview">Overview</h1>
+			<p>Calm now includes article-body h1 headings in the generated navigation so feeds that use h1 for section titles still surface a section list.</p>
 			<h2 id="shortcuts">Special moves are shortcuts and patterns</h2>
 			<p>The same grammar shows up far outside the arcade. The first time you string a few moves together without touching the menus, the action collapses in time. Six trips become one fluid motion.</p>
 
@@ -132,7 +134,7 @@
 			return;
 		}
 
-		var headings = Array.prototype.slice.call(body.querySelectorAll("h2, h3, h4, h5, h6"))
+		var headings = Array.prototype.slice.call(body.querySelectorAll("h1, h2, h3, h4, h5, h6"))
 			.filter(function (heading) {
 				return heading.textContent.trim().length > 0;
 			});

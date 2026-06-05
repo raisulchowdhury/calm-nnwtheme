@@ -188,10 +188,6 @@ article,
 	white-space: nowrap;
 }
 
-.externalLink:has(a[href=""]) {
-	display: none;
-}
-
 .externalLink[hidden] {
 	display: none;
 }
@@ -573,6 +569,7 @@ sub {
 	margin: 0;
 }
 
+.readerToc li.h1,
 .readerToc li.h3,
 .readerToc li.h4,
 .readerToc li.h5,
@@ -589,6 +586,10 @@ sub {
 	line-height: 1.15;
 	text-decoration: none;
 	transition: color 0.1s ease;
+}
+
+.readerToc li.h1 a {
+	font-weight: 500;
 }
 
 .readerToc li.h3 a {
