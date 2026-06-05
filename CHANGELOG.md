@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Reworked the generated section rail into a lower-contrast marker stack for desktop and mobile.
+- Limited section markers to the article title and major body headings so lower-level subheads do not make the rail feel random.
+- Kept marker clicks inside the reader view and added scroll breathing room for section jumps.
+
 ## 1.0.1 - 2026-05-18
 
 - Increased the iOS article font size while preserving NetNewsWire Dynamic Type behavior.
