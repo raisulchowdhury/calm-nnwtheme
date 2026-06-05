@@ -636,8 +636,8 @@ sub {
 	width: 7px;
 	height: 2px;
 	border-radius: 999px;
-	background: var(--reader-faint);
-	opacity: 0.42;
+	background: var(--reader-heading);
+	opacity: 0.2;
 	transform: translateY(-50%);
 	transition: width 0.12s ease, background 0.12s ease, opacity 0.12s ease;
 }
@@ -645,7 +645,7 @@ sub {
 .readerToc li.article button::before,
 .readerToc li.h1 button::before,
 .readerToc li.h2 button::before {
-	width: 9px;
+	width: 8px;
 }
 
 .readerToc li.h4 button::before,
@@ -655,7 +655,7 @@ sub {
 }
 
 .readerToc li.is-before button::before {
-	opacity: 0.24;
+	opacity: 0.26;
 }
 
 .readerToc button:hover,
@@ -665,7 +665,7 @@ sub {
 }
 
 .readerToc li button.active::before {
-	width: 13px;
+	width: 9px;
 	background: var(--reader-heading);
 	opacity: 0.78;
 }
@@ -714,8 +714,8 @@ sub {
 	}
 
 	.readerToc {
-		left: 10px;
-		width: 1.1rem;
+		left: 8px;
+		width: 0.95rem;
 	}
 
 	.readerToc ol {
@@ -723,7 +723,7 @@ sub {
 	}
 
 	.readerToc button {
-		width: 1.1rem;
+		width: 0.95rem;
 		height: 1rem;
 	}
 
@@ -734,21 +734,21 @@ sub {
 	.readerToc li.h4 button::before,
 	.readerToc li.h5 button::before,
 	.readerToc li.h6 button::before {
-		width: 5px;
+		width: 4px;
 		height: 2px;
 		border-radius: 999px;
 		opacity: 0.3;
 	}
 
 	.readerToc li.is-before button::before {
-		opacity: 0.18;
+		opacity: 0.22;
 	}
 
 	.readerToc li button.active::before {
-		width: 8px;
+		width: 7px;
 		height: 2px;
 		background: var(--reader-heading);
-		opacity: 0.72;
+		opacity: 0.78;
 	}
 
 	.articleTitle h1 {
