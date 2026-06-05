@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.3 - 2026-06-05
+
+- Removed the top reading progress bar from reader views.
+- Bumped the internal theme version to `6`.
+
 ## 1.1.2 - 2026-06-05
 
 - Changed the section rail to use major headings only when an article has five or more filtered headings.

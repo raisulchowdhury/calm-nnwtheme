@@ -7,8 +7,6 @@
 	<link rel="stylesheet" href="../Calm.nnwtheme/stylesheet.css">
 </head>
 <body>
-	<div class="readingProgress" aria-hidden="true"><div id="readingProgressBar"></div></div>
-
 	<nav class="readerToc" aria-label="Article sections" hidden>
 		<div class="readerTocTitle">Sections</div>
 		<ol id="readerTocList"></ol>
@@ -65,7 +63,6 @@
 	var tocList = document.getElementById("readerTocList");
 	var readerFooter = document.querySelector(".readerFooter");
 	var readingStats = document.getElementById("readingStats");
-	var progressBar = document.getElementById("readingProgressBar");
 	var title = document.querySelector(".articleTitle h1");
 	var header = document.getElementById("readerTop");
 	var externalLink = document.querySelector(".externalLink");
@@ -105,26 +102,6 @@
 		} else if (readerFooter) {
 			readerFooter.hidden = true;
 		}
-	}
-
-	function updateReadingProgress() {
-		if (!progressBar) {
-			return;
-		}
-		var root = document.documentElement;
-		var scrollTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
-		var scrollMax = Math.max(1, root.scrollHeight - window.innerHeight);
-		var progress = Math.max(0, Math.min(1, scrollTop / scrollMax));
-		progressBar.style.transform = "scaleX(" + progress + ")";
-	}
-
-	function initReadingProgress() {
-		if (!progressBar) {
-			return;
-		}
-		updateReadingProgress();
-		window.addEventListener("scroll", updateReadingProgress, { passive: true });
-		window.addEventListener("resize", updateReadingProgress);
 	}
 
 	function initToc() {
@@ -294,7 +271,6 @@
 
 	hideEmptyExternalLink();
 	updateReadingStats();
-	initReadingProgress();
 	initToc();
 })();
 </script>

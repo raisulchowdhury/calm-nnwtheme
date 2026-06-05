@@ -95,26 +95,6 @@ a:hover {
 	color: var(--reader-muted);
 }
 
-.readingProgress {
-	position: fixed;
-	z-index: 20;
-	top: 0;
-	right: 0;
-	left: 0;
-	height: 2px;
-	pointer-events: none;
-}
-
-#readingProgressBar {
-	width: 100%;
-	height: 100%;
-	background: var(--reader-progress);
-	opacity: 1;
-	transform: scaleX(0);
-	transform-origin: left center;
-	transition: transform 80ms linear;
-}
-
 .articleHeader,
 article,
 .readerFooter {
