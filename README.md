@@ -2,7 +2,7 @@
 
 A quiet serif theme for NetNewsWire on macOS and iOS.
 
-Calm is tuned for long-form reading: a narrow article column, strong editorial headings, soft metadata, restrained links, light and dark appearances, and a desktop section rail when there is enough room.
+Calm is tuned for long-form reading: a narrow article column, strong editorial headings, soft metadata, restrained links, light and dark appearances, and a quiet section rail for articles with headings.
 
 ## Screenshots
 
@@ -43,7 +43,7 @@ The theme includes:
 
 - system light and dark mode
 - iOS Dynamic Type support with a small Calm-specific size bump
-- responsive table of contents for articles with headings
+- responsive section rail for articles with title and major body headings
 - reading progress line across reader views
 - word count and estimated read time footer
 - image blending in light mode

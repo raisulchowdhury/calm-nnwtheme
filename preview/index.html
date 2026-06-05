@@ -9,7 +9,8 @@
 <body>
 	<div class="readingProgress" aria-hidden="true"><div id="readingProgressBar"></div></div>
 
-	<nav class="readerToc" aria-label="Article sections">
+	<nav class="readerToc" aria-label="Article sections" hidden>
+		<div class="readerTocTitle">Sections</div>
 		<ol id="readerTocList"></ol>
 	</nav>
 
@@ -134,12 +135,31 @@
 			return;
 		}
 
-		var headings = Array.prototype.slice.call(body.querySelectorAll("h1, h2, h3, h4, h5, h6"))
+		var titleText = title ? title.textContent.trim() : "";
+		function normalizeHeadingText(text) {
+			return text.replace(/\s+/g, " ").trim().toLowerCase();
+		}
+
+		var rawHeadings = Array.prototype.slice.call(body.querySelectorAll("h1, h2, h3, h4, h5, h6"))
 			.filter(function (heading) {
 				return heading.textContent.trim().length > 0;
 			});
+		var titleKey = normalizeHeadingText(titleText);
+		var hasTopLevelSection = rawHeadings.some(function (heading) {
+			return Number(heading.tagName.slice(1)) <= 2;
+		});
+		var fallbackLevel = rawHeadings.reduce(function (level, heading) {
+			return Math.min(level, Number(heading.tagName.slice(1)));
+		}, 6);
+		var headings = rawHeadings.filter(function (heading) {
+			var level = Number(heading.tagName.slice(1));
+			if (titleKey && normalizeHeadingText(heading.textContent) === titleKey) {
+				return false;
+			}
+			return hasTopLevelSection ? level <= 2 : level === fallbackLevel;
+		});
 
-		if (headings.length < 1) {
+		if (headings.length < 1 && !titleText) {
 			toc.hidden = true;
 			return;
 		}
@@ -162,17 +182,22 @@
 
 		function addTocItem(text, href, className) {
 			var item = document.createElement("li");
-			var link = document.createElement("a");
+			var control = document.createElement("button");
 			item.className = className;
-			link.href = href;
-			link.textContent = text;
-			item.appendChild(link);
+			control.type = "button";
+			control.setAttribute("aria-label", text);
+			control.setAttribute("data-href", href);
+			control.setAttribute("data-label", text);
+			control.textContent = text;
+			item.appendChild(control);
 			tocList.appendChild(item);
 		}
 
 		tocList.textContent = "";
-		if (title && header && title.textContent.trim()) {
-			addTocItem(title.textContent.trim(), "#readerTop", "article");
+		var sectionTargets = [];
+		if (titleText && header) {
+			addTocItem(titleText, "#readerTop", "article");
+			sectionTargets.push({ href: "#readerTop", element: header });
 		}
 
 		headings.forEach(function (heading) {
@@ -181,21 +206,28 @@
 			}
 
 			addTocItem(heading.textContent.trim(), "#" + heading.id, heading.tagName.toLowerCase());
+			sectionTargets.push({ href: "#" + heading.id, element: heading });
 		});
 
-		var links = Array.prototype.slice.call(tocList.querySelectorAll("a"));
+		if (tocList.children.length < 1) {
+			toc.hidden = true;
+			return;
+		}
+		toc.hidden = false;
+
+		var controls = Array.prototype.slice.call(tocList.querySelectorAll("button"));
 		function setActiveSection(href) {
 			var activeIndex = -1;
-			links.forEach(function (link, index) {
-				if (link.getAttribute("href") === href) {
+			controls.forEach(function (control, index) {
+				if (control.getAttribute("data-href") === href) {
 					activeIndex = index;
 				}
 			});
 
-			links.forEach(function (link, index) {
-				var item = link.parentElement;
+			controls.forEach(function (control, index) {
+				var item = control.parentElement;
 				var isActive = index === activeIndex;
-				link.classList.toggle("active", isActive);
+				control.classList.toggle("active", isActive);
 				if (!item) {
 					return;
 				}
@@ -204,26 +236,69 @@
 			});
 		}
 
-		if (links[0]) {
-			setActiveSection(links[0].getAttribute("href"));
+		if (controls[0]) {
+			setActiveSection(controls[0].getAttribute("data-href"));
 		}
-		if ("IntersectionObserver" in window) {
-			var observer = new IntersectionObserver(function (entries) {
-				entries.forEach(function (entry) {
-					if (!entry.isIntersecting) {
-						return;
-					}
-					setActiveSection("#" + entry.target.id);
-				});
-			}, { rootMargin: "-18% 0px -72% 0px", threshold: 0.01 });
 
-			if (header) {
-				observer.observe(header);
+		function updateActiveFromScroll() {
+			if (sectionTargets.length < 1) {
+				return;
 			}
-			headings.forEach(function (heading) {
-				observer.observe(heading);
+
+			var threshold = Math.max(96, window.innerHeight * 0.28);
+			var activeHref = sectionTargets[0].href;
+			sectionTargets.forEach(function (section) {
+				if (section.element.getBoundingClientRect().top <= threshold) {
+					activeHref = section.href;
+				}
 			});
+
+			var root = document.documentElement;
+			var scrollTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
+			var scrollMax = Math.max(0, root.scrollHeight - window.innerHeight);
+			if (scrollMax - scrollTop < Math.max(80, window.innerHeight * 0.12)) {
+				activeHref = sectionTargets[sectionTargets.length - 1].href;
+			}
+
+			setActiveSection(activeHref);
 		}
+
+		function getScrollOffset(href) {
+			if (href === "#readerTop") {
+				return Math.max(72, Math.min(128, window.innerHeight * 0.12));
+			}
+			return Math.max(72, Math.min(128, window.innerHeight * 0.12));
+		}
+
+		function scrollToSection(href) {
+			var target = href === "#readerTop" ? header : document.getElementById(href.slice(1));
+			if (!target) {
+				return;
+			}
+			var root = document.documentElement;
+			var currentTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
+			var targetTop = href === "#readerTop" ? 0 : target.getBoundingClientRect().top + currentTop - getScrollOffset(href);
+			var scrollMax = Math.max(0, root.scrollHeight - window.innerHeight);
+			var nextTop = Math.max(0, Math.min(scrollMax, targetTop));
+			try {
+				window.scrollTo({ top: nextTop, left: 0, behavior: "smooth" });
+			} catch (error) {
+				window.scrollTo(0, nextTop);
+			}
+		}
+
+		controls.forEach(function (control) {
+			control.addEventListener("click", function (event) {
+				event.preventDefault();
+				var href = control.getAttribute("data-href");
+				scrollToSection(href);
+				setActiveSection(href);
+			});
+		});
+
+		updateActiveFromScroll();
+		window.addEventListener("scroll", updateActiveFromScroll, { passive: true });
+		window.addEventListener("resize", updateActiveFromScroll);
 	}
 
 	hideEmptyExternalLink();

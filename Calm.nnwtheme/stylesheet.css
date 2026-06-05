@@ -526,33 +526,37 @@ sub {
 
 .readerToc {
 	display: none;
-	width: min(100%, var(--reader-measure));
-	max-height: 14rem;
-	margin: 0 auto 2rem;
-	padding: 0 0 0.9rem;
+	position: fixed;
+	z-index: 1;
+	top: 0;
+	left: 14px;
+	width: 2rem;
+	height: 100vh;
+	margin: 0;
+	padding: 0;
+	align-items: center;
+	justify-content: flex-start;
 	overflow-x: hidden;
-	overflow-y: auto;
-	border-bottom: 1px solid var(--reader-rule);
+	overflow-y: hidden;
 	color: var(--reader-muted);
 	font-family: var(--reader-sans);
-	font-size: 0.88rem;
-	line-height: 1.22;
+	font-size: 0;
+	line-height: 1;
 	-webkit-overflow-scrolling: touch;
 }
 
+@supports (height: 100dvh) {
+	.readerToc {
+		height: 100dvh;
+	}
+}
+
 .readerToc:not([hidden]) {
-	display: block;
+	display: flex;
 }
 
 .readerToc::before {
-	content: "Sections";
-	display: block;
-	margin-bottom: 0.5rem;
-	color: var(--reader-faint);
-	font-size: 0.72rem;
-	font-weight: 650;
-	letter-spacing: 0.055em;
-	text-transform: uppercase;
+	display: none;
 }
 
 .readerToc[hidden] {
@@ -560,83 +564,191 @@ sub {
 }
 
 .readerToc ol {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.36rem;
 	margin: 0;
-	padding: 0;
+	padding: 0.12rem 0;
+	max-height: calc(100vh - 4rem);
+	overflow-x: hidden;
+	overflow-y: auto;
 	list-style: none;
+	scrollbar-width: none;
+	-webkit-overflow-scrolling: touch;
+}
+
+@supports (height: 100dvh) {
+	.readerToc ol {
+		max-height: calc(100dvh - 4rem);
+	}
+}
+
+.readerToc ol::-webkit-scrollbar {
+	display: none;
 }
 
 .readerToc li {
+	flex: 0 0 auto;
 	margin: 0;
 }
 
-.readerToc li.h1,
-.readerToc li.h3,
-.readerToc li.h4,
-.readerToc li.h5,
-.readerToc li.h6 {
-	font-size: 0.92em;
-}
-
-.readerToc a,
-.readerToc a:visited {
+.readerToc button {
+	appearance: none;
+	-webkit-appearance: none;
 	display: block;
-	padding: 5px 8px;
-	border-radius: var(--reader-radius);
-	color: var(--reader-muted);
-	line-height: 1.15;
+	position: relative;
+	width: 1.6rem;
+	height: 1rem;
+	margin: 0;
+	padding: 0;
+	overflow: visible;
+	border: 0;
+	outline: 0;
+	background: transparent;
+	color: transparent;
+	cursor: pointer;
+	font-size: 0;
+	font-family: inherit;
+	line-height: 1;
 	text-decoration: none;
-	transition: color 0.1s ease;
+	text-indent: 0;
+	touch-action: manipulation;
+	white-space: nowrap;
+	transition: opacity 0.12s ease;
 }
 
-.readerToc li.h1 a {
-	font-weight: 500;
+.readerTocTitle {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
 }
 
-.readerToc li.h3 a {
-	padding-left: 24px;
+.readerToc button::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 0;
+	width: 7px;
+	height: 2px;
+	border-radius: 999px;
+	background: var(--reader-faint);
+	opacity: 0.42;
+	transform: translateY(-50%);
+	transition: width 0.12s ease, background 0.12s ease, opacity 0.12s ease;
 }
 
-.readerToc li.h4 a,
-.readerToc li.h5 a,
-.readerToc li.h6 a {
-	padding-left: 36px;
+.readerToc li.article button::before,
+.readerToc li.h1 button::before,
+.readerToc li.h2 button::before {
+	width: 9px;
 }
 
-.readerToc li.is-before a {
-	color: var(--reader-faint);
+.readerToc li.h4 button::before,
+.readerToc li.h5 button::before,
+.readerToc li.h6 button::before {
+	width: 6px;
 }
 
-.readerToc a:hover,
-.readerToc a.active {
+.readerToc li.is-before button::before {
+	opacity: 0.24;
+}
+
+.readerToc button:hover,
+.readerToc button.active {
 	color: var(--reader-heading);
-	font-weight: 500;
+	opacity: 1;
+}
+
+.readerToc li button.active::before {
+	width: 13px;
+	background: var(--reader-heading);
+	opacity: 0.78;
+}
+
+.readerToc button:hover::before {
+	background: var(--reader-muted);
+	opacity: 0.72;
+}
+
+.readerToc button:focus {
+	outline: 0;
+	box-shadow: none;
+}
+
+.readerToc button:focus-visible::before {
+	background: var(--reader-heading);
+	opacity: 1;
 }
 
 @media (min-width: 1180px) {
 	.readerToc {
-		position: fixed;
-		z-index: 1;
-		top: var(--reader-page-pad-y);
-		left: max(28px, calc(50vw - 42rem));
-		width: 12.5rem;
-		max-height: calc(100vh - var(--reader-page-pad-y) - 3rem);
-		margin: 0;
-		padding: 0;
-		border-bottom: 0;
+		font-size: 0.82rem;
 	}
 
-	.readerToc::before {
-		display: none;
+	.readerTocTitle {
+		position: absolute;
+	}
+
+	.readerToc li {
+		display: flex;
+	}
+
+	.readerToc button:hover,
+	.readerToc button.active {
+		color: transparent;
 	}
 }
 
 @media (max-width: 760px) {
 	body {
-		padding: 34px 20px 56px;
+		padding: 34px 20px 56px 42px;
 	}
 
 	.articleHeader {
 		margin-bottom: 2rem;
+	}
+
+	.readerToc {
+		left: 10px;
+		width: 1.1rem;
+	}
+
+	.readerToc ol {
+		gap: 0.42rem;
+	}
+
+	.readerToc button {
+		width: 1.1rem;
+		height: 1rem;
+	}
+
+	.readerToc button::before,
+	.readerToc li.article button::before,
+	.readerToc li.h1 button::before,
+	.readerToc li.h2 button::before,
+	.readerToc li.h4 button::before,
+	.readerToc li.h5 button::before,
+	.readerToc li.h6 button::before {
+		width: 5px;
+		height: 2px;
+		border-radius: 999px;
+		opacity: 0.3;
+	}
+
+	.readerToc li.is-before button::before {
+		opacity: 0.18;
+	}
+
+	.readerToc li button.active::before {
+		width: 8px;
+		height: 2px;
+		background: var(--reader-heading);
+		opacity: 0.72;
 	}
 
 	.articleTitle h1 {
@@ -663,7 +775,7 @@ sub {
 
 @supports (-webkit-touch-callout: none) {
 	body {
-		padding: 30px 20px 56px;
+		padding: 30px 20px 56px 42px;
 		word-break: break-word;
 		-webkit-hyphens: auto;
 	}
