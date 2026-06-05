@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1 - 2026-06-05
+
+- Updated the installer author website to `https://raisul.xyz`.
+- Bumped the internal theme version to `4`.
+
 ## 1.1.0 - 2026-06-05
 
 - Reworked the generated section rail into a lower-contrast marker stack for desktop and mobile.
