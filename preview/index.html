@@ -116,8 +116,20 @@
 		var markerCount = 5;
 		var root = document.documentElement;
 		var markerLabels = ["Top", "25%", "50%", "75%", "Bottom"];
+		var reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+		var hasPointerEvents = "PointerEvent" in window;
+		var isScrubbing = false;
+		var scrubIndex = -1;
+		var activePointerId = null;
+		var activeTouchId = null;
+		var markerCenters = [];
+
 		function getScrollMax() {
 			return Math.max(0, root.scrollHeight - window.innerHeight);
+		}
+
+		function getMarkerOffset() {
+			return Math.max(72, Math.min(128, window.innerHeight * 0.12));
 		}
 
 		function normalizeHeadingText(text) {
@@ -193,6 +205,7 @@
 		toc.hidden = false;
 
 		var controls = Array.prototype.slice.call(tocList.querySelectorAll("button"));
+
 		function setActiveSection(activeIndex) {
 			controls.forEach(function (control, index) {
 				var item = control.parentElement;
@@ -218,12 +231,82 @@
 			return Math.round(getScrollMax() * section.ratio);
 		}
 
+		function cacheMarkerCenters() {
+			markerCenters = controls.map(function (control) {
+				var rect = control.getBoundingClientRect();
+				return rect.top + rect.height / 2;
+			});
+		}
+
+		function getNearestMarkerIndexFromY(clientY) {
+			if (markerCenters.length < 1) {
+				return -1;
+			}
+
+			var activeIndex = 0;
+			var bestDistance = Infinity;
+			markerCenters.forEach(function (centerY, index) {
+				var distance = Math.abs(centerY - clientY);
+				if (distance < bestDistance) {
+					bestDistance = distance;
+					activeIndex = index;
+				}
+			});
+			return activeIndex;
+		}
+
+		function setScrubTargetFromY(clientY) {
+			var nextIndex = getNearestMarkerIndexFromY(clientY);
+			if (nextIndex !== scrubIndex) {
+				scrubIndex = nextIndex;
+				setActiveSection(scrubIndex);
+			}
+		}
+
+		function beginScrub(pointerId, clientY) {
+			isScrubbing = true;
+			activePointerId = pointerId;
+			cacheMarkerCenters();
+			setScrubTargetFromY(clientY);
+			toc.classList.add("isScrubbing");
+		}
+
+		function moveScrub(clientY) {
+			if (!isScrubbing) {
+				return;
+			}
+			setScrubTargetFromY(clientY);
+		}
+
+		function endScrub() {
+			if (!isScrubbing) {
+				return;
+			}
+			isScrubbing = false;
+			toc.classList.remove("isScrubbing");
+			activePointerId = null;
+			activeTouchId = null;
+			var indexToScroll = scrubIndex;
+			scrubIndex = -1;
+			if (indexToScroll > -1) {
+				scrollToSection(sectionTargets[indexToScroll]);
+			}
+			updateActiveFromScroll();
+		}
+
+		function getBehavior() {
+			if (reducedMotionQuery && reducedMotionQuery.matches) {
+				return "auto";
+			}
+			return "smooth";
+		}
+
 		function updateActiveFromScroll() {
 			if (sectionTargets.length < 1) {
 				return;
 			}
 
-			var markerOffset = Math.max(72, Math.min(128, window.innerHeight * 0.12));
+			var markerOffset = getMarkerOffset();
 			var scrollTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
 			var scrollLimit = getScrollMax();
 			if (scrollLimit - scrollTop < markerOffset) {
@@ -244,16 +327,114 @@
 			if (!section) {
 				return;
 			}
-			var markerOffset = Math.max(72, Math.min(128, window.innerHeight * 0.12));
+			var markerOffset = getMarkerOffset();
 			var targetTop = getTargetTop(section);
 			var nextTop = targetTop <= 0 ? 0 : targetTop - markerOffset;
 			var scrollMax = getScrollMax();
 			nextTop = Math.max(0, Math.min(scrollMax, nextTop));
 			try {
-				window.scrollTo({ top: nextTop, left: 0, behavior: "smooth" });
+				window.scrollTo({
+					top: nextTop,
+					left: 0,
+					behavior: getBehavior()
+				});
 			} catch (error) {
 				window.scrollTo(0, nextTop);
 			}
+		}
+
+		function getTouchPoint(event, touchId) {
+			var points = event.touches || event.changedTouches;
+			if (!points || points.length < 1) {
+				return null;
+			}
+			for (var i = 0; i < points.length; i++) {
+				var touch = points[i];
+				if (touch.identifier === touchId) {
+					return touch;
+				}
+			}
+			return points[0];
+		}
+
+		function onPointerDown(event) {
+			if (event.button && event.button !== 0) {
+				return;
+			}
+			if (!event.isPrimary) {
+				return;
+			}
+			event.preventDefault();
+			beginScrub(event.pointerId, event.clientY);
+		}
+
+		function onPointerMove(event) {
+			if (!isScrubbing || event.pointerId !== activePointerId) {
+				return;
+			}
+			event.preventDefault();
+			moveScrub(event.clientY);
+		}
+
+		function onPointerEnd(event) {
+			if (!isScrubbing) {
+				return;
+			}
+			if (activePointerId !== null && event.pointerId !== activePointerId) {
+				return;
+			}
+			event.preventDefault();
+			endScrub();
+		}
+
+		function onTouchStart(event) {
+			if (isScrubbing || !event.touches || event.touches.length < 1) {
+				return;
+			}
+			var touch = event.touches[0];
+			activeTouchId = touch.identifier;
+			event.preventDefault();
+			beginScrub(null, touch.clientY);
+		}
+
+		function onTouchMove(event) {
+			if (!isScrubbing || !event.touches || event.touches.length < 1) {
+				return;
+			}
+			var touch = getTouchPoint(event, activeTouchId);
+			if (!touch) {
+				return;
+			}
+			event.preventDefault();
+			moveScrub(touch.clientY);
+		}
+
+		function onTouchEnd(event) {
+			if (!isScrubbing) {
+				return;
+			}
+			if (!event.changedTouches || event.changedTouches.length < 1) {
+				return;
+			}
+			var touch = getTouchPoint(event, activeTouchId);
+			if (!touch) {
+				return;
+			}
+			event.preventDefault();
+			endScrub();
+		}
+
+		if (hasPointerEvents) {
+			toc.addEventListener("pointerdown", onPointerDown, { passive: false });
+			toc.addEventListener("pointermove", onPointerMove, { passive: false });
+			toc.addEventListener("pointerup", onPointerEnd, { passive: false });
+			toc.addEventListener("pointercancel", onPointerEnd, { passive: false });
+			toc.addEventListener("pointerleave", onPointerEnd, { passive: false });
+		} else {
+			toc.addEventListener("touchstart", onTouchStart, { passive: false });
+			toc.addEventListener("touchmove", onTouchMove, { passive: false });
+			toc.addEventListener("touchend", onTouchEnd, { passive: false });
+			toc.addEventListener("touchcancel", onTouchEnd, { passive: false });
 		}
 
 		controls.forEach(function (control, index) {
@@ -264,9 +445,13 @@
 			});
 		});
 
+		cacheMarkerCenters();
 		updateActiveFromScroll();
 		window.addEventListener("scroll", updateActiveFromScroll, { passive: true });
-		window.addEventListener("resize", updateActiveFromScroll);
+		window.addEventListener("resize", function () {
+			cacheMarkerCenters();
+			updateActiveFromScroll();
+		});
 	}
 
 	hideEmptyExternalLink();

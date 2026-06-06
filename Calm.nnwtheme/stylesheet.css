@@ -509,8 +509,8 @@ sub {
 	position: fixed;
 	z-index: 1;
 	top: 0;
-	left: 14px;
-	width: 2rem;
+	left: 12px;
+	width: 1.9rem;
 	height: 100vh;
 	margin: 0;
 	padding: 0;
@@ -523,6 +523,8 @@ sub {
 	font-size: 0;
 	line-height: 1;
 	-webkit-overflow-scrolling: touch;
+	touch-action: none;
+	cursor: default;
 }
 
 @supports (height: 100dvh) {
@@ -546,9 +548,10 @@ sub {
 .readerToc ol {
 	display: flex;
 	flex-direction: column;
+	justify-content: center;
 	align-items: flex-start;
 	gap: 0.36rem;
-	margin: 0;
+	margin: auto 0;
 	padding: 0.12rem 0;
 	max-height: calc(100vh - 4rem);
 	overflow-x: hidden;
@@ -578,7 +581,7 @@ sub {
 	-webkit-appearance: none;
 	display: block;
 	position: relative;
-	width: 1.6rem;
+	width: 1.55rem;
 	height: 1rem;
 	margin: 0;
 	padding: 0;
@@ -612,8 +615,8 @@ sub {
 	content: "";
 	position: absolute;
 	top: 50%;
-	left: 0;
-	width: 7px;
+	left: 0.56rem;
+	width: 5px;
 	height: 2px;
 	border-radius: 999px;
 	background: var(--reader-heading);
@@ -625,13 +628,13 @@ sub {
 .readerToc li.article button::before,
 .readerToc li.h1 button::before,
 .readerToc li.h2 button::before {
-	width: 8px;
+	width: 6px;
 }
 
 .readerToc li.h4 button::before,
 .readerToc li.h5 button::before,
 .readerToc li.h6 button::before {
-	width: 6px;
+	width: 4px;
 }
 
 .readerToc li.is-before button::before {
@@ -645,7 +648,7 @@ sub {
 }
 
 .readerToc li button.active::before {
-	width: 9px;
+	width: 7px;
 	background: var(--reader-heading);
 	opacity: 0.78;
 }
@@ -663,6 +666,10 @@ sub {
 .readerToc button:focus-visible::before {
 	background: var(--reader-heading);
 	opacity: 1;
+}
+
+.readerToc.isScrubbing button::before {
+	opacity: 0.46;
 }
 
 @media (min-width: 1180px) {
@@ -695,7 +702,7 @@ sub {
 
 	.readerToc {
 		left: 8px;
-		width: 0.95rem;
+		width: 1.2rem;
 	}
 
 	.readerToc ol {
@@ -703,7 +710,7 @@ sub {
 	}
 
 	.readerToc button {
-		width: 0.95rem;
+		width: 1.2rem;
 		height: 1rem;
 	}
 
@@ -714,7 +721,8 @@ sub {
 	.readerToc li.h4 button::before,
 	.readerToc li.h5 button::before,
 	.readerToc li.h6 button::before {
-		width: 4px;
+		left: 0.22rem;
+		width: 3.5px;
 		height: 2px;
 		border-radius: 999px;
 		opacity: 0.3;
@@ -725,10 +733,14 @@ sub {
 	}
 
 	.readerToc li button.active::before {
-		width: 7px;
+		width: 5px;
 		height: 2px;
 		background: var(--reader-heading);
 		opacity: 0.78;
+	}
+
+	.readerToc.isScrubbing button::before {
+		opacity: 0.42;
 	}
 
 	.articleTitle h1 {
