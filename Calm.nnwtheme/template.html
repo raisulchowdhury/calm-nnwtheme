@@ -362,6 +362,13 @@ body: The body of the article.
 				return;
 			}
 			event.preventDefault();
+			if (toc.setPointerCapture) {
+				try {
+					toc.setPointerCapture(event.pointerId);
+				} catch (error) {
+					// Without capture, the pointerleave listener still ends the scrub.
+				}
+			}
 			beginScrub(event.pointerId, event.clientY);
 		}
 

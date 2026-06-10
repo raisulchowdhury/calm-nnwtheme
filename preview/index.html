@@ -49,7 +49,19 @@
 			<p>Deeper headings should still appear in the generated section rail when the viewport has enough room for it.</p>
 
 			<h2 id="mastery">Mastery without mashing buttons</h2>
-			<p>Every fighting game player started by mashing buttons. Random inputs, hoping a fireball would come out, occasionally winning by accident. Mashing is how you find the inputs in the first place.</p>
+			<p>Every fighting game player started by mashing buttons. Random inputs, hoping a fireball would come out, occasionally winning by accident. Mashing is how you find the inputs in the first place. The part that <mark>actually matters</mark> is noticing which inputs worked, like pressing <kbd>↓</kbd> <kbd>↘</kbd> <kbd>→</kbd> <kbd>P</kbd> on purpose the second time.</p>
+
+			<dl>
+				<dt>Special move</dt>
+				<dd>A practiced input sequence that collapses several steps into one motion.</dd>
+				<dt>Combo</dt>
+				<dd>Special moves chained together until the whole exchange feels like one decision.</dd>
+			</dl>
+
+			<details>
+				<summary>Frame data for the curious</summary>
+				<p>None of this requires memorizing frame data. It requires repetition until the motion stops being a sequence of steps and starts being a single thing you do.</p>
+			</details>
 		</div>
 	</article>
 
@@ -365,6 +377,13 @@
 				return;
 			}
 			event.preventDefault();
+			if (toc.setPointerCapture) {
+				try {
+					toc.setPointerCapture(event.pointerId);
+				} catch (error) {
+					// Without capture, the pointerleave listener still ends the scrub.
+				}
+			}
 			beginScrub(event.pointerId, event.clientY);
 		}
 
