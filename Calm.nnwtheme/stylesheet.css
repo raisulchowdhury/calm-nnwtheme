@@ -223,6 +223,11 @@ article,
 	margin: 1rem 0;
 }
 
+.articleBody p,
+.articleBody li {
+	text-wrap: pretty;
+}
+
 .articleBody strong,
 .articleBody b {
 	color: var(--reader-heading);
@@ -308,6 +313,19 @@ article,
 	color: var(--reader-muted);
 }
 
+.articleBody dl {
+	margin: 1.1em 0;
+}
+
+.articleBody dt {
+	color: var(--reader-heading);
+	font-weight: 700;
+}
+
+.articleBody dd {
+	margin: 0.2em 0 0.8em 1.35em;
+}
+
 .articleBody blockquote {
 	margin: 1.6em 0;
 	padding: 0 0 0 1em;
@@ -322,6 +340,32 @@ article,
 
 .articleBody blockquote > :last-child {
 	margin-bottom: 0;
+}
+
+.articleBody mark {
+	padding: 0.05em 0.15em;
+	border-radius: 3px;
+	background: var(--reader-selection);
+	color: inherit;
+}
+
+.articleBody details {
+	margin: 1.6em 0;
+	padding: 0.7em 1em;
+	border: 1px solid var(--reader-rule);
+	border-radius: var(--reader-radius);
+}
+
+.articleBody summary {
+	color: var(--reader-heading);
+	font-family: var(--reader-sans);
+	font-size: 0.9em;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.articleBody details[open] summary {
+	margin-bottom: 0.6em;
 }
 
 .articleBody hr {
@@ -368,6 +412,12 @@ article,
 	.articleBody svg {
 		mix-blend-mode: multiply;
 	}
+}
+
+.articleBody audio {
+	display: block;
+	width: 100%;
+	margin: 2.15em 0;
 }
 
 .articleBody figcaption {
@@ -433,6 +483,16 @@ pre code {
 	padding: 0;
 	background: transparent;
 	font-size: inherit;
+}
+
+kbd {
+	padding: 0.12em 0.4em;
+	border: 1px solid var(--reader-rule);
+	border-bottom-width: 2px;
+	border-radius: 4px;
+	background: var(--reader-code-bg);
+	font-family: var(--reader-mono);
+	font-size: 0.82em;
 }
 
 .nnw-overflow {
