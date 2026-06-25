@@ -18,6 +18,10 @@ Download the latest release:
 
 [Calm.nnwtheme.zip](https://github.com/raisulchowdhury/calm-nnwtheme/releases/latest/download/Calm.nnwtheme.zip)
 
+The same installable zip is also kept at the repository root:
+
+[Calm.nnwtheme.zip](Calm.nnwtheme.zip)
+
 Then open the zip with NetNewsWire, or use NetNewsWire's theme URL scheme after this repository is public:
 
 ```text
@@ -77,7 +81,7 @@ Build an installable zip:
 ditto -c -k --norsrc --keepParent Calm.nnwtheme Calm.nnwtheme.zip
 ```
 
-Generated zips are published through GitHub Releases, not committed to the repository.
+The root `Calm.nnwtheme.zip` is committed for direct GitHub access, and GitHub Releases should publish the same rebuilt file.
 
 ## Preview
 

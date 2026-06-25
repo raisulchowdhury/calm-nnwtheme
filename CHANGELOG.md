@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 - 2026-06-25
+
+- Restored `Calm.nnwtheme.zip` to the repository root so the installable package is visible from GitHub's file list.
+- Kept the package content aligned with the `Version` 8 theme source; no theme template or stylesheet behavior changed.
+
 ## 1.2.0 - 2026-06-10
 
 - Held pointer capture while scrubbing the section rail so a drag no longer ends early when the pointer drifts off the narrow rail.
