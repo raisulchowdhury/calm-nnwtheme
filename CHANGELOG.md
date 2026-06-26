@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0 - 2026-06-26
+
+- Removed the section rail from compact mobile layouts so phone reading is quieter and no longer reserves a left rail gutter.
+- Kept the section rail on wider tablet and desktop layouts.
+- Prevented compact mobile layouts from initializing rail interaction JavaScript.
+- Added validation checks for theme/preview script parity, compact rail behavior, and package/source alignment.
+- Bumped the internal theme version to `9`.
+
 ## 1.2.1 - 2026-06-25
 
 - Restored `Calm.nnwtheme.zip` to the repository root so the installable package is visible from GitHub's file list.
