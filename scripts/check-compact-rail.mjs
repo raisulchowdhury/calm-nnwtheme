@@ -22,12 +22,13 @@ function assertNotContains(source, forbidden, label) {
 
 assertContains(stylesheet, `@media ${compactQuery}`, "stylesheet.css");
 assertContains(stylesheet, ".readerToc,\n\t.readerToc:not([hidden]) {\n\t\tdisplay: none !important;\n\t}", "stylesheet.css compact rail rule");
-assertContains(stylesheet, "@media (min-width: 821px) and (min-height: 501px)", "stylesheet.css WebKit wide-screen guard");
 assertContains(stylesheet, "padding: 34px 20px 56px;", "stylesheet.css compact body padding");
-assertContains(stylesheet, "padding: 30px 20px 56px;", "stylesheet.css WebKit compact body padding");
+assertContains(stylesheet, "@supports (-webkit-touch-callout: none) {\n\tbody {\n\t\tpadding: 30px 20px 56px;\n\t\tpadding-left: 42px;", "stylesheet.css WebKit rail gutter");
+assertContains(stylesheet, `@media ${compactQuery} {\n\t\tbody {\n\t\t\tpadding: 30px 20px 56px;`, "stylesheet.css WebKit compact body padding");
 assertNotContains(stylesheet, "@media (max-width: 760px)", "stylesheet.css");
 assertNotContains(stylesheet, "padding: 34px 20px 56px 42px", "stylesheet.css");
 assertNotContains(stylesheet, "padding: 30px 20px 56px 42px", "stylesheet.css");
+assertNotContains(stylesheet, "@media (min-width: 821px) and (min-height: 501px)", "stylesheet.css");
 
 for (const [label, script] of [
 	["template.html script", templateScript],

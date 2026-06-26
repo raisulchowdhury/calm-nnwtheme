@@ -790,13 +790,14 @@ sub {
 @supports (-webkit-touch-callout: none) {
 	body {
 		padding: 30px 20px 56px;
+		padding-left: 42px;
 		word-break: break-word;
 		-webkit-hyphens: auto;
 	}
 
-	@media (min-width: 821px) and (min-height: 501px) {
+	@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
 		body {
-			padding-left: 42px;
+			padding: 30px 20px 56px;
 		}
 	}
 
