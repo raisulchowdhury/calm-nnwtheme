@@ -39,7 +39,9 @@ This is intentionally not a full scrollbar. It should feel like a reader navigat
 
 ### Compact Mobile
 
-On phone-width layouts, Calm hides the section rail entirely.
+Compact mode is exactly: `(max-width: 820px), (pointer: coarse) and (max-height: 500px)`.
+
+On matching layouts, Calm hides the section rail entirely.
 
 Rationale:
 
@@ -47,7 +49,7 @@ Rationale:
 - A usable touch target requires a visible or invisible gutter that competes with the article.
 - Compact reading should prioritize uninterrupted vertical flow.
 
-Compact mobile layouts must not render the rail, reserve an invisible rail gutter, or initialize rail interaction listeners.
+Compact mobile layouts must not render the rail, reserve an invisible rail gutter, add extra left padding/inset/gutter, or initialize rail interaction listeners.
 
 ### Larger Tablet
 
