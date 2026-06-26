@@ -268,21 +268,20 @@ No output from `node --check`, `check-scripts.mjs`, or `diff` means those checks
 
 Replace the current manual validation command block in `README.md` with:
 
-````markdown
-Validate changes:
+Use this exact Markdown block:
 
-```sh
-scripts/validate.sh
-```
+    Validate changes:
 
-The validation runner checks:
+    ```sh
+    scripts/validate.sh
+    ```
 
-- `Info.plist` syntax
-- theme and preview inline JavaScript syntax
-- theme and preview inline JavaScript parity
-- root zip content against `Calm.nnwtheme/`
-```
-````
+    The validation runner checks:
+
+    - `Info.plist` syntax
+    - theme and preview inline JavaScript syntax
+    - theme and preview inline JavaScript parity
+    - root zip content against `Calm.nnwtheme/`
 
 - [ ] **Step 8: Update the PR checklist**
 
