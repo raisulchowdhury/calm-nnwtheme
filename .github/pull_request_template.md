@@ -6,7 +6,6 @@
 
 ## Checks
 
-- [ ] `plutil -lint Calm.nnwtheme/Info.plist`
 - [ ] `scripts/validate.sh`
 - [ ] Phone-width preview has no rail and no left gutter
 - [ ] Desktop preview still has the section rail
