@@ -46,7 +46,7 @@
 			<p>The way you build a move set is the same way the arcade kids built theirs. You try things. You fail a lot. You watch people who are better than you and steal what they do.</p>
 
 			<h4>Keep what works</h4>
-			<p>Deeper headings should still appear in the generated section rail when the viewport has enough room for it.</p>
+			<p>Deeper headings still appear in the generated section rail on wider screens, while compact mobile keeps the page rail-free.</p>
 
 			<h2 id="mastery">Mastery without mashing buttons</h2>
 			<p>Every fighting game player started by mashing buttons. Random inputs, hoping a fireball would come out, occasionally winning by accident. Mashing is how you find the inputs in the first place. The part that <mark>actually matters</mark> is noticing which inputs worked, like pressing <kbd>↓</kbd> <kbd>↘</kbd> <kbd>→</kbd> <kbd>P</kbd> on purpose the second time.</p>
@@ -79,6 +79,13 @@
 	var header = document.getElementById("readerTop");
 	var externalLink = document.querySelector(".externalLink");
 	var externalLinkAnchor = externalLink ? externalLink.querySelector("a") : null;
+	var compactRailQuery = window.matchMedia ?
+		window.matchMedia("(max-width: 820px), (pointer: coarse) and (max-height: 500px)") :
+		null;
+
+	function shouldDisableRail() {
+		return compactRailQuery && compactRailQuery.matches;
+	}
 
 	function isPlaceholderValue(value) {
 		return /^\s*\[\[[^\]]+\]\]\s*$/.test(value || "");
@@ -117,7 +124,7 @@
 	}
 
 	function initToc() {
-		if (!body || !toc || !tocList) {
+		if (!body || !toc || !tocList || shouldDisableRail()) {
 			if (toc) {
 				toc.hidden = true;
 			}

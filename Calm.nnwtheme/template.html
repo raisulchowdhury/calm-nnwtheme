@@ -64,6 +64,13 @@ body: The body of the article.
 	var header = document.getElementById("readerTop");
 	var externalLink = document.querySelector(".externalLink");
 	var externalLinkAnchor = externalLink ? externalLink.querySelector("a") : null;
+	var compactRailQuery = window.matchMedia ?
+		window.matchMedia("(max-width: 820px), (pointer: coarse) and (max-height: 500px)") :
+		null;
+
+	function shouldDisableRail() {
+		return compactRailQuery && compactRailQuery.matches;
+	}
 
 	function isPlaceholderValue(value) {
 		return /^\s*\[\[[^\]]+\]\]\s*$/.test(value || "");
@@ -102,7 +109,7 @@ body: The body of the article.
 	}
 
 	function initToc() {
-		if (!body || !toc || !tocList) {
+		if (!body || !toc || !tocList || shouldDisableRail()) {
 			if (toc) {
 				toc.hidden = true;
 			}
