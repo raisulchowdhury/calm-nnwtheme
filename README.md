@@ -71,9 +71,15 @@ template.html
 Validate changes:
 
 ```sh
-plutil -lint Calm.nnwtheme/Info.plist
-node --check <(sed -n '/<script>/,/<\/script>/p' Calm.nnwtheme/template.html | sed '1d;$d')
+scripts/validate.sh
 ```
+
+The validation runner checks:
+
+- `Info.plist` syntax
+- theme and preview inline JavaScript syntax
+- theme and preview inline JavaScript parity
+- root zip content against `Calm.nnwtheme/`
 
 Build an installable zip:
 
