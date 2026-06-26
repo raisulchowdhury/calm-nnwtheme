@@ -37,25 +37,27 @@ This is intentionally not a full scrollbar. It should feel like a reader navigat
 
 ## Device Behavior
 
-### iPhone
+### Compact Mobile
 
-The primary input is touch.
+On phone-width layouts, Calm hides the section rail entirely.
 
-- Use a generous invisible left gutter, roughly 28-36px wide.
-- Tapping in the gutter snaps to the nearest target.
-- Dragging vertically in the gutter updates the active target.
-- Releasing settles the article at the selected target.
-- The rail should not require pinpoint tapping on a dash.
+Rationale:
 
-### iPad
+- The rail is supplemental, not required for reading.
+- A usable touch target requires a visible or invisible gutter that competes with the article.
+- Compact reading should prioritize uninterrupted vertical flow.
 
-iPad should support both touch and pointer behavior.
+Compact mobile layouts must not render the rail, reserve an invisible rail gutter, or initialize rail interaction listeners.
 
-- Touch follows the iPhone model.
+### Larger Tablet
+
+Larger tablets keep the rail when there is enough room for it to sit outside the reader column without becoming visually dominant.
+
+- Touch follows the same Tap + Scrub model as wider screens.
 - Pointer hover can raise marker contrast slightly.
 - Pointer click jumps to the nearest target.
 - Pointer drag scrubs through the target set.
-- The rail may sit slightly farther from the article text than iPhone because the canvas is wider.
+- The rail may sit slightly farther from the article text than compact phone layouts because the canvas is wider.
 
 ### Mac
 
@@ -126,16 +128,19 @@ Test with:
 - A short article with no headings.
 - An article with one to four filtered headings.
 - An article with five or more filtered headings.
-- A long article on iPhone width.
-- A wide desktop view on Mac.
+- A long article on phone-width portrait: no rail, no reserved left gutter, normal vertical scrolling.
+- A long article on phone-width landscape with coarse pointer and short height: no rail, no reserved left gutter.
+- A long article on wider tablet or desktop: rail appears when the article is long enough.
 - Pointer hover and click-drag behavior.
 - Touch drag behavior in mobile emulation or device testing.
 - Reduced motion mode.
 
 Acceptance criteria:
 
-- Users can tap the rail gutter without hitting the exact dash.
-- Users can drag the rail gutter and land on predictable targets.
+- Compact mobile layouts show no rail and reserve no rail gutter.
+- Compact mobile layouts do not initialize rail interaction listeners.
+- Wider layouts can tap the rail gutter without hitting the exact dash.
+- Wider layouts can drag the rail gutter and land on predictable targets.
 - Article scrolling remains normal outside the rail.
 - No marker interaction opens the source article.
 - The rail remains visually quiet at rest.
