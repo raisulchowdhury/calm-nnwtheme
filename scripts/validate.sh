@@ -6,6 +6,7 @@ node --check <(sed -n '/<script>/,/<\/script>/p' Calm.nnwtheme/template.html | s
 node --check <(sed -n '/<script>/,/<\/script>/p' preview/index.html | sed '1d;$d')
 node scripts/check-scripts.mjs
 node scripts/check-compact-rail.mjs
+node scripts/check-heading-rail-targets.mjs
 
 tmpdir="$(mktemp -d)"
 cleanup() {

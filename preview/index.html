@@ -160,17 +160,17 @@
 				return heading.textContent.trim().length > 0;
 			});
 		var titleKey = normalizeHeadingText(titleText);
-		var hasTopLevelSection = rawHeadings.some(function (heading) {
+		var sectionHeadings = rawHeadings.filter(function (heading) {
+			return !titleKey || normalizeHeadingText(heading.textContent) !== titleKey;
+		});
+		var hasTopLevelSection = sectionHeadings.some(function (heading) {
 			return Number(heading.tagName.slice(1)) <= 2;
 		});
-		var fallbackLevel = rawHeadings.reduce(function (level, heading) {
+		var fallbackLevel = sectionHeadings.reduce(function (level, heading) {
 			return Math.min(level, Number(heading.tagName.slice(1)));
 		}, 6);
-		var headings = rawHeadings.filter(function (heading) {
+		var headings = sectionHeadings.filter(function (heading) {
 			var level = Number(heading.tagName.slice(1));
-			if (titleKey && normalizeHeadingText(heading.textContent) === titleKey) {
-				return false;
-			}
 			return hasTopLevelSection ? level <= 2 : level === fallbackLevel;
 		});
 		var useHeadingTargets = headings.length > 4;
