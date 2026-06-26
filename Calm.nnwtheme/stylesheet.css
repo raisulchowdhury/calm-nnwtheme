@@ -753,7 +753,7 @@ sub {
 
 @media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
 	body {
-		padding: 34px 20px 56px;
+		padding: 34px 16px 56px;
 	}
 
 	.readerToc,
@@ -797,7 +797,7 @@ sub {
 
 	@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
 		body {
-			padding: 30px 20px 56px;
+			padding: 30px 16px 56px;
 		}
 	}
 
