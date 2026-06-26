@@ -4,6 +4,7 @@
 
 - Removed the section rail from compact mobile layouts so phone reading is quieter and no longer reserves a left rail gutter.
 - Tightened compact mobile side padding so phone articles feel less inset under NetNewsWire's chrome.
+- Tightened compact mobile line height slightly to reduce vertical gaps without changing desktop reading rhythm.
 - Kept the section rail on wider tablet and desktop layouts.
 - Prevented compact mobile layouts from initializing rail interaction JavaScript.
 - Added validation checks for theme/preview script parity, compact rail behavior, and package/source alignment.

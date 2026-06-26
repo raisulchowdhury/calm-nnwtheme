@@ -776,6 +776,7 @@ sub {
 	.articleBody {
 		--reader-font-size: 18.5px;
 		max-width: 100%;
+		line-height: 1.54;
 	}
 
 	.articleBody img,
@@ -798,6 +799,10 @@ sub {
 	@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
 		body {
 			padding: 30px 16px 56px;
+		}
+
+		.articleBody {
+			line-height: 1.54;
 		}
 	}
 
