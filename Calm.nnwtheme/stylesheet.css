@@ -776,7 +776,7 @@ sub {
 	.articleBody {
 		--reader-font-size: 18.5px;
 		max-width: 100%;
-		line-height: 1.54;
+		line-height: 1.48;
 	}
 
 	.articleBody img,
@@ -802,7 +802,7 @@ sub {
 		}
 
 		.articleBody {
-			line-height: 1.54;
+			line-height: 1.48;
 		}
 	}
 
