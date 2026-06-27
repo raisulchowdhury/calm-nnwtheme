@@ -6,6 +6,8 @@
 
 ## Checks
 
-- [ ] `plutil -lint Calm.nnwtheme/Info.plist`
-- [ ] `node --check` on the script block in `Calm.nnwtheme/template.html`
-- [ ] Rebuilt `Calm.nnwtheme.zip` for release if needed
+- [ ] `scripts/validate.sh`
+- [ ] Phone-width preview has no rail and no left gutter
+- [ ] Desktop preview still has the section rail
+- [ ] Changelog and `Info.plist` version updated
+- [ ] `Calm.nnwtheme.zip` rebuilt if releasing
