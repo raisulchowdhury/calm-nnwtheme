@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Added system-accent keyboard focus treatment to the section rail.
+- Enlarged title, metadata, disclosure, and wide iPad rail touch targets to 44 points without changing their visual weight.
+- Improved reading-statistics contrast in light and dark appearances.
+- Refreshed the desktop and iPhone screenshots to match the current theme.
+- Added validation coverage for interaction polish and bumped the internal theme version to `10`.
+
 ## 1.3.0 - 2026-06-26
 
 - Removed the section rail from compact mobile layouts so phone reading is quieter and no longer reserves a left rail gutter.

@@ -80,6 +80,8 @@ The validation runner checks:
 - `Info.plist` syntax
 - theme and preview inline JavaScript syntax
 - theme and preview inline JavaScript parity
+- compact and touch-capable interaction targets
+- section rail keyboard focus treatment
 - root zip content against `Calm.nnwtheme/`
 
 Build an installable zip:
