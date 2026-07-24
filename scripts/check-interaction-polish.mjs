@@ -18,6 +18,18 @@ assertContains(
 	"system rail focus ring",
 );
 assertContains(
+	".articleHeader {\n\tmargin-bottom: 2.5rem;\n}",
+	"wide title-to-body separation",
+);
+assertContains(
+	"font-size: calc(var(--reader-base-size) * 1.8);\n\tfont-weight: 700;\n\tline-height: 1.16;\n\tletter-spacing: -0.025em;",
+	"wide responsive title hierarchy",
+);
+assertContains(
+	".articleHeader {\n\t\tmargin-bottom: 2rem;\n\t}\n\n\t.articleTitle h1 {\n\t\tfont-size: calc(var(--reader-base-size) * 1.6);\n\t\tline-height: 1.2;\n\t\tletter-spacing: -0.02em;\n\t}",
+	"compact title hierarchy preservation",
+);
+assertContains(
 	".articleTitle a {\n\t\tdisplay: inline-flex;\n\t\talign-items: center;\n\t\tmin-height: 44px;\n\t\tmargin-block: -5px;\n\t}",
 	"compact title target",
 );

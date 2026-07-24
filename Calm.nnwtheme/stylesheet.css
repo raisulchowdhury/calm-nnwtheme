@@ -104,17 +104,17 @@ article,
 }
 
 .articleHeader {
-	margin-bottom: 2.25rem;
+	margin-bottom: 2.5rem;
 }
 
 .articleTitle h1 {
 	margin: 0;
 	color: var(--reader-heading);
 	font-family: var(--reader-serif-display);
-	font-size: calc(var(--reader-base-size) * 1.6);
+	font-size: calc(var(--reader-base-size) * 1.8);
 	font-weight: 700;
-	line-height: 1.2;
-	letter-spacing: -0.02em;
+	line-height: 1.16;
+	letter-spacing: -0.025em;
 	text-wrap: balance;
 }
 
@@ -793,6 +793,8 @@ sub {
 
 	.articleTitle h1 {
 		font-size: calc(var(--reader-base-size) * 1.6);
+		line-height: 1.2;
+		letter-spacing: -0.02em;
 	}
 
 	.articleTitle a {
