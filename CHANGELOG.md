@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.1 - 2026-07-24
 
 - Added system-accent keyboard focus treatment to the section rail.
 - Enlarged title, metadata, disclosure, and wide iPad rail touch targets to 44 points without changing their visual weight.
