@@ -1,79 +1,122 @@
-# Design QA: Calm v1.4 checkpoint 1
+# Design QA: Calm v1.4 checkpoint 2
 
-## Scope
+## Comparison target
 
-Responsive article-title hierarchy only. Rail position, metadata, footer,
-palette, article measure, media treatment, and article-body heading sizes are
-outside this checkpoint and must remain unchanged.
+- Source visual truth:
+  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-1/checkpoint-1-desktop-1440x1100-dark.png`
+- Intended delta:
+  `docs/specs/2026-07-24-v1.4-reading-craft-design.md`, checkpoint 2
+- Rendered implementation:
+  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-2/checkpoint-2-desktop-dark-1440x1100.png`
+- Local URL: `http://localhost:8765/preview/`
+- State: top scroll position, preview article, default text size, dark appearance
+- CSS viewport: `1440 × 1100`
+- Source pixels: `1440 × 1100`
+- Implementation pixels: `1440 × 1100`
+- Density normalization: both captures at device scale factor `1`
 
-## Comparison evidence
+The accepted checkpoint 1 capture is the source state. Checkpoint 2 intentionally
+moves only the section rail; every other visible region should remain identical.
 
-- Source references:
-  - `assets/screenshots/calm-dark.png`
-  - `assets/screenshots/calm-light.png`
-- Implementation URL: `http://localhost:8765/preview/`
-- Full comparison viewport: `1440 × 1100` CSS pixels at the top scroll state
+## Evidence
+
 - Full dark comparison:
-  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-1/compare-desktop-dark.png`
-- Focused dark header comparison:
-  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-1/compare-header-dark.png`
+  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-2/compare-desktop-dark.png`
+- Focused rail comparison:
+  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-2/compare-rail-dark.png`
 - Full light comparison:
-  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-1/compare-desktop-light.png`
-- Required-width light contact sheet:
-  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-1/responsive-contact-sheet-light.png`
+  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-2/compare-desktop-light.png`
 - Required-width dark contact sheet:
-  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-1/responsive-contact-sheet-dark.png`
-- Long-title contact sheet:
-  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-1/long-title-contact-sheet-dark.png`
+  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-2/responsive-contact-sheet-dark.png`
+- Required-width light contact sheet:
+  `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-2/responsive-contact-sheet-light.png`
 
-The source and implementation captures use the same article, viewport, scroll
-position, and appearance. The light and coarse-pointer states were rendered
-through a temporary local QA harness that reused the shipped preview and
-stylesheet; that harness was removed after capture.
+The temporary light, WebKit, and coarse-pointer QA harness reused the shipped
+preview and stylesheet, then was removed after capture.
 
-## Measured results
+## Findings
 
-| Layout | Title size | Line height | Tracking | Header gap | Rail |
-| --- | ---: | ---: | ---: | ---: | --- |
-| `1440 × 1100` | `31.5px` | `36.54px` | `-0.7875px` | `40px` | present |
-| `834 × 1194` | `31.5px` | `36.54px` | `-0.7875px` | `40px` | present |
-| `1194 × 834` | `31.5px` | `36.54px` | `-0.7875px` | `40px` | present |
-| `744 × 1133` | `28px` | `33.6px` | `-0.56px` | `32px` | absent |
-| `390 × 844` | `28px` | `33.6px` | `-0.56px` | `32px` | absent |
-| `844 × 390`, coarse | `28px` | `33.6px` | `-0.56px` | `32px` | absent |
+No actionable P0, P1, or P2 differences remain.
 
-The wide values resolve exactly to `1.8 ×` the `17.5px` base size, `1.16`
-line height, `-0.025em` tracking, and a `2.5rem` gap. Compact values preserve
-the prior `1.6 ×`, `1.2`, `-0.02em`, and `2rem` settings.
+### Spacing and layout
 
-The compact title link remains 44 pixels high. The article remains 665 pixels
-wide at full measure, and the sampled article-body `h2` remains `22.75px`.
+- The article remains centered and exactly `665px` wide, the rendered value of
+  the unchanged `41.5625rem` measure.
+- At desktop `1440 × 1100`, the rail right edge is `375.5px`, the article left
+  edge is `387.5px`, and the requested gap is exactly `12px` (`0.75rem`).
+- At coarse iPad portrait `834 × 1194`, the rail spans `28.5–72.5px`, the
+  article begins at `84.5px`, and the gap remains exactly `12px`.
+- At coarse iPad landscape `1194 × 834`, the rail spans `208.5–252.5px`, the
+  article begins at `264.5px`, and the gap remains exactly `12px`.
+- Wide WebKit padding is symmetric at `20px`, so the old left-edge rail gutter
+  no longer shifts the iPad reading column.
+- Split View `744 × 1133`, iPhone `390 × 844`, and coarse landscape
+  `844 × 390` show no rail and reserve no rail gutter.
 
-## Visual findings
+### Fonts and typography
 
-- The title is visibly more confident at wide widths without becoming heavier.
-- The four-pixel gap increase gives the opening paragraph clearer separation
-  without loosening the rest of the article.
-- The long-title fixture wraps to two lines on desktop, iPad, Split View, and
-  coarse landscape, and four lines on iPhone, with no clipping or horizontal
-  overflow.
-- Split View, iPhone, and short coarse landscape retain the compact title and
-  rail-free composition.
-- Source and implementation comparisons show no palette, measure, media,
-  article-body heading, or rail-style drift.
+Title and body typography match checkpoint 1. The title remains `31.5px` on
+wide layouts and `28px` on compact layouts; body-heading sizes, wrapping, line
+height, tracking, and hierarchy are unchanged.
+
+### Colors and visual tokens
+
+Light and dark comparisons show no palette, opacity, contrast, border, or
+surface changes. The new half-measure token affects positioning only.
+
+### Image quality and assets
+
+The existing article illustration keeps the same source, crop, dimensions,
+sharpness, blending, and caption treatment. No asset was added or replaced.
+
+### Copy and content
+
+Title, metadata, article copy, rail labels, accessible names, and footer copy
+are unchanged.
+
+### States, interaction, and accessibility
+
+- Precise-pointer rail controls remain approximately `24.8 × 16px`.
+- Coarse iPad controls remain `44 × 44px`, while their visible dashes stay
+  small and aligned.
+- Activating the `50%` marker moved the preview from `scrollY 0` to `494` and
+  selected the `50%` marker.
+- Dragging through the rail settled at `scrollY 1115` with `Bottom` active;
+  the scrubbing class cleared after release.
+- Compact listener suppression and rail absence remain covered by the
+  repository validation suite.
+- Existing system focus-ring and pointer-focus-suppression rules are unchanged.
 - A clean reload of the real preview produced no console warnings or errors.
 
-The in-app browser does not expose coarse-pointer emulation. The `844 × 390`
-visual therefore used the real compact CSS rules through the temporary harness;
-the actual coarse media query, rail absence, and listener suppression remain
-covered by the repository validation suite.
+## Comparison history
 
-## Severity review
+The first normalized comparison found no P0, P1, or P2 mismatch. No visual
+fix-and-recapture iteration was required. The half-measure token was changed
+from calculated division to the equivalent literal `20.78125rem` before final
+validation to avoid depending on newer CSS division support; rendered geometry
+remained identical.
 
-- P0: none
-- P1: none
-- P2: none
-- P3: coarse-pointer behavior should still receive a physical iPad check before
-  release preparation.
+## Open questions
+
+None for this checkpoint.
+
+## Implementation checklist
+
+- [x] Keep the `41.5625rem` measure unchanged.
+- [x] Add its paired `20.78125rem` half-measure token.
+- [x] Position the rail with the approved column-relative formula.
+- [x] Preserve precise-pointer geometry.
+- [x] Preserve 44-point coarse iPad controls.
+- [x] Center the WebKit reading column after removing the obsolete edge gutter.
+- [x] Preserve compact rail removal and listener suppression.
+- [x] Verify Tap + Scrub after repositioning.
+- [x] Verify light, dark, desktop, iPad, Split View, iPhone, and coarse
+  landscape states.
+
+## Follow-up polish
+
+- P3: Repeat the coarse-pointer checks on physical iPad hardware before release
+  preparation. The in-app browser simulation exercises the shipped CSS rules
+  but cannot reproduce an actual finger.
 
 final result: passed

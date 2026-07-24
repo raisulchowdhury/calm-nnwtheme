@@ -30,6 +30,14 @@ assertContains(
 	"compact title hierarchy preservation",
 );
 assertContains(
+	"--reader-measure: 41.5625rem;\n\t--reader-half-measure: 20.78125rem;",
+	"paired reader measure tokens",
+);
+assertContains(
+	"right: calc(50% + var(--reader-half-measure) + 0.75rem);\n\tleft: auto;",
+	"article-relative rail position",
+);
+assertContains(
 	".articleTitle a {\n\t\tdisplay: inline-flex;\n\t\talign-items: center;\n\t\tmin-height: 44px;\n\t\tmargin-block: -5px;\n\t}",
 	"compact title target",
 );
@@ -46,7 +54,7 @@ assertContains(
 	"compact disclosure target",
 );
 assertContains(
-	"@media (any-pointer: coarse) and (min-width: 821px) {\n\t.readerToc {\n\t\tleft: 2px;\n\t\twidth: 44px;",
+	"@media (any-pointer: coarse) and (min-width: 821px) {\n\t.readerToc {\n\t\twidth: 44px;",
 	"wide touch rail target",
 );
 assertContains(

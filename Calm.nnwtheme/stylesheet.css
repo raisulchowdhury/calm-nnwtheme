@@ -25,6 +25,7 @@
 
 	--reader-base-size: 17.5px;
 	--reader-measure: 41.5625rem;
+	--reader-half-measure: 20.78125rem;
 	--reader-page-pad-x: clamp(20px, 7vw, 88px);
 	--reader-page-pad-y: clamp(64px, 7vw, 104px);
 	--reader-radius: 8px;
@@ -569,7 +570,8 @@ sub {
 	position: fixed;
 	z-index: 1;
 	top: 0;
-	left: 12px;
+	right: calc(50% + var(--reader-half-measure) + 0.75rem);
+	left: auto;
 	width: 1.9rem;
 	height: 100vh;
 	margin: 0;
@@ -759,7 +761,6 @@ sub {
 
 @media (any-pointer: coarse) and (min-width: 821px) {
 	.readerToc {
-		left: 2px;
 		width: 44px;
 	}
 
@@ -849,7 +850,6 @@ sub {
 @supports (-webkit-touch-callout: none) {
 	body {
 		padding: 30px 20px 56px;
-		padding-left: 42px;
 		word-break: break-word;
 		-webkit-hyphens: auto;
 	}
