@@ -8,6 +8,7 @@ node scripts/check-scripts.mjs
 node scripts/check-compact-rail.mjs
 node scripts/check-heading-rail-targets.mjs
 node scripts/check-interaction-polish.mjs
+node scripts/check-reading-time.mjs
 
 tmpdir="$(mktemp -d)"
 cleanup() {

@@ -97,8 +97,7 @@ a:hover {
 }
 
 .articleHeader,
-article,
-.readerFooter {
+article {
 	width: min(100%, var(--reader-measure));
 	margin-right: auto;
 	margin-left: auto;
@@ -137,7 +136,7 @@ article,
 	line-height: 1.35;
 }
 
-.articleMeta > span:not(:empty) + span::before {
+.articleMeta > span:not(:empty) ~ span:not(:empty)::before {
 	content: "·";
 	margin-right: 0.35rem;
 	color: var(--reader-faint);
@@ -153,7 +152,9 @@ article,
 
 .byline:empty,
 .feedName:empty,
-.metaDate:empty {
+.metaDate:empty,
+.readingTime:empty,
+.readingTime[hidden] {
 	display: none;
 }
 
@@ -538,20 +539,6 @@ sup {
 
 sub {
 	bottom: -0.2em;
-}
-
-.readerFooter {
-	margin-top: 5rem;
-	padding-top: 1.25rem;
-	border-top: 1px solid var(--reader-rule);
-	color: var(--reader-muted);
-	font-family: var(--reader-sans);
-	font-size: 0.86rem;
-	line-height: 1.4;
-}
-
-.readerFooter[hidden] {
-	display: none;
 }
 
 .systemMessage {

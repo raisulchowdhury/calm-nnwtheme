@@ -18,6 +18,7 @@
 			<span class="byline">David Hoang</span>
 			<span class="metaDate"><a href="#">May 17, 2026</a></span>
 			<span class="feedName"><a href="#">Proof of Concept</a></span>
+			<span class="readingTime" id="readingTime" hidden></span>
 		</div>
 	</header>
 
@@ -65,16 +66,12 @@
 		</div>
 	</article>
 
-	<footer class="readerFooter">
-		<span id="readingStats"></span>
-	</footer>
 <script>
 (function () {
 	var body = document.getElementById("bodyContainer");
 	var toc = document.querySelector(".readerToc");
 	var tocList = document.getElementById("readerTocList");
-	var readerFooter = document.querySelector(".readerFooter");
-	var readingStats = document.getElementById("readingStats");
+	var readingTime = document.getElementById("readingTime");
 	var title = document.querySelector(".articleTitle h1");
 	var header = document.getElementById("readerTop");
 	var externalLink = document.querySelector(".externalLink");
@@ -104,23 +101,32 @@
 		}
 	}
 
-	function updateReadingStats() {
-		if (!body) {
-			if (readerFooter) {
-				readerFooter.hidden = true;
-			}
+	function hideReadingTime() {
+		if (!readingTime) {
+			return;
+		}
+		readingTime.hidden = true;
+		readingTime.textContent = "";
+		readingTime.removeAttribute("aria-label");
+	}
+
+	function updateReadingTime() {
+		if (!body || !readingTime) {
+			hideReadingTime();
 			return;
 		}
 
-		var words = body.innerText.trim().split(/\s+/).filter(Boolean).length;
-		if (readingStats && words > 0) {
-			var minutes = Math.max(1, Math.ceil(words / 225));
-			readingStats.textContent =
-				words.toLocaleString() + " " + (words === 1 ? "word" : "words") +
-				" · " + minutes + " min read";
-		} else if (readerFooter) {
-			readerFooter.hidden = true;
+		var text = (body.innerText || body.textContent || "").trim();
+		var words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+		var minutes = Math.ceil(words / 225);
+		if (minutes < 4) {
+			hideReadingTime();
+			return;
 		}
+
+		readingTime.textContent = minutes + " min";
+		readingTime.setAttribute("aria-label", "Estimated reading time: " + minutes + " minutes");
+		readingTime.hidden = false;
 	}
 
 	function initToc() {
@@ -481,7 +487,7 @@
 	}
 
 	hideEmptyExternalLink();
-	updateReadingStats();
+	updateReadingTime();
 	initToc();
 })();
 </script>

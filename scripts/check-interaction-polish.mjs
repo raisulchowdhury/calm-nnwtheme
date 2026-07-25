@@ -65,7 +65,3 @@ assertContains(
 	".articleBody details {\n\t\tpadding-top: 0;\n\t\tpadding-bottom: 0;\n\t}",
 	"compact disclosure spacing",
 );
-assertContains(
-	".readerFooter {\n\tmargin-top: 5rem;\n\tpadding-top: 1.25rem;\n\tborder-top: 1px solid var(--reader-rule);\n\tcolor: var(--reader-muted);",
-	"readable footer color",
-);

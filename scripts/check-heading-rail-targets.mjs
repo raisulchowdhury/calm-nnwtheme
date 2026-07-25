@@ -120,11 +120,6 @@ function createFixture() {
 	tocList.id = "readerTocList";
 	toc.appendChild(tocList);
 
-	const readerFooter = new FakeNode("footer");
-	readerFooter.className = "readerFooter";
-	const readingStats = new FakeNode("span");
-	readingStats.id = "readingStats";
-
 	const title = new FakeNode("h1", articleTitle);
 	const header = new FakeNode("header");
 	header.id = "readerTop";
@@ -144,14 +139,12 @@ function createFixture() {
 			return {
 				bodyContainer: body,
 				readerTocList: tocList,
-				readingStats,
 				readerTop: header,
 			}[id] || null;
 		},
 		querySelector(selector) {
 			return {
 				".readerToc": toc,
-				".readerFooter": readerFooter,
 				".articleTitle h1": title,
 				".externalLink": externalLink,
 			}[selector] || null;
