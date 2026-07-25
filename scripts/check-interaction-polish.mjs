@@ -18,6 +18,26 @@ assertContains(
 	"system rail focus ring",
 );
 assertContains(
+	".articleHeader {\n\tmargin-bottom: 2.5rem;\n}",
+	"wide title-to-body separation",
+);
+assertContains(
+	"font-size: calc(var(--reader-base-size) * 1.8);\n\tfont-weight: 700;\n\tline-height: 1.16;\n\tletter-spacing: -0.025em;",
+	"wide responsive title hierarchy",
+);
+assertContains(
+	".articleHeader {\n\t\tmargin-bottom: 2rem;\n\t}\n\n\t.articleTitle h1 {\n\t\tfont-size: calc(var(--reader-base-size) * 1.6);\n\t\tline-height: 1.2;\n\t\tletter-spacing: -0.02em;\n\t}",
+	"compact title hierarchy preservation",
+);
+assertContains(
+	"--reader-measure: 41.5625rem;\n\t--reader-half-measure: 20.78125rem;",
+	"paired reader measure tokens",
+);
+assertContains(
+	"right: calc(50% + var(--reader-half-measure) + 0.75rem);\n\tleft: auto;",
+	"article-relative rail position",
+);
+assertContains(
 	".articleTitle a {\n\t\tdisplay: inline-flex;\n\t\talign-items: center;\n\t\tmin-height: 44px;\n\t\tmargin-block: -5px;\n\t}",
 	"compact title target",
 );
@@ -34,7 +54,7 @@ assertContains(
 	"compact disclosure target",
 );
 assertContains(
-	"@media (any-pointer: coarse) and (min-width: 821px) {\n\t.readerToc {\n\t\tleft: 2px;\n\t\twidth: 44px;",
+	"@media (any-pointer: coarse) and (min-width: 821px) {\n\t.readerToc {\n\t\twidth: 44px;",
 	"wide touch rail target",
 );
 assertContains(
@@ -44,8 +64,4 @@ assertContains(
 assertContains(
 	".articleBody details {\n\t\tpadding-top: 0;\n\t\tpadding-bottom: 0;\n\t}",
 	"compact disclosure spacing",
-);
-assertContains(
-	".readerFooter {\n\tmargin-top: 5rem;\n\tpadding-top: 1.25rem;\n\tborder-top: 1px solid var(--reader-rule);\n\tcolor: var(--reader-muted);",
-	"readable footer color",
 );

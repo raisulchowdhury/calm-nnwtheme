@@ -40,15 +40,28 @@ class FakeClassList {
 class FakeNode {
 	constructor(tagName, textContent = "") {
 		this.tagName = tagName.toUpperCase();
-		this.textContent = textContent;
 		this.children = [];
+		this._textContent = textContent;
 		this.parentElement = null;
 		this.attributes = new Map();
 		this.hidden = false;
 		this.className = "";
+		this.rectTop = 0;
 		this.type = "";
+		this.style = { top: "" };
 		this._listeners = new Map();
 		this.classList = new FakeClassList(this);
+	}
+
+	get textContent() {
+		return this._textContent;
+	}
+
+	set textContent(value) {
+		this._textContent = value;
+		if (value === "" && this.children) {
+			this.children = [];
+		}
 	}
 
 	get innerText() {
@@ -77,8 +90,14 @@ class FakeNode {
 		this._listeners.set(type, listener);
 	}
 
+	removeEventListener(type, listener) {
+		if (this._listeners.get(type) === listener) {
+			this._listeners.delete(type);
+		}
+	}
+
 	getBoundingClientRect() {
-		return { top: 0, height: 16 };
+		return { top: this.rectTop, height: 16 };
 	}
 
 	querySelector(selector) {
@@ -86,11 +105,17 @@ class FakeNode {
 	}
 
 	querySelectorAll(selector) {
-		const selectors = selector.split(",").map((part) => part.trim().toUpperCase());
+		const selectors = selector.split(",").map((part) => part.trim());
 		const matches = [];
+		function matchesSelector(node, candidate) {
+			if (candidate.startsWith(".")) {
+				return node.className.split(/\s+/).includes(candidate.slice(1));
+			}
+			return node.tagName === candidate.toUpperCase();
+		}
 		function visit(node) {
 			for (const child of node.children) {
-				if (selectors.includes(child.tagName)) {
+				if (selectors.some((candidate) => matchesSelector(child, candidate))) {
 					matches.push(child);
 				}
 				visit(child);
@@ -105,25 +130,25 @@ function makeHeading(level, text) {
 	return new FakeNode(`h${level}`, text);
 }
 
-function createFixture() {
+function createFixture(headingCount = sectionHeadings.length) {
 	const body = new FakeNode("div", "word ".repeat(1200));
 	body.id = "bodyContainer";
 	body.appendChild(makeHeading(3, articleTitle));
-	for (const heading of sectionHeadings) {
-		body.appendChild(makeHeading(4, heading));
+	for (const [index, heading] of sectionHeadings.slice(0, headingCount).entries()) {
+		const headingNode = makeHeading(4, heading);
+		headingNode.rectTop = (index + 1) * 600;
+		body.appendChild(headingNode);
 	}
 
 	const toc = new FakeNode("nav");
 	toc.className = "readerToc";
 	toc.hidden = true;
+	const tocContext = new FakeNode("div");
+	tocContext.className = "readerTocContext";
+	toc.appendChild(tocContext);
 	const tocList = new FakeNode("ol");
 	tocList.id = "readerTocList";
 	toc.appendChild(tocList);
-
-	const readerFooter = new FakeNode("footer");
-	readerFooter.className = "readerFooter";
-	const readingStats = new FakeNode("span");
-	readingStats.id = "readingStats";
 
 	const title = new FakeNode("h1", articleTitle);
 	const header = new FakeNode("header");
@@ -136,6 +161,24 @@ function createFixture() {
 	documentElement.scrollTop = 0;
 	const documentBody = new FakeNode("body");
 	documentBody.scrollTop = 0;
+	const compactListeners = new Set();
+	const compactMedia = {
+		matches: false,
+		addEventListener(type, listener) {
+			if (type === "change") {
+				compactListeners.add(listener);
+			}
+		},
+		addListener(listener) {
+			compactListeners.add(listener);
+		},
+		setMatches(matches) {
+			this.matches = matches;
+			for (const listener of compactListeners) {
+				listener({ matches });
+			}
+		},
+	};
 
 	const document = {
 		documentElement,
@@ -144,14 +187,12 @@ function createFixture() {
 			return {
 				bodyContainer: body,
 				readerTocList: tocList,
-				readingStats,
 				readerTop: header,
 			}[id] || null;
 		},
 		querySelector(selector) {
 			return {
 				".readerToc": toc,
-				".readerFooter": readerFooter,
 				".articleTitle h1": title,
 				".externalLink": externalLink,
 			}[selector] || null;
@@ -161,29 +202,118 @@ function createFixture() {
 		},
 	};
 
+	const windowListeners = new Map();
 	const window = {
 		innerHeight: 800,
 		pageYOffset: 0,
-		matchMedia() {
-			return { matches: false };
+		PointerEvent: function PointerEvent() {},
+		matchMedia(query) {
+			return query.includes("(max-width: 820px)") ? compactMedia : { matches: false };
 		},
-		addEventListener() {},
+		addEventListener(type, listener) {
+			windowListeners.set(type, listener);
+		},
+		removeEventListener(type, listener) {
+			if (windowListeners.get(type) === listener) {
+				windowListeners.delete(type);
+			}
+		},
 		scrollTo() {},
 	};
 
-	return { document, window, toc, tocList };
+	return { compactMedia, document, window, windowListeners, toc, tocContext, tocList };
 }
 
-function runScript(path) {
-	const { document, window, toc, tocList } = createFixture();
+function runScript(path, headingCount) {
+	const { compactMedia, document, window, windowListeners, toc, tocContext, tocList } =
+		createFixture(headingCount);
 	vm.runInNewContext(extractInlineScript(path), { document, window });
-	const labels = tocList.querySelectorAll("button").map((button) => button.textContent);
-	return { labels, tocHidden: toc.hidden };
+	const controls = tocList.querySelectorAll("button");
+	const labels = controls.map((button) => button.textContent);
+	const initialContext = tocContext.textContent;
+	const initialContextTop = tocContext.style.top;
+	let scrubContext = "";
+	let scrubbingDuring = false;
+	let scrubbingAfter = false;
+	if (controls.length > 0) {
+		controls.forEach((control, index) => {
+			control.rectTop = 100 + index * 40;
+		});
+		const finalControl = controls.at(-1);
+		const pointerEvent = {
+			button: 0,
+			clientY: finalControl.rectTop + 8,
+			isPrimary: true,
+			pointerId: 1,
+			preventDefault() {},
+		};
+		toc._listeners.get("pointerdown")?.(pointerEvent);
+		scrubContext = tocContext.textContent;
+		scrubbingDuring = toc.className.split(/\s+/).includes("isScrubbing");
+		toc._listeners.get("pointerup")?.(pointerEvent);
+		scrubbingAfter = toc.className.split(/\s+/).includes("isScrubbing");
+	}
+	const initialPointerListener = toc._listeners.has("pointerdown");
+	const initialScrollListener = windowListeners.has("scroll");
+	compactMedia.setMatches(true);
+	const compactControlCount = tocList.querySelectorAll("button").length;
+	const compactHidden = toc.hidden;
+	const compactPointerListener = toc._listeners.has("pointerdown");
+	const compactScrollListener = windowListeners.has("scroll");
+	compactMedia.setMatches(false);
+	const restoredControlCount = tocList.querySelectorAll("button").length;
+	const restoredHidden = toc.hidden;
+	const restoredPointerListener = toc._listeners.has("pointerdown");
+	const restoredScrollListener = windowListeners.has("scroll");
+	return {
+		compactControlCount,
+		compactHidden,
+		compactPointerListener,
+		compactScrollListener,
+		contextAfterScrub: tocContext.textContent,
+		headingBased: toc.className.split(/\s+/).includes("is-heading-based"),
+		initialPointerListener,
+		initialScrollListener,
+		initialContext,
+		initialContextTop,
+		labels,
+		restoredControlCount,
+		restoredHidden,
+		restoredPointerListener,
+		restoredScrollListener,
+		scrubContext,
+		scrubbingAfter,
+		scrubbingDuring,
+		tocHidden: toc.hidden,
+	};
 }
 
 for (const path of ["Calm.nnwtheme/template.html", "preview/index.html"]) {
-	const { labels, tocHidden } = runScript(path);
-	assert.equal(tocHidden, false, `${path} should show the rail for long structured articles`);
-	assert.ok(labels.includes("BACKGROUND"), `${path} should include real h4 section headings`);
-	assert.ok(!labels.includes("25%"), `${path} should not fall back to scroll-depth markers`);
+	const headingRail = runScript(path, 6);
+	assert.equal(headingRail.tocHidden, false, `${path} should show the rail for long structured articles`);
+	assert.equal(headingRail.headingBased, true, `${path} should mark real-heading navigation`);
+	assert.ok(headingRail.labels.includes("BACKGROUND"), `${path} should include real h4 section headings`);
+	assert.ok(!headingRail.labels.includes("25%"), `${path} should not fall back to scroll-depth markers`);
+	assert.equal(headingRail.scrubContext, sectionHeadings.at(-1), `${path} should update the label while scrubbing`);
+	assert.equal(headingRail.scrubbingDuring, true, `${path} should expose the active scrubbing state`);
+	assert.equal(headingRail.scrubbingAfter, false, `${path} should clear the active scrubbing state`);
+	assert.equal(headingRail.contextAfterScrub, articleTitle, `${path} should restore the current section after scrubbing`);
+	assert.equal(headingRail.initialContext, articleTitle, `${path} should synchronize the active heading label`);
+	assert.equal(headingRail.initialContextTop, "8px", `${path} should align the label to the active marker`);
+	assert.equal(headingRail.initialPointerListener, true, `${path} should initialize wide pointer interaction`);
+	assert.equal(headingRail.initialScrollListener, true, `${path} should initialize wide scroll tracking`);
+	assert.equal(headingRail.compactHidden, true, `${path} should hide the rail after entering Split View`);
+	assert.equal(headingRail.compactControlCount, 0, `${path} should remove controls after entering Split View`);
+	assert.equal(headingRail.compactPointerListener, false, `${path} should remove compact pointer interaction`);
+	assert.equal(headingRail.compactScrollListener, false, `${path} should remove compact scroll tracking`);
+	assert.equal(headingRail.restoredHidden, false, `${path} should restore the rail after leaving Split View`);
+	assert.ok(headingRail.restoredControlCount > 0, `${path} should rebuild controls after leaving Split View`);
+	assert.equal(headingRail.restoredPointerListener, true, `${path} should restore wide pointer interaction`);
+	assert.equal(headingRail.restoredScrollListener, true, `${path} should restore wide scroll tracking`);
+
+	const depthRail = runScript(path, 4);
+	assert.equal(depthRail.tocHidden, false, `${path} should show depth markers for shallow long articles`);
+	assert.equal(depthRail.headingBased, false, `${path} should not mark depth navigation as heading-based`);
+	assert.ok(depthRail.labels.includes("25%"), `${path} should preserve scroll-depth markers`);
+	assert.equal(depthRail.initialContext, "", `${path} should not expose section text for depth markers`);
 }

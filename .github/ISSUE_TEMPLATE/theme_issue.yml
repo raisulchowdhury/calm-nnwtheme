@@ -1,30 +1,50 @@
-name: Theme issue
-description: Report a rendering problem with Calm.
+name: Calm theme issue
+description: Report a rendering, layout, or interaction problem with Calm.
 title: "[Theme] "
 labels: ["bug"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Calm. If the problem also appears with a built-in NetNewsWire theme, please use NetNewsWire's issue tracker instead.
   - type: textarea
     id: problem
     attributes:
       label: Problem
-      description: What looks wrong?
+      description: What happened, and what did you expect instead?
     validations:
       required: true
   - type: dropdown
-    id: platform
+    id: device
     attributes:
-      label: Platform
+      label: Device
       options:
-        - macOS
-        - iOS
-        - Both
+        - Mac
+        - iPhone
+        - iPad
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: OS version
+      placeholder: "Example: macOS 26.0 or iOS 26.0"
     validations:
       required: true
   - type: input
     id: netnewswire-version
     attributes:
       label: NetNewsWire version
-      placeholder: "Example: 6.1"
+      placeholder: "Example: 7.1.1"
+    validations:
+      required: true
+  - type: input
+    id: calm-version
+    attributes:
+      label: Calm version
+      placeholder: "Example: 1.4.0"
+    validations:
+      required: true
   - type: dropdown
     id: appearance
     attributes:
@@ -32,9 +52,43 @@ body:
       options:
         - Light
         - Dark
+        - Automatic
         - Both
+    validations:
+      required: true
+  - type: input
+    id: layout
+    attributes:
+      label: Window mode and orientation
+      description: Include Split View or Stage Manager if relevant.
+      placeholder: "Example: iPad Split View, portrait"
+  - type: input
+    id: text-size
+    attributes:
+      label: NetNewsWire text size
+      placeholder: "Example: default, two steps larger"
+  - type: input
+    id: article-url
+    attributes:
+      label: Article URL
+      description: Share the affected article when it is public.
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open…
+        2. Change…
+        3. Scroll…
   - type: textarea
     id: screenshot
     attributes:
-      label: Screenshot
-      description: Add a screenshot if possible.
+      label: Screenshots or recording
+      description: Drag files here. Remove private feed or account details first.
+  - type: checkboxes
+    id: built-in-theme
+    attributes:
+      label: Scope check
+      options:
+        - label: I checked whether the problem also appears with a built-in NetNewsWire theme.
+          required: true

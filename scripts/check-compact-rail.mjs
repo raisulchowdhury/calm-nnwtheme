@@ -24,12 +24,15 @@ assertContains(stylesheet, `@media ${compactQuery}`, "stylesheet.css");
 assertContains(stylesheet, ".readerToc,\n\t.readerToc:not([hidden]) {\n\t\tdisplay: none !important;\n\t}", "stylesheet.css compact rail rule");
 assertContains(stylesheet, "padding: 34px 16px 56px;", "stylesheet.css compact body padding");
 assertContains(stylesheet, "--reader-font-size: 18.5px;\n\t\tmax-width: 100%;\n\t\tline-height: 1.48;", "stylesheet.css compact article rhythm");
-assertContains(stylesheet, "@supports (-webkit-touch-callout: none) {\n\tbody {\n\t\tpadding: 30px 20px 56px;\n\t\tpadding-left: 42px;", "stylesheet.css WebKit rail gutter");
+assertContains(stylesheet, "@supports (-webkit-touch-callout: none) {\n\tbody {\n\t\tpadding: 30px 20px 56px;\n\t\tword-break: break-word;", "stylesheet.css centered WebKit reading column");
 assertContains(stylesheet, `@media ${compactQuery} {\n\t\tbody {\n\t\t\tpadding: 30px 16px 56px;`, "stylesheet.css WebKit compact body padding");
 assertContains(stylesheet, `@media ${compactQuery} {\n\t\tbody {\n\t\t\tpadding: 30px 16px 56px;\n\t\t}\n\n\t\t.articleBody {\n\t\t\tline-height: 1.48;`, "stylesheet.css WebKit compact article rhythm");
 assertNotContains(stylesheet, "@media (max-width: 760px)", "stylesheet.css");
 assertNotContains(stylesheet, "padding: 34px 20px 56px 42px", "stylesheet.css");
 assertNotContains(stylesheet, "padding: 30px 20px 56px 42px", "stylesheet.css");
+assertNotContains(stylesheet, "padding-left: 42px", "stylesheet.css");
+assertNotContains(stylesheet, "\tleft: 12px;", "stylesheet.css legacy desktop rail position");
+assertNotContains(stylesheet, "\t\tleft: 2px;", "stylesheet.css legacy coarse rail position");
 assertNotContains(stylesheet, "@media (min-width: 821px) and (min-height: 501px)", "stylesheet.css");
 
 for (const [label, script] of [
@@ -38,6 +41,11 @@ for (const [label, script] of [
 ]) {
 	assertContains(script, `window.matchMedia("${compactQuery}")`, label);
 	assertContains(script, "function shouldDisableRail() {", label);
+	assertContains(script, "function syncTocMode() {", label);
+	assertContains(script, 'compactRailQuery.addEventListener("change", syncTocMode);', label);
+	assertContains(script, "tocCleanup = initToc() || null;", label);
+	assertContains(script, 'window.removeEventListener("scroll", updateActiveFromScroll);', label);
+	assertContains(script, 'window.removeEventListener("resize", onResize);', label);
 	assertContains(script, "shouldDisableRail()", label);
 	assertContains(script, "if (!body || !toc || !tocList || shouldDisableRail())", label);
 }

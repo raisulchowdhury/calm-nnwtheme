@@ -32,6 +32,7 @@ body: The body of the article.
 
 <nav class="readerToc" aria-label="Article sections" hidden>
 	<div class="readerTocTitle">Sections</div>
+	<div class="readerTocContext" aria-hidden="true"></div>
 	<ol id="readerTocList"></ol>
 </nav>
 
@@ -41,6 +42,7 @@ body: The body of the article.
 		<span class="byline">[[byline]]</span>
 		<span class="metaDate"><a href="[[preferred_link]]">[[date_medium]]</a></span>
 		<span class="feedName"><a href="[[feed_link]]">[[feed_link_title]]</a></span>
+		<span class="readingTime" id="readingTime" hidden></span>
 	</div>
 	<div class="externalLink">[[external_link_label]] <a href="[[external_link]]">[[external_link_stripped]]</a></div>
 </header>
@@ -49,17 +51,15 @@ body: The body of the article.
 	<div id="bodyContainer" class="articleBody [[text_size_class]]">[[body]]</div>
 </article>
 
-<footer class="readerFooter">
-	<span id="readingStats"></span>
-</footer>
-
 <script>
 (function () {
 	var body = document.getElementById("bodyContainer");
 	var toc = document.querySelector(".readerToc");
 	var tocList = document.getElementById("readerTocList");
-	var readerFooter = document.querySelector(".readerFooter");
-	var readingStats = document.getElementById("readingStats");
+	var tocContext = toc ? toc.querySelector(".readerTocContext") : null;
+	var readingTime = document.getElementById("readingTime");
+	var articleMeta = document.querySelector(".articleMeta");
+	var metadataItems = articleMeta ? articleMeta.children : [];
 	var title = document.querySelector(".articleTitle h1");
 	var header = document.getElementById("readerTop");
 	var externalLink = document.querySelector(".externalLink");
@@ -67,6 +67,7 @@ body: The body of the article.
 	var compactRailQuery = window.matchMedia ?
 		window.matchMedia("(max-width: 820px), (pointer: coarse) and (max-height: 500px)") :
 		null;
+	var tocCleanup = null;
 
 	function shouldDisableRail() {
 		return compactRailQuery && compactRailQuery.matches;
@@ -89,23 +90,54 @@ body: The body of the article.
 		}
 	}
 
-	function updateReadingStats() {
-		if (!body) {
-			if (readerFooter) {
-				readerFooter.hidden = true;
+	function normalizeMetadata() {
+		Array.prototype.forEach.call(metadataItems, function (metadataItem) {
+			if (metadataItem === readingTime) {
+				return;
 			}
+
+			var text = (metadataItem.textContent || "").trim();
+			metadataItem.hidden = !text || isPlaceholderValue(text);
+		});
+	}
+
+	function updateMetadataVisibility() {
+		if (!articleMeta) {
 			return;
 		}
 
-		var words = body.innerText.trim().split(/\s+/).filter(Boolean).length;
-		if (readingStats && words > 0) {
-			var minutes = Math.max(1, Math.ceil(words / 225));
-			readingStats.textContent =
-				words.toLocaleString() + " " + (words === 1 ? "word" : "words") +
-				" · " + minutes + " min read";
-		} else if (readerFooter) {
-			readerFooter.hidden = true;
+		var hasVisibleMetadata = Array.prototype.some.call(metadataItems, function (metadataItem) {
+			return !metadataItem.hidden;
+		});
+		articleMeta.hidden = !hasVisibleMetadata;
+	}
+
+	function hideReadingTime() {
+		if (!readingTime) {
+			return;
 		}
+		readingTime.hidden = true;
+		readingTime.textContent = "";
+		readingTime.removeAttribute("aria-label");
+	}
+
+	function updateReadingTime() {
+		if (!body || !readingTime) {
+			hideReadingTime();
+			return;
+		}
+
+		var text = (body.innerText || body.textContent || "").trim();
+		var words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+		var minutes = Math.ceil(words / 225);
+		if (minutes < 4) {
+			hideReadingTime();
+			return;
+		}
+
+		readingTime.textContent = minutes + " min";
+		readingTime.setAttribute("aria-label", "Estimated reading time: " + minutes + " minutes");
+		readingTime.hidden = false;
 	}
 
 	function initToc() {
@@ -164,6 +196,7 @@ body: The body of the article.
 			toc.hidden = true;
 			return;
 		}
+		toc.classList.toggle("is-heading-based", useHeadingTargets);
 
 		if (titleText) {
 			markerLabels[0] = titleText;
@@ -221,6 +254,17 @@ body: The body of the article.
 				item.classList.toggle("is-before", activeIndex > -1 && index < activeIndex);
 				item.classList.toggle("is-after", activeIndex > -1 && index > activeIndex);
 			});
+
+			var activeControl = activeIndex > -1 ? controls[activeIndex] : null;
+			if (tocContext && useHeadingTargets && activeControl) {
+				var activeRect = activeControl.getBoundingClientRect();
+				var tocRect = toc.getBoundingClientRect();
+				tocContext.textContent = activeControl.getAttribute("data-label") || "";
+				tocContext.style.top = (activeRect.top - tocRect.top + activeRect.height / 2) + "px";
+			} else if (tocContext) {
+				tocContext.textContent = "";
+				tocContext.style.top = "";
+			}
 		}
 
 		if (controls[0]) {
@@ -448,25 +492,94 @@ body: The body of the article.
 			toc.addEventListener("touchcancel", onTouchEnd, { passive: false });
 		}
 
-		controls.forEach(function (control, index) {
-			control.addEventListener("click", function (event) {
+		var controlClickHandlers = controls.map(function (control, index) {
+			var clickHandler = function (event) {
 				event.preventDefault();
 				scrollToSection(sectionTargets[index]);
 				setActiveSection(index);
-			});
+			};
+			control.addEventListener("click", clickHandler);
+			return clickHandler;
 		});
+
+		function onResize() {
+			cacheMarkerCenters();
+			updateActiveFromScroll();
+		}
 
 		cacheMarkerCenters();
 		updateActiveFromScroll();
 		window.addEventListener("scroll", updateActiveFromScroll, { passive: true });
-		window.addEventListener("resize", function () {
-			cacheMarkerCenters();
-			updateActiveFromScroll();
-		});
+		window.addEventListener("resize", onResize);
+
+		return function cleanupToc() {
+			if (hasPointerEvents) {
+				toc.removeEventListener("pointerdown", onPointerDown);
+				toc.removeEventListener("pointermove", onPointerMove);
+				toc.removeEventListener("pointerup", onPointerEnd);
+				toc.removeEventListener("pointercancel", onPointerEnd);
+				toc.removeEventListener("pointerleave", onPointerEnd);
+			} else {
+				toc.removeEventListener("touchstart", onTouchStart);
+				toc.removeEventListener("touchmove", onTouchMove);
+				toc.removeEventListener("touchend", onTouchEnd);
+				toc.removeEventListener("touchcancel", onTouchEnd);
+			}
+			controls.forEach(function (control, index) {
+				control.removeEventListener("click", controlClickHandlers[index]);
+			});
+			window.removeEventListener("scroll", updateActiveFromScroll);
+			window.removeEventListener("resize", onResize);
+			resetToc();
+		};
 	}
 
+	function resetToc() {
+		if (!toc || !tocList) {
+			return;
+		}
+		toc.hidden = true;
+		toc.classList.remove("is-heading-based");
+		toc.classList.remove("isScrubbing");
+		tocList.textContent = "";
+		if (tocContext) {
+			tocContext.textContent = "";
+			tocContext.style.top = "";
+		}
+	}
+
+	function syncTocMode() {
+		if (!body || !toc || !tocList || shouldDisableRail()) {
+			if (tocCleanup) {
+				tocCleanup();
+				tocCleanup = null;
+			} else {
+				resetToc();
+			}
+			return;
+		}
+
+		if (!tocCleanup) {
+			tocCleanup = initToc() || null;
+		}
+	}
+
+	function observeCompactRail() {
+		if (!compactRailQuery) {
+			return;
+		}
+		if (compactRailQuery.addEventListener) {
+			compactRailQuery.addEventListener("change", syncTocMode);
+		} else if (compactRailQuery.addListener) {
+			compactRailQuery.addListener(syncTocMode);
+		}
+	}
+
+	normalizeMetadata();
 	hideEmptyExternalLink();
-	updateReadingStats();
-	initToc();
+	updateReadingTime();
+	updateMetadataVisibility();
+	observeCompactRail();
+	syncTocMode();
 })();
 </script>

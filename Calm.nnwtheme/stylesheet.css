@@ -25,6 +25,7 @@
 
 	--reader-base-size: 17.5px;
 	--reader-measure: 41.5625rem;
+	--reader-half-measure: 20.78125rem;
 	--reader-page-pad-x: clamp(20px, 7vw, 88px);
 	--reader-page-pad-y: clamp(64px, 7vw, 104px);
 	--reader-radius: 8px;
@@ -96,25 +97,24 @@ a:hover {
 }
 
 .articleHeader,
-article,
-.readerFooter {
+article {
 	width: min(100%, var(--reader-measure));
 	margin-right: auto;
 	margin-left: auto;
 }
 
 .articleHeader {
-	margin-bottom: 2.25rem;
+	margin-bottom: 2.5rem;
 }
 
 .articleTitle h1 {
 	margin: 0;
 	color: var(--reader-heading);
 	font-family: var(--reader-serif-display);
-	font-size: calc(var(--reader-base-size) * 1.6);
+	font-size: calc(var(--reader-base-size) * 1.8);
 	font-weight: 700;
-	line-height: 1.2;
-	letter-spacing: -0.02em;
+	line-height: 1.16;
+	letter-spacing: -0.025em;
 	text-wrap: balance;
 }
 
@@ -136,7 +136,7 @@ article,
 	line-height: 1.35;
 }
 
-.articleMeta > span:not(:empty) + span::before {
+.articleMeta > span:not([hidden]) ~ span:not([hidden])::before {
 	content: "·";
 	margin-right: 0.35rem;
 	color: var(--reader-faint);
@@ -150,9 +150,12 @@ article,
 	text-decoration: none;
 }
 
+.articleMeta[hidden],
 .byline:empty,
 .feedName:empty,
-.metaDate:empty {
+.metaDate:empty,
+.readingTime:empty,
+.articleMeta > span[hidden] {
 	display: none;
 }
 
@@ -539,20 +542,6 @@ sub {
 	bottom: -0.2em;
 }
 
-.readerFooter {
-	margin-top: 5rem;
-	padding-top: 1.25rem;
-	border-top: 1px solid var(--reader-rule);
-	color: var(--reader-muted);
-	font-family: var(--reader-sans);
-	font-size: 0.86rem;
-	line-height: 1.4;
-}
-
-.readerFooter[hidden] {
-	display: none;
-}
-
 .systemMessage {
 	position: absolute;
 	top: 45%;
@@ -569,7 +558,8 @@ sub {
 	position: fixed;
 	z-index: 1;
 	top: 0;
-	left: 12px;
+	right: calc(50% + var(--reader-half-measure) + 0.75rem);
+	left: auto;
 	width: 1.9rem;
 	height: 100vh;
 	margin: 0;
@@ -671,6 +661,10 @@ sub {
 	white-space: nowrap;
 }
 
+.readerTocContext {
+	display: none;
+}
+
 .readerToc button::before {
 	content: "";
 	position: absolute;
@@ -757,9 +751,47 @@ sub {
 	}
 }
 
+@media (min-width: 1080px) and (hover: hover) and (pointer: fine) {
+	.readerToc.is-heading-based {
+		overflow: visible;
+	}
+
+	.readerToc.is-heading-based .readerTocContext {
+		display: block;
+		position: absolute;
+		right: calc(100% + 0.75rem);
+		width: min(12rem, calc(50vw - var(--reader-half-measure) - 3.75rem));
+		overflow: hidden;
+		color: var(--reader-muted);
+		font-family: var(--reader-sans);
+		font-size: 0.78rem;
+		font-weight: 500;
+		line-height: 1.25;
+		letter-spacing: 0.01em;
+		opacity: 0;
+		pointer-events: none;
+		text-align: right;
+		text-overflow: ellipsis;
+		transform: translateY(-50%);
+		transition: opacity 120ms ease;
+		white-space: nowrap;
+	}
+
+	.readerToc.is-heading-based:hover .readerTocContext,
+	.readerToc.is-heading-based:focus-within .readerTocContext,
+	.readerToc.is-heading-based.isScrubbing .readerTocContext {
+		opacity: 1;
+	}
+}
+
+@media (any-pointer: coarse) {
+	.readerTocContext {
+		display: none !important;
+	}
+}
+
 @media (any-pointer: coarse) and (min-width: 821px) {
 	.readerToc {
-		left: 2px;
 		width: 44px;
 	}
 
@@ -793,6 +825,8 @@ sub {
 
 	.articleTitle h1 {
 		font-size: calc(var(--reader-base-size) * 1.6);
+		line-height: 1.2;
+		letter-spacing: -0.02em;
 	}
 
 	.articleTitle a {
@@ -844,10 +878,15 @@ sub {
 	}
 }
 
+@media (prefers-reduced-motion: reduce) {
+	.readerTocContext {
+		transition: none;
+	}
+}
+
 @supports (-webkit-touch-callout: none) {
 	body {
 		padding: 30px 20px 56px;
-		padding-left: 42px;
 		word-break: break-word;
 		-webkit-hyphens: auto;
 	}
