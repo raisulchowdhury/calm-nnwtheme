@@ -9,6 +9,7 @@
 <body>
 	<nav class="readerToc" aria-label="Article sections" hidden>
 		<div class="readerTocTitle">Sections</div>
+		<div class="readerTocContext" aria-hidden="true"></div>
 		<ol id="readerTocList"></ol>
 	</nav>
 
@@ -63,6 +64,9 @@
 				<summary>Frame data for the curious</summary>
 				<p>None of this requires memorizing frame data. It requires repetition until the motion stops being a sequence of steps and starts being a single thing you do.</p>
 			</details>
+
+			<h2 id="intention">Practice with intention</h2>
+			<p>The quiet payoff is recognition. A move that once demanded attention becomes available when you need it, leaving more room to read the situation instead of the instructions.</p>
 		</div>
 	</article>
 
@@ -71,6 +75,7 @@
 	var body = document.getElementById("bodyContainer");
 	var toc = document.querySelector(".readerToc");
 	var tocList = document.getElementById("readerTocList");
+	var tocContext = toc ? toc.querySelector(".readerTocContext") : null;
 	var readingTime = document.getElementById("readingTime");
 	var title = document.querySelector(".articleTitle h1");
 	var header = document.getElementById("readerTop");
@@ -185,6 +190,7 @@
 			toc.hidden = true;
 			return;
 		}
+		toc.classList.toggle("is-heading-based", useHeadingTargets);
 
 		if (titleText) {
 			markerLabels[0] = titleText;
@@ -242,6 +248,17 @@
 				item.classList.toggle("is-before", activeIndex > -1 && index < activeIndex);
 				item.classList.toggle("is-after", activeIndex > -1 && index > activeIndex);
 			});
+
+			var activeControl = activeIndex > -1 ? controls[activeIndex] : null;
+			if (tocContext && useHeadingTargets && activeControl) {
+				var activeRect = activeControl.getBoundingClientRect();
+				var tocRect = toc.getBoundingClientRect();
+				tocContext.textContent = activeControl.getAttribute("data-label") || "";
+				tocContext.style.top = (activeRect.top - tocRect.top + activeRect.height / 2) + "px";
+			} else if (tocContext) {
+				tocContext.textContent = "";
+				tocContext.style.top = "";
+			}
 		}
 
 		if (controls[0]) {

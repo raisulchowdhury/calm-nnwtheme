@@ -660,6 +660,10 @@ sub {
 	white-space: nowrap;
 }
 
+.readerTocContext {
+	display: none;
+}
+
 .readerToc button::before {
 	content: "";
 	position: absolute;
@@ -743,6 +747,45 @@ sub {
 	.readerToc button:hover,
 	.readerToc button.active {
 		color: transparent;
+	}
+}
+
+@media (min-width: 1080px) and (hover: hover) and (pointer: fine) {
+	.readerToc.is-heading-based {
+		overflow: visible;
+	}
+
+	.readerToc.is-heading-based .readerTocContext {
+		display: block;
+		position: absolute;
+		right: calc(100% + 0.75rem);
+		width: min(12rem, calc(50vw - var(--reader-half-measure) - 3.75rem));
+		overflow: hidden;
+		color: var(--reader-muted);
+		font-family: var(--reader-sans);
+		font-size: 0.78rem;
+		font-weight: 500;
+		line-height: 1.25;
+		letter-spacing: 0.01em;
+		opacity: 0;
+		pointer-events: none;
+		text-align: right;
+		text-overflow: ellipsis;
+		transform: translateY(-50%);
+		transition: opacity 120ms ease;
+		white-space: nowrap;
+	}
+
+	.readerToc.is-heading-based:hover .readerTocContext,
+	.readerToc.is-heading-based:focus-within .readerTocContext,
+	.readerToc.is-heading-based.isScrubbing .readerTocContext {
+		opacity: 1;
+	}
+}
+
+@media (any-pointer: coarse) {
+	.readerTocContext {
+		display: none !important;
 	}
 }
 
@@ -831,6 +874,12 @@ sub {
 	.articleBody iframe {
 		margin-top: 2rem;
 		margin-bottom: 2rem;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.readerTocContext {
+		transition: none;
 	}
 }
 

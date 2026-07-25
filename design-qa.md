@@ -1,58 +1,112 @@
-# Design QA: Calm v1.4 checkpoint 3
+# Design QA: Calm v1.4 checkpoint 4
 
 ## Comparison target
 
-- Accepted source state:
+- Source visual truth:
   `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-2/checkpoint-2-desktop-dark-1440x1100.png`
 - Intended delta:
-  `docs/specs/2026-07-24-v1.4-reading-craft-design.md`, checkpoint 3
-- Local URL: `http://localhost:8765/preview/`
-- Preview fixture: 346-word article, below the four-minute disclosure threshold
+  `docs/specs/2026-07-24-v1.4-reading-craft-design.md`, checkpoint 4
+- Implementation URL: `http://localhost:8765/preview/`
+- Implementation screenshots:
+  - `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-4-revised/nnw-pane-1136x697-hover.png`
+  - `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-4-revised/nnw-pane-1136x697-hover-dark.png`
+  - `/Users/raisul/Documents/Codex/2026-07-24/prior-conversation-with-codex-conversation-role/work/calm-v1.4-checkpoint-4-revised/boundary-1080-long-label.png`
+- Captured desktop states: light and dark appearance with the active heading
+  label revealed by hover
+- Source pixels: `1440 × 1100`
+- Implementation pixels: `1136 × 697`, matching the observed full-window
+  NetNewsWire article pane, plus the `1080 × 697` boundary
+- Density normalization: device scale factor `1`
 
-Checkpoint 3 changes only opening metadata and the end-of-article statistics
-surface. The accepted title, rail placement, reading measure, palette, media,
-article typography, and compact behavior remain the comparison truth.
+## Findings
 
-## Source and preview parity
+- [Resolved P1] The original `1180px` threshold excluded the approximately
+  `1136px` article pane in a normal full-window NetNewsWire layout.
+  Location: the precise-pointer media query for `.readerTocContext`.
+  Evidence: the label was absent at the observed app width before the revision;
+  the revised preview reports `display: block`, `opacity: 1`, and a `175.5px`
+  label width at `1136px`.
+  Fix: lower only the heading-label threshold to `1080px`; keep the base rail,
+  coarse-pointer suppression, and compact-layout rules unchanged.
+- [Pass] At the `1080px` boundary, the label remains within the viewport with a
+  `147.5px` content width and a `5.6px` outer margin. The real preview heading
+  truncates with an ellipsis without colliding with the rail or article.
+- [Pass] At `1079px`, the label returns to `display: none`, so the enhancement
+  does not leak below the revised wide-layout threshold.
+- [Pass] Light and dark captures preserve the intended muted text, visual
+  hierarchy, reading measure, media treatment, and rail alignment.
 
-- Both files place an initially hidden `#readingTime` span directly after the
-  existing textual feed name.
-- Both scripts estimate at 225 words per minute, disclose only four minutes or
-  longer, and expose the full estimate through `aria-label`.
-- Both scripts hide and clear the estimate when the article is shorter or text
-  is unavailable.
-- The inline scripts remain byte-for-byte identical.
-- The footer markup, word count, `min read` copy, footer rule, and obsolete
-  footer JavaScript are removed from both surfaces.
+## Implemented behavior
 
-## Targeted evidence
+- The rail is marked `is-heading-based` only when it uses five or more real
+  heading targets.
+- The preview now has five major headings so its live rail exercises heading
+  mode rather than depth markers.
+- On `1080px+` precise-pointer layouts, the active heading appears as plain,
+  right-aligned, truncated text to the left of the rail.
+- Hover, `focus-within`, and active scrubbing reveal the text with a 120ms
+  opacity transition.
+- The label has no background, border, arrow, bracket, shadow, or pointer hit
+  area.
+- Any coarse-pointer environment hides the label, preserving iPad marker-only
+  feedback.
+- Depth-marker rails keep the label empty and remain text-free.
+- Compact phone, Split View, and short coarse landscape layouts retain complete
+  rail removal and listener suppression.
+- Reduced motion removes the opacity transition.
 
-- 675 words: estimate hidden.
-- 676 words: `4 min`, with `Estimated reading time: 4 minutes`.
-- 1,350 words: `6 min`, with matching accessible text.
-- Missing article body: estimate hidden and cleared.
-- Missing author/date/feed combinations are protected by a general-sibling
-  separator rule that only inserts separators between non-empty metadata spans.
-- The real preview response contains the source identity and reading-time slot,
-  contains no statistics footer, and is served from the required local URL.
+## Automated evidence
 
-## Responsive review
+- Theme and preview scripts remain byte-for-byte identical.
+- Heading mode receives the heading-only class and synchronizes label text and
+  vertical position to the active marker.
+- Simulated scrubbing updates the label to the scrubbed heading, exposes the
+  active scrubbing class, clears it on release, and restores the current section.
+- Four-heading fixtures preserve `25%` depth markers, omit the heading-only
+  class, and expose no section text.
+- Source assertions cover the `1080px+` precise-pointer query, hover, keyboard
+  focus, scrubbing, coarse-pointer suppression, plain-text styling,
+  truncation, and reduced motion.
+- The full validation suite and rebuilt package comparison pass.
 
-- Wide layouts retain the accepted 1.8× title and 2.5rem title-to-body gap.
-- Compact layouts retain the accepted 1.6× title, 44-point metadata links, and
-  existing phone spacing.
-- Reading-time metadata inherits the same wrapping, color, type, and touch
-  behavior as the adjacent feed metadata.
-- Removing the footer does not change article measure, body rhythm, media
-  treatment, or rail mechanics.
+## Fidelity review
 
-The automated source, behavior, package, and live-response checks pass. The
-user-facing visual decision is intentionally deferred to the combined
-checkpoint 3 and 4 review requested for this staged branch.
+- Fonts and typography: the existing tokens are unchanged; label weight,
+  truncation, and optical balance remain quiet in both appearances.
+- Spacing and layout: the label fits at both the observed NetNewsWire pane width
+  and the exact `1080px` boundary without article or rail collision.
+- Colors and tokens: the existing muted token remains legible without becoming
+  article chrome in light or dark appearance.
+- Image quality: no image source, crop, or treatment changed.
+- Copy and content: the label mirrors the real active heading and truncates
+  cleanly at the boundary.
+- States and accessibility: semantics, focus selector, coarse suppression,
+  reduced-motion CSS, hover rendering, and boundary behavior are covered.
+
+## Comparison history
+
+The initial checkpoint 4 review was blocked because a rendered implementation
+capture was unavailable. The revised pass uses the actual observed NetNewsWire
+pane width, captures light and dark hover states, and exercises both sides of
+the new boundary. There are no known automated or visual P0, P1, or P2
+failures.
+
+## Implementation checklist
+
+- [x] Keep checkpoint 4 isolated from checkpoint 3.
+- [x] Mark only real-heading navigation.
+- [x] Reveal plain active-section text on wide precise-pointer layouts.
+- [x] Support hover, keyboard focus, and active scrubbing.
+- [x] Preserve coarse-pointer marker-only feedback.
+- [x] Preserve depth-marker, compact, and reduced-motion behavior.
+- [x] Rebuild and compare the installable package.
+- [x] Capture and compare matching browser-rendered responsive states.
 
 ## Follow-up polish
 
-- P3: Repeat the coarse-pointer checks on physical iPad hardware before release
+- P3: Repeat coarse-pointer behavior on physical iPad hardware before release
   preparation.
+- P3: Reinstall the revised bundle in NetNewsWire when desktop app control is
+  available and repeat the hover capture in the app.
 
-final result: pending combined visual review
+final result: passed
