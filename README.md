@@ -1,6 +1,9 @@
 # Calm
 
-![Calm, a quiet serif theme for NetNewsWire](assets/social-preview.jpg)
+<picture>
+  <source media="(max-width: 600px)" srcset="assets/social-preview-mobile.jpg">
+  <img src="assets/social-preview.jpg" alt="Calm light and dark NetNewsWire article previews side by side">
+</picture>
 
 A quiet serif theme for NetNewsWire on macOS, iPhone, and iPad.
 
