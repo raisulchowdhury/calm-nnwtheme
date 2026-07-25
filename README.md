@@ -5,31 +5,53 @@
   <img src="assets/social-preview.jpg" alt="Calm light and dark NetNewsWire article previews side by side">
 </picture>
 
-A quiet serif theme for NetNewsWire on macOS, iPhone, and iPad.
+**Long-form navigation without reader chrome.**
 
-Calm is tuned for long-form reading: a narrow article column, strong editorial
-headings, soft source metadata, restrained links, light and dark appearances,
-and a quiet reading map beside the article on wider screens. Compact layouts
-stay rail-free.
+Calm is a NetNewsWire theme that adapts its reading map to the article. On wider
+Mac and iPad layouts, structured pieces become a heading map while simpler
+pieces get five quiet depth markers. Tap a marker or scrub the rail to move
+through the article. On iPhone, Split View, and short landscape layouts, the map
+disappears entirely.
+
+The reading surface stays deliberately familiar: a narrow serif column, strong
+editorial headings, restrained links, soft source metadata, and system light
+and dark appearances.
 
 [Install](#install) ·
 [Latest release](https://github.com/raisulchowdhury/calm-nnwtheme/releases/latest) ·
 [Report a theme issue](https://github.com/raisulchowdhury/calm-nnwtheme/issues/new?template=theme_issue.yml) ·
 [Contribute](CONTRIBUTING.md)
 
+## What makes Calm different
+
+Calm's typography sets the mood. The reading map is the product idea.
+
+- It reads the article first. Five or more major headings become real section
+  destinations; simpler posts use evenly spaced depth markers instead of a
+  forced table of contents.
+- It supports direct navigation. Click or tap a marker to jump, or drag along
+  the rail to scrub through the article. Wide Mac layouts reveal the active
+  section name only while you interact.
+- It knows when to leave. The rail sits outside the unchanged reading measure on
+  wide layouts, uses 44-point targets on iPad, and is removed completely from
+  compact layouts.
+- It keeps secondary information quiet. Source identity stays visible, reading
+  time appears only for articles estimated at four minutes or longer, and
+  there is no persistent progress bar, word count, or statistics footer.
+
 ## Screenshots
 
 | Desktop light | Desktop dark |
 | --- | --- |
-| <img src="assets/screenshots/calm-light.png" alt="Calm light theme showing a long-form article with an opening image" width="520"> | <img src="assets/screenshots/calm-dark.png" alt="Calm dark theme showing the intent-revealed section label beside the article" width="520"> |
+| <img src="assets/screenshots/calm-light.png" alt="Calm light theme showing a long-form article and quiet reading rail outside the article column" width="520"> | <img src="assets/screenshots/calm-dark.png" alt="Calm dark theme showing the active section label revealed beside the reading rail" width="520"> |
 
 | Structured article | iPad |
 | --- | --- |
-| <img src="assets/screenshots/calm-structured-light.png" alt="Calm light theme showing source identity, reading time, and a structured article" width="520"> | <img src="assets/screenshots/calm-ipad-light.png" alt="Calm on iPad with the marker-only reading map beside the article" width="400"> |
+| <img src="assets/screenshots/calm-structured-light.png" alt="Calm light theme showing source identity, conditional reading time, and a heading-based reading map" width="520"> | <img src="assets/screenshots/calm-ipad-light.png" alt="Calm on iPad with 44-point marker targets and no section text under the pointer" width="400"> |
 
 | iPhone light | iPhone dark |
 | --- | --- |
-| <img src="assets/screenshots/calm-ios-light.png" alt="Calm rail-free compact layout on iPhone in light mode" width="195"> | <img src="assets/screenshots/calm-ios-dark.png" alt="Calm rail-free compact layout on iPhone in dark mode" width="195"> |
+| <img src="assets/screenshots/calm-ios-light.png" alt="Calm rail-free iPhone layout in light mode" width="195"> | <img src="assets/screenshots/calm-ios-dark.png" alt="Calm rail-free iPhone layout in dark mode" width="195"> |
 
 Screenshots use
 [“If You’re So Smart, Why Aren’t You Happy?”](https://navalsarchive.substack.com/p/if-youre-so-smart-why-arent-you-happy)
@@ -87,7 +109,7 @@ NetNewsWire and WebKit updates can still affect rendering. When reporting an
 issue, include your device, OS version, NetNewsWire version, Calm version,
 window mode, text size, and a screenshot.
 
-## Design Notes
+## How it works
 
 Calm uses the system serif stack that best matches Apple's reader surfaces:
 
@@ -99,9 +121,10 @@ The theme includes:
 
 - system light and dark mode
 - iOS Dynamic Type support with a small Calm-specific size bump
-- a reading map beside the centered article on wider screens
-- major-heading markers for highly structured articles and scroll-depth markers
+- an article-aware reading map beside the centered column on wider screens
+- major-heading destinations for structured articles and scroll-depth markers
   for simpler articles
+- click, tap, keyboard, and Tap + Scrub navigation
 - an intent-revealed active-section label on wide, precise-pointer layouts
 - 44-point marker targets and marker-only feedback on iPad
 - a rail-free compact layout for phone, Split View, and short coarse landscape
