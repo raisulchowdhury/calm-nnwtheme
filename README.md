@@ -38,25 +38,27 @@ by Yew Jin Lim.
 
 ### iPhone and iPad
 
-Open this link on the device with NetNewsWire installed:
-
-[Install Calm in NetNewsWire](netnewswire://theme/add?url=https%3A%2F%2Fgithub.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Freleases%2Flatest%2Fdownload%2FCalm.nnwtheme.zip)
-
-If the link is not tappable in your current app, copy the full URL into Safari:
+GitHub removes non-HTTPS links from rendered Markdown. Copy the full installer
+URL below, paste it into Safari's address bar, and confirm that you want to open
+NetNewsWire:
 
 ```text
 netnewswire://theme/add?url=https%3A%2F%2Fgithub.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Freleases%2Flatest%2Fdownload%2FCalm.nnwtheme.zip
 ```
 
-NetNewsWire fetches the package itself, so the release asset must be publicly
-accessible without a GitHub login. Opening the raw zip in Safari or the GitHub
-app only downloads it; the `netnewswire://` link invokes NetNewsWire's theme
-installer.
+NetNewsWire then fetches the package itself, so the release asset must be
+publicly accessible without a GitHub login. Opening the raw zip in Safari or the
+GitHub app only downloads it; opening the full `netnewswire://` URL invokes
+NetNewsWire's theme installer.
 
 ### macOS
 
-Use the same one-tap install link above, or download the latest package and open
-the bundle manually:
+Paste the same installer URL into Safari, run it from Terminal with `open`, or
+download the latest package and open the bundle manually:
+
+```sh
+open 'netnewswire://theme/add?url=https%3A%2F%2Fgithub.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Freleases%2Flatest%2Fdownload%2FCalm.nnwtheme.zip'
+```
 
 [Calm.nnwtheme.zip](https://github.com/raisulchowdhury/calm-nnwtheme/releases/latest/download/Calm.nnwtheme.zip)
 

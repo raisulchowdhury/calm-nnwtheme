@@ -15,6 +15,10 @@ and include:
 - a minimal reproduction or affected feed/article
 - the impact you observed
 
+If GitHub's private form is unavailable, contact the maintainer through
+[raisul.xyz](https://raisul.xyz) without posting vulnerability details
+publicly.
+
 Calm is a static NetNewsWire theme, but its template runs inside a reader view.
 Reports involving unexpected script execution, content escaping the article
 surface, unsafe external navigation, or package tampering are especially

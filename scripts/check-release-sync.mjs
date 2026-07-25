@@ -32,9 +32,18 @@ assert.match(
 	/netnewswire:\/\/theme\/add\?url=/,
 	"README should include NetNewsWire's install URL",
 );
+assert.ok(
+	!readme.includes("](netnewswire://"),
+	"README should not use a custom-scheme Markdown link that GitHub strips",
+);
 assert.match(
 	readme,
-	/release asset must be publicly\s+accessible/,
+	/copy the full installer\s+URL/i,
+	"README should explain how to open the installer URL from GitHub",
+);
+assert.match(
+	readme,
+	/release asset must be\s+publicly accessible/,
 	"README should explain the public asset requirement",
 );
 assert.ok(
