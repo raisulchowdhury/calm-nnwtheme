@@ -19,6 +19,8 @@
   including pointer, scroll, and resize listener cleanup.
 - Expanded the public screenshot set across desktop, iPad, iPhone, light, dark,
   structured, and image-first articles.
+- Added macOS release validation and focused contribution, support, conduct,
+  and security guidance for the public repository.
 - Extended release validation and bumped the internal theme version to `11`.
 
 ## 1.3.1 - 2026-07-24

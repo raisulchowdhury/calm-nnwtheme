@@ -1,11 +1,18 @@
 # Calm
 
+![Calm, a quiet serif theme for NetNewsWire](assets/social-preview.jpg)
+
 A quiet serif theme for NetNewsWire on macOS, iPhone, and iPad.
 
 Calm is tuned for long-form reading: a narrow article column, strong editorial
 headings, soft source metadata, restrained links, light and dark appearances,
 and a quiet reading map beside the article on wider screens. Compact layouts
 stay rail-free.
+
+[Install](#install) ·
+[Latest release](https://github.com/raisulchowdhury/calm-nnwtheme/releases/latest) ·
+[Report a theme issue](https://github.com/raisulchowdhury/calm-nnwtheme/issues/new?template=theme_issue.yml) ·
+[Contribute](CONTRIBUTING.md)
 
 ## Screenshots
 
@@ -29,41 +36,51 @@ by Yew Jin Lim.
 
 ## Install
 
-After a public release is published, download the latest package:
-
-[Calm.nnwtheme.zip](https://github.com/raisulchowdhury/calm-nnwtheme/releases/latest/download/Calm.nnwtheme.zip)
-
-Repository collaborators can also use the package kept at the repository root:
-
-[Calm.nnwtheme.zip](Calm.nnwtheme.zip)
-
 ### iPhone and iPad
 
-Use NetNewsWire’s theme URL scheme. The `url` parameter must point to the zip:
+Open this link on the device with NetNewsWire installed:
+
+[Install Calm in NetNewsWire](netnewswire://theme/add?url=https%3A%2F%2Fgithub.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Freleases%2Flatest%2Fdownload%2FCalm.nnwtheme.zip)
+
+If the link is not tappable in your current app, copy the full URL into Safari:
 
 ```text
 netnewswire://theme/add?url=https%3A%2F%2Fgithub.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Freleases%2Flatest%2Fdownload%2FCalm.nnwtheme.zip
 ```
 
-NetNewsWire fetches that URL itself, so the release asset must be publicly
-accessible. A private GitHub repository returns `404` to NetNewsWire even when
-Safari or the GitHub app is signed in.
-
-Opening the raw zip from Safari or the GitHub app only downloads the file; it
-does not invoke NetNewsWire’s theme installer. Paste the full
-`netnewswire://` link above into Safari, or open it from a tappable link.
+NetNewsWire fetches the package itself, so the release asset must be publicly
+accessible without a GitHub login. Opening the raw zip in Safari or the GitHub
+app only downloads it; the `netnewswire://` link invokes NetNewsWire's theme
+installer.
 
 ### macOS
 
-Open the same `netnewswire://` link, or install the bundle manually:
+Use the same one-tap install link above, or download the latest package and open
+the bundle manually:
+
+[Calm.nnwtheme.zip](https://github.com/raisulchowdhury/calm-nnwtheme/releases/latest/download/Calm.nnwtheme.zip)
 
 ```sh
 unzip Calm.nnwtheme.zip
 open Calm.nnwtheme
 ```
 
-NetNewsWire documents the bundle format and installer URL in its
+The repository also keeps the current package at
+[Calm.nnwtheme.zip](Calm.nnwtheme.zip). NetNewsWire documents the bundle format
+and installer URL in its
 [theme technote](https://github.com/Ranchero-Software/NetNewsWire/blob/main/Technotes/Themes.md).
+
+## Compatibility
+
+Calm follows NetNewsWire's documented theme bundle format and uses only the
+HTML, CSS, and JavaScript supported by that reader surface. Automated checks
+cover the theme on macOS runners, while the preview matrix covers desktop,
+iPad, Split View, iPhone, light, dark, precise-pointer, and coarse-pointer
+layouts.
+
+NetNewsWire and WebKit updates can still affect rendering. When reporting an
+issue, include your device, OS version, NetNewsWire version, Calm version,
+window mode, text size, and a screenshot.
 
 ## Design Notes
 
@@ -110,6 +127,10 @@ Validate changes:
 scripts/validate.sh
 ```
 
+The validator uses standard macOS tools (`plutil`, `ditto`, and `unzip`) plus
+Node.js. GitHub Actions runs the same suite for every pull request and every
+push to `main`.
+
 The validation runner checks:
 
 - `Info.plist` syntax
@@ -128,7 +149,8 @@ Build an installable zip:
 ditto -c -k --norsrc --keepParent Calm.nnwtheme Calm.nnwtheme.zip
 ```
 
-The root `Calm.nnwtheme.zip` is committed for direct GitHub access, and GitHub Releases should publish the same rebuilt file.
+The root `Calm.nnwtheme.zip` is committed for direct access. GitHub Releases
+publish that same rebuilt file.
 
 ## Preview
 
@@ -140,6 +162,17 @@ preview/index.html
 
 It uses the real theme stylesheet from `Calm.nnwtheme/stylesheet.css`.
 
+## Support
+
+Use the
+[Calm issue form](https://github.com/raisulchowdhury/calm-nnwtheme/issues/new?template=theme_issue.yml)
+for theme-specific rendering or interaction problems. If the same problem
+appears in NetNewsWire's built-in themes, report it to the
+[NetNewsWire project](https://github.com/Ranchero-Software/NetNewsWire/issues/new/choose).
+
+Pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+project's design constraints, test matrix, and packaging rules.
+
 ## Credits
 
 Made by Raisul Chowdhury.
@@ -148,4 +181,6 @@ Calm is not affiliated with NetNewsWire or Ranchero Software.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE). Community participation is covered by the
+[Code of Conduct](CODE_OF_CONDUCT.md), and security reports should follow
+[SECURITY.md](SECURITY.md).
