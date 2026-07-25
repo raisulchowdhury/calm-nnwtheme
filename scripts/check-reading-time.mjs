@@ -26,8 +26,20 @@ class FakeReadingTime {
 	}
 }
 
-function runScript(path, wordCount, includeBody = true) {
+class FakeMetadataItem {
+	constructor(textContent) {
+		this.hidden = false;
+		this.textContent = textContent;
+	}
+}
+
+function runScript(path, wordCount, includeBody = true, metadataText = ["Author", "Date", "Feed"]) {
 	const readingTime = new FakeReadingTime();
+	const metadataItems = metadataText.map((text) => new FakeMetadataItem(text));
+	const articleMeta = {
+		children: [...metadataItems, readingTime],
+		hidden: false,
+	};
 	const text = Array.from({ length: wordCount }, () => "word").join(" ");
 	const body = includeBody ? { innerText: text, textContent: text } : null;
 	const document = {
@@ -37,8 +49,8 @@ function runScript(path, wordCount, includeBody = true) {
 				readingTime,
 			}[id] || null;
 		},
-		querySelector() {
-			return null;
+		querySelector(selector) {
+			return selector === ".articleMeta" ? articleMeta : null;
 		},
 	};
 	const window = {
@@ -48,7 +60,7 @@ function runScript(path, wordCount, includeBody = true) {
 	};
 
 	vm.runInNewContext(extractInlineScript(path), { document, window });
-	return readingTime;
+	return { articleMeta, metadataItems, readingTime };
 }
 
 for (const path of paths) {
@@ -62,12 +74,12 @@ for (const path of paths) {
 	assert.ok(!source.includes("readingStats"), `${path} should remove obsolete statistics logic`);
 	assert.ok(!source.includes("min read"), `${path} should remove the old footer phrasing`);
 
-	const short = runScript(path, 675);
+	const short = runScript(path, 675).readingTime;
 	assert.equal(short.hidden, true, `${path} should hide a three-minute estimate`);
 	assert.equal(short.textContent, "", `${path} should clear hidden reading-time text`);
 	assert.equal(short.getAttribute("aria-label"), "", `${path} should clear hidden reading-time labels`);
 
-	const threshold = runScript(path, 676);
+	const threshold = runScript(path, 676).readingTime;
 	assert.equal(threshold.hidden, false, `${path} should show a four-minute estimate`);
 	assert.equal(threshold.textContent, "4 min", `${path} should use the quiet metadata label`);
 	assert.equal(
@@ -76,7 +88,7 @@ for (const path of paths) {
 		`${path} should expose an accessible estimate`,
 	);
 
-	const long = runScript(path, 1350);
+	const long = runScript(path, 1350).readingTime;
 	assert.equal(long.hidden, false, `${path} should show a longer estimate`);
 	assert.equal(long.textContent, "6 min", `${path} should continue using 225 words per minute`);
 	assert.equal(
@@ -85,16 +97,37 @@ for (const path of paths) {
 		`${path} should keep the accessible label in sync`,
 	);
 
-	const missingBody = runScript(path, 0, false);
+	const missingBody = runScript(path, 0, false).readingTime;
 	assert.equal(missingBody.hidden, true, `${path} should fail closed when article text is missing`);
+
+	const missingDate = runScript(path, 676, true, ["Author", "", "Feed"]);
+	assert.equal(missingDate.metadataItems[0].hidden, false, `${path} should preserve present authors`);
+	assert.equal(missingDate.metadataItems[1].hidden, true, `${path} should hide an empty date anchor`);
+	assert.equal(missingDate.metadataItems[2].hidden, false, `${path} should preserve present feed names`);
+	assert.equal(missingDate.articleMeta.hidden, false, `${path} should retain remaining metadata`);
+
+	const placeholders = runScript(path, 675, true, ["[[byline]]", "[[date_medium]]", "[[feed_link_title]]"]);
+	assert.ok(
+		placeholders.metadataItems.every((metadataItem) => metadataItem.hidden),
+		`${path} should hide unresolved metadata placeholders`,
+	);
+	assert.equal(placeholders.articleMeta.hidden, true, `${path} should hide an empty metadata row`);
+
+	const readingTimeOnly = runScript(path, 676, true, ["", "", ""]);
+	assert.equal(readingTimeOnly.readingTime.hidden, false, `${path} should allow reading-time-only metadata`);
+	assert.equal(readingTimeOnly.articleMeta.hidden, false, `${path} should show the reading-time-only row`);
 }
 
 assert.ok(!stylesheet.includes(".readerFooter"), "stylesheet should remove obsolete footer rules");
 assert.ok(
-	stylesheet.includes(".articleMeta > span:not(:empty) ~ span:not(:empty)::before"),
-	"metadata separators should skip empty preceding fields",
+	stylesheet.includes(".articleMeta > span:not([hidden]) ~ span:not([hidden])::before"),
+	"metadata separators should skip hidden preceding fields",
 );
 assert.ok(
-	stylesheet.includes(".readingTime:empty,\n.readingTime[hidden] {\n\tdisplay: none;"),
-	"empty and short reading-time metadata should stay hidden",
+	stylesheet.includes(".articleMeta[hidden],\n.byline:empty,"),
+	"all-empty metadata rows should override the flex display",
+);
+assert.ok(
+	stylesheet.includes(".readingTime:empty,\n.articleMeta > span[hidden] {\n\tdisplay: none;"),
+	"empty and normalized metadata should stay hidden",
 );

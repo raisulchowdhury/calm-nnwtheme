@@ -40,8 +40,8 @@ class FakeClassList {
 class FakeNode {
 	constructor(tagName, textContent = "") {
 		this.tagName = tagName.toUpperCase();
-		this.textContent = textContent;
 		this.children = [];
+		this._textContent = textContent;
 		this.parentElement = null;
 		this.attributes = new Map();
 		this.hidden = false;
@@ -51,6 +51,17 @@ class FakeNode {
 		this.style = { top: "" };
 		this._listeners = new Map();
 		this.classList = new FakeClassList(this);
+	}
+
+	get textContent() {
+		return this._textContent;
+	}
+
+	set textContent(value) {
+		this._textContent = value;
+		if (value === "" && this.children) {
+			this.children = [];
+		}
 	}
 
 	get innerText() {
@@ -77,6 +88,12 @@ class FakeNode {
 
 	addEventListener(type, listener) {
 		this._listeners.set(type, listener);
+	}
+
+	removeEventListener(type, listener) {
+		if (this._listeners.get(type) === listener) {
+			this._listeners.delete(type);
+		}
 	}
 
 	getBoundingClientRect() {
@@ -144,6 +161,24 @@ function createFixture(headingCount = sectionHeadings.length) {
 	documentElement.scrollTop = 0;
 	const documentBody = new FakeNode("body");
 	documentBody.scrollTop = 0;
+	const compactListeners = new Set();
+	const compactMedia = {
+		matches: false,
+		addEventListener(type, listener) {
+			if (type === "change") {
+				compactListeners.add(listener);
+			}
+		},
+		addListener(listener) {
+			compactListeners.add(listener);
+		},
+		setMatches(matches) {
+			this.matches = matches;
+			for (const listener of compactListeners) {
+				listener({ matches });
+			}
+		},
+	};
 
 	const document = {
 		documentElement,
@@ -167,22 +202,31 @@ function createFixture(headingCount = sectionHeadings.length) {
 		},
 	};
 
+	const windowListeners = new Map();
 	const window = {
 		innerHeight: 800,
 		pageYOffset: 0,
 		PointerEvent: function PointerEvent() {},
-		matchMedia() {
-			return { matches: false };
+		matchMedia(query) {
+			return query.includes("(max-width: 820px)") ? compactMedia : { matches: false };
 		},
-		addEventListener() {},
+		addEventListener(type, listener) {
+			windowListeners.set(type, listener);
+		},
+		removeEventListener(type, listener) {
+			if (windowListeners.get(type) === listener) {
+				windowListeners.delete(type);
+			}
+		},
 		scrollTo() {},
 	};
 
-	return { document, window, toc, tocContext, tocList };
+	return { compactMedia, document, window, windowListeners, toc, tocContext, tocList };
 }
 
 function runScript(path, headingCount) {
-	const { document, window, toc, tocContext, tocList } = createFixture(headingCount);
+	const { compactMedia, document, window, windowListeners, toc, tocContext, tocList } =
+		createFixture(headingCount);
 	vm.runInNewContext(extractInlineScript(path), { document, window });
 	const controls = tocList.querySelectorAll("button");
 	const labels = controls.map((button) => button.textContent);
@@ -209,12 +253,34 @@ function runScript(path, headingCount) {
 		toc._listeners.get("pointerup")?.(pointerEvent);
 		scrubbingAfter = toc.className.split(/\s+/).includes("isScrubbing");
 	}
+	const initialPointerListener = toc._listeners.has("pointerdown");
+	const initialScrollListener = windowListeners.has("scroll");
+	compactMedia.setMatches(true);
+	const compactControlCount = tocList.querySelectorAll("button").length;
+	const compactHidden = toc.hidden;
+	const compactPointerListener = toc._listeners.has("pointerdown");
+	const compactScrollListener = windowListeners.has("scroll");
+	compactMedia.setMatches(false);
+	const restoredControlCount = tocList.querySelectorAll("button").length;
+	const restoredHidden = toc.hidden;
+	const restoredPointerListener = toc._listeners.has("pointerdown");
+	const restoredScrollListener = windowListeners.has("scroll");
 	return {
+		compactControlCount,
+		compactHidden,
+		compactPointerListener,
+		compactScrollListener,
 		contextAfterScrub: tocContext.textContent,
 		headingBased: toc.className.split(/\s+/).includes("is-heading-based"),
+		initialPointerListener,
+		initialScrollListener,
 		initialContext,
 		initialContextTop,
 		labels,
+		restoredControlCount,
+		restoredHidden,
+		restoredPointerListener,
+		restoredScrollListener,
 		scrubContext,
 		scrubbingAfter,
 		scrubbingDuring,
@@ -234,6 +300,16 @@ for (const path of ["Calm.nnwtheme/template.html", "preview/index.html"]) {
 	assert.equal(headingRail.contextAfterScrub, articleTitle, `${path} should restore the current section after scrubbing`);
 	assert.equal(headingRail.initialContext, articleTitle, `${path} should synchronize the active heading label`);
 	assert.equal(headingRail.initialContextTop, "8px", `${path} should align the label to the active marker`);
+	assert.equal(headingRail.initialPointerListener, true, `${path} should initialize wide pointer interaction`);
+	assert.equal(headingRail.initialScrollListener, true, `${path} should initialize wide scroll tracking`);
+	assert.equal(headingRail.compactHidden, true, `${path} should hide the rail after entering Split View`);
+	assert.equal(headingRail.compactControlCount, 0, `${path} should remove controls after entering Split View`);
+	assert.equal(headingRail.compactPointerListener, false, `${path} should remove compact pointer interaction`);
+	assert.equal(headingRail.compactScrollListener, false, `${path} should remove compact scroll tracking`);
+	assert.equal(headingRail.restoredHidden, false, `${path} should restore the rail after leaving Split View`);
+	assert.ok(headingRail.restoredControlCount > 0, `${path} should rebuild controls after leaving Split View`);
+	assert.equal(headingRail.restoredPointerListener, true, `${path} should restore wide pointer interaction`);
+	assert.equal(headingRail.restoredScrollListener, true, `${path} should restore wide scroll tracking`);
 
 	const depthRail = runScript(path, 4);
 	assert.equal(depthRail.tocHidden, false, `${path} should show depth markers for shallow long articles`);

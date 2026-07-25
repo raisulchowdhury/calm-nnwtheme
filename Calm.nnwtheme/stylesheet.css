@@ -136,7 +136,7 @@ article {
 	line-height: 1.35;
 }
 
-.articleMeta > span:not(:empty) ~ span:not(:empty)::before {
+.articleMeta > span:not([hidden]) ~ span:not([hidden])::before {
 	content: "·";
 	margin-right: 0.35rem;
 	color: var(--reader-faint);
@@ -150,11 +150,12 @@ article {
 	text-decoration: none;
 }
 
+.articleMeta[hidden],
 .byline:empty,
 .feedName:empty,
 .metaDate:empty,
 .readingTime:empty,
-.readingTime[hidden] {
+.articleMeta > span[hidden] {
 	display: none;
 }
 

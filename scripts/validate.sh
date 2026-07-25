@@ -10,6 +10,7 @@ node scripts/check-heading-rail-targets.mjs
 node scripts/check-interaction-polish.mjs
 node scripts/check-reading-time.mjs
 node scripts/check-rail-context.mjs
+node scripts/check-release-sync.mjs
 
 tmpdir="$(mktemp -d)"
 cleanup() {

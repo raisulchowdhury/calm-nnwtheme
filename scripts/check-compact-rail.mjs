@@ -41,6 +41,11 @@ for (const [label, script] of [
 ]) {
 	assertContains(script, `window.matchMedia("${compactQuery}")`, label);
 	assertContains(script, "function shouldDisableRail() {", label);
+	assertContains(script, "function syncTocMode() {", label);
+	assertContains(script, 'compactRailQuery.addEventListener("change", syncTocMode);', label);
+	assertContains(script, "tocCleanup = initToc() || null;", label);
+	assertContains(script, 'window.removeEventListener("scroll", updateActiveFromScroll);', label);
+	assertContains(script, 'window.removeEventListener("resize", onResize);', label);
 	assertContains(script, "shouldDisableRail()", label);
 	assertContains(script, "if (!body || !toc || !tocList || shouldDisableRail())", label);
 }

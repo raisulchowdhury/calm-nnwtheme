@@ -58,6 +58,8 @@ body: The body of the article.
 	var tocList = document.getElementById("readerTocList");
 	var tocContext = toc ? toc.querySelector(".readerTocContext") : null;
 	var readingTime = document.getElementById("readingTime");
+	var articleMeta = document.querySelector(".articleMeta");
+	var metadataItems = articleMeta ? articleMeta.children : [];
 	var title = document.querySelector(".articleTitle h1");
 	var header = document.getElementById("readerTop");
 	var externalLink = document.querySelector(".externalLink");
@@ -65,6 +67,7 @@ body: The body of the article.
 	var compactRailQuery = window.matchMedia ?
 		window.matchMedia("(max-width: 820px), (pointer: coarse) and (max-height: 500px)") :
 		null;
+	var tocCleanup = null;
 
 	function shouldDisableRail() {
 		return compactRailQuery && compactRailQuery.matches;
@@ -85,6 +88,28 @@ body: The body of the article.
 		if (!externalLinkAnchor || !href || !linkText || isPlaceholderValue(href) || isPlaceholderValue(linkText) || isPlaceholderValue(label)) {
 			externalLink.hidden = true;
 		}
+	}
+
+	function normalizeMetadata() {
+		Array.prototype.forEach.call(metadataItems, function (metadataItem) {
+			if (metadataItem === readingTime) {
+				return;
+			}
+
+			var text = (metadataItem.textContent || "").trim();
+			metadataItem.hidden = !text || isPlaceholderValue(text);
+		});
+	}
+
+	function updateMetadataVisibility() {
+		if (!articleMeta) {
+			return;
+		}
+
+		var hasVisibleMetadata = Array.prototype.some.call(metadataItems, function (metadataItem) {
+			return !metadataItem.hidden;
+		});
+		articleMeta.hidden = !hasVisibleMetadata;
 	}
 
 	function hideReadingTime() {
@@ -467,25 +492,94 @@ body: The body of the article.
 			toc.addEventListener("touchcancel", onTouchEnd, { passive: false });
 		}
 
-		controls.forEach(function (control, index) {
-			control.addEventListener("click", function (event) {
+		var controlClickHandlers = controls.map(function (control, index) {
+			var clickHandler = function (event) {
 				event.preventDefault();
 				scrollToSection(sectionTargets[index]);
 				setActiveSection(index);
-			});
+			};
+			control.addEventListener("click", clickHandler);
+			return clickHandler;
 		});
+
+		function onResize() {
+			cacheMarkerCenters();
+			updateActiveFromScroll();
+		}
 
 		cacheMarkerCenters();
 		updateActiveFromScroll();
 		window.addEventListener("scroll", updateActiveFromScroll, { passive: true });
-		window.addEventListener("resize", function () {
-			cacheMarkerCenters();
-			updateActiveFromScroll();
-		});
+		window.addEventListener("resize", onResize);
+
+		return function cleanupToc() {
+			if (hasPointerEvents) {
+				toc.removeEventListener("pointerdown", onPointerDown);
+				toc.removeEventListener("pointermove", onPointerMove);
+				toc.removeEventListener("pointerup", onPointerEnd);
+				toc.removeEventListener("pointercancel", onPointerEnd);
+				toc.removeEventListener("pointerleave", onPointerEnd);
+			} else {
+				toc.removeEventListener("touchstart", onTouchStart);
+				toc.removeEventListener("touchmove", onTouchMove);
+				toc.removeEventListener("touchend", onTouchEnd);
+				toc.removeEventListener("touchcancel", onTouchEnd);
+			}
+			controls.forEach(function (control, index) {
+				control.removeEventListener("click", controlClickHandlers[index]);
+			});
+			window.removeEventListener("scroll", updateActiveFromScroll);
+			window.removeEventListener("resize", onResize);
+			resetToc();
+		};
 	}
 
+	function resetToc() {
+		if (!toc || !tocList) {
+			return;
+		}
+		toc.hidden = true;
+		toc.classList.remove("is-heading-based");
+		toc.classList.remove("isScrubbing");
+		tocList.textContent = "";
+		if (tocContext) {
+			tocContext.textContent = "";
+			tocContext.style.top = "";
+		}
+	}
+
+	function syncTocMode() {
+		if (!body || !toc || !tocList || shouldDisableRail()) {
+			if (tocCleanup) {
+				tocCleanup();
+				tocCleanup = null;
+			} else {
+				resetToc();
+			}
+			return;
+		}
+
+		if (!tocCleanup) {
+			tocCleanup = initToc() || null;
+		}
+	}
+
+	function observeCompactRail() {
+		if (!compactRailQuery) {
+			return;
+		}
+		if (compactRailQuery.addEventListener) {
+			compactRailQuery.addEventListener("change", syncTocMode);
+		} else if (compactRailQuery.addListener) {
+			compactRailQuery.addListener(syncTocMode);
+		}
+	}
+
+	normalizeMetadata();
 	hideEmptyExternalLink();
 	updateReadingTime();
-	initToc();
+	updateMetadataVisibility();
+	observeCompactRail();
+	syncTocMode();
 })();
 </script>

@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.4.0 - 2026-07-24
+
+- Strengthened the responsive article-title hierarchy on rail-capable layouts
+  while preserving compact title sizing and spacing.
+- Moved the reading map beside the centered article without changing the
+  `41.5625rem` reading measure.
+- Added source identity and conditional reading time to the opening metadata;
+  estimates appear only at four minutes or longer.
+- Normalized missing author, date, feed, and read-time fields so metadata never
+  leaves orphaned or doubled separators.
+- Removed the visible word count and persistent statistics footer.
+- Added an intent-revealed active-section label on wide precise-pointer
+  layouts, while keeping iPad marker-only and compact layouts rail-free.
+- Tuned the active-section label threshold to `1080px` for normal full-window
+  NetNewsWire article panes.
+- Added live rail teardown and restoration across iPad Split View transitions,
+  including pointer, scroll, and resize listener cleanup.
+- Expanded the public screenshot set across desktop, iPad, iPhone, light, dark,
+  structured, and image-first articles.
+- Extended release validation and bumped the internal theme version to `11`.
+
 ## 1.3.1 - 2026-07-24
 
 - Added system-accent keyboard focus treatment to the section rail.
