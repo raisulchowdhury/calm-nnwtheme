@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(max-width: 600px)" srcset="assets/social-preview-mobile.jpg">
-  <img src="assets/social-preview.jpg" alt="Calm light and dark NetNewsWire article previews side by side">
+  <img src="assets/social-preview.jpg" alt="Calm for NetNewsWire with undistorted light, dark, and iPhone article screenshots and the line Not everything is meant to be scrolled">
 </picture>
 
 **Long-form navigation without reader chrome.**
