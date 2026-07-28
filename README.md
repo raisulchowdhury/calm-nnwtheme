@@ -2,10 +2,10 @@
 
 <picture>
   <source media="(max-width: 600px)" srcset="assets/social-preview-mobile.jpg">
-  <img src="assets/social-preview.jpg" alt="Calm for NetNewsWire with undistorted light, dark, and iPhone article screenshots and the line Not everything is meant to be scrolled">
+  <img src="assets/social-preview.jpg" alt="Calm for NetNewsWire with undistorted light, dark, and iPhone article screenshots and the line Navigate long articles without distraction">
 </picture>
 
-**Long-form navigation without reader chrome.**
+**Navigate long articles without distraction.**
 
 Calm is a NetNewsWire theme that adapts its reading map to the article. On wider
 Mac and iPad layouts, structured pieces become a heading map while simpler
