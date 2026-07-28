@@ -35,7 +35,7 @@ improves the article surface and leaves the rest of the app alone.
 
 ### Tagline
 
-Long-form navigation without reader chrome.
+Navigate long articles without distraction.
 
 ### One-line description
 
@@ -59,8 +59,8 @@ and a rail-free iPhone layout.
    uses coarse-pointer targets on iPad, and disappears with its listeners on
    phone, Split View, and short landscape layouts.
 4. **Everything else stays quiet.** Source identity is visible. Reading time
-   appears only when it is useful. Persistent progress, word count, and
-   statistics chrome are absent.
+   appears only when it is useful. The persistent progress bar, word count, and
+   statistics footer are absent.
 5. **The reading craft is consistent.** The narrow measure, serif rhythm, media
    treatment, light and dark palettes, Dynamic Type behavior, focus states, and
    reduced-motion behavior work as one system.
@@ -90,6 +90,7 @@ private, unindexed, or future theme has similar behavior.
 
 Safe public language:
 
+- "Navigate long articles without distraction."
 - "An adaptive, scrubbable reading map built for NetNewsWire."
 - "A reading map that adapts to the article, then gets out of the way."
 - "Distinct among the public NetNewsWire themes we reviewed."
