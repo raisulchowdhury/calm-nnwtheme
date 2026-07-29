@@ -203,7 +203,7 @@ project's design constraints, test matrix, and packaging rules.
 
 ## Credits
 
-Made by Raisul Chowdhury.
+Made by [Raisul Chowdhury](https://raisul.xyz).
 
 Calm is not affiliated with NetNewsWire or Ranchero Software.
 
