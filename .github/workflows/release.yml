@@ -1,0 +1,85 @@
+name: Publish release
+
+on:
+  workflow_run:
+    workflows:
+      - Validate theme
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Validate release package
+        run: scripts/validate.sh
+
+      - name: Resolve release metadata
+        id: release
+        run: |
+          set -euo pipefail
+          version="$(node --print "require('./package.json').version")"
+          tag="v${version}"
+          shopt -s nullglob
+          notes=(docs/releases/*-calm-"${version}".md)
+          if [[ "${#notes[@]}" -ne 1 ]]; then
+            echo "Expected exactly one release-notes file for ${version}." >&2
+            exit 1
+          fi
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "title=Calm ${version}" >> "$GITHUB_OUTPUT"
+          echo "notes=${notes[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish or reconcile GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_NOTES: ${{ steps.release.outputs.notes }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_TITLE: ${{ steps.release.outputs.title }}
+          RELEASE_TARGET: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" \
+              --title "$RELEASE_TITLE" \
+              --notes-file "$RELEASE_NOTES" \
+              --latest
+
+            download_dir="$(mktemp -d)"
+            if gh release download "$RELEASE_TAG" \
+              --pattern Calm.nnwtheme.zip \
+              --dir "$download_dir" >/dev/null 2>&1 && \
+              cmp -s Calm.nnwtheme.zip "$download_dir/Calm.nnwtheme.zip"; then
+              exit 0
+            fi
+
+            gh release upload "$RELEASE_TAG" Calm.nnwtheme.zip --clobber
+          else
+            gh release create "$RELEASE_TAG" Calm.nnwtheme.zip \
+              --target "$RELEASE_TARGET" \
+              --title "$RELEASE_TITLE" \
+              --notes-file "$RELEASE_NOTES" \
+              --latest
+          fi
