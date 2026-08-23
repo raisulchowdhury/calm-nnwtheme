@@ -73,8 +73,18 @@ assert.match(
 );
 assert.match(
 	releaseWorkflow,
-	/scripts\/validate\.sh[\s\S]*gh release create[\s\S]*Calm\.nnwtheme\.zip/,
+	/workflows:\s*\n\s*- Validate theme[\s\S]*workflow_run\.conclusion == 'success'/,
+	"the release workflow should run only after the main validation workflow passes",
+);
+assert.match(
+	releaseWorkflow,
+	/scripts\/validate\.sh[\s\S]*gh release (?:upload|create)[\s\S]*Calm\.nnwtheme\.zip/,
 	"the release workflow should validate and publish the installable package",
+);
+assert.match(
+	releaseWorkflow,
+	/gh release download[\s\S]*cmp -s Calm\.nnwtheme\.zip[\s\S]*gh release upload[\s\S]*--clobber/,
+	"the release workflow should reconcile a missing or stale existing asset",
 );
 
 const communityFiles = [
