@@ -46,6 +46,9 @@ an issue so the interaction can be discussed before implementation.
 
    ```sh
    scripts/validate.sh
+   npm ci
+   npx playwright install webkit chromium
+   npm run test:browser
    git diff --check
    ```
 

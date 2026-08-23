@@ -86,6 +86,10 @@ class FakeNode {
 		return this.attributes.get(name) || "";
 	}
 
+	removeAttribute(name) {
+		this.attributes.delete(name);
+	}
+
 	addEventListener(type, listener) {
 		this._listeners.set(type, listener);
 	}
@@ -130,12 +134,13 @@ function makeHeading(level, text) {
 	return new FakeNode(`h${level}`, text);
 }
 
-function createFixture(headingCount = sectionHeadings.length) {
+function createFixture(headingCount = sectionHeadings.length, options = {}) {
 	const body = new FakeNode("div", "word ".repeat(1200));
 	body.id = "bodyContainer";
 	body.appendChild(makeHeading(3, articleTitle));
-	for (const [index, heading] of sectionHeadings.slice(0, headingCount).entries()) {
-		const headingNode = makeHeading(4, heading);
+	const headingDefinitions = options.headings || sectionHeadings.slice(0, headingCount).map((text) => ({ level: 4, text }));
+	for (const [index, heading] of headingDefinitions.entries()) {
+		const headingNode = makeHeading(heading.level, heading.text);
 		headingNode.rectTop = (index + 1) * 600;
 		body.appendChild(headingNode);
 	}
@@ -157,7 +162,7 @@ function createFixture(headingCount = sectionHeadings.length) {
 	externalLink.className = "externalLink";
 
 	const documentElement = new FakeNode("html");
-	documentElement.scrollHeight = 5000;
+	documentElement.scrollHeight = options.scrollHeight || 5000;
 	documentElement.scrollTop = 0;
 	const documentBody = new FakeNode("body");
 	documentBody.scrollTop = 0;
@@ -204,7 +209,7 @@ function createFixture(headingCount = sectionHeadings.length) {
 
 	const windowListeners = new Map();
 	const window = {
-		innerHeight: 800,
+		innerHeight: options.innerHeight || 800,
 		pageYOffset: 0,
 		PointerEvent: function PointerEvent() {},
 		matchMedia(query) {
@@ -218,18 +223,33 @@ function createFixture(headingCount = sectionHeadings.length) {
 				windowListeners.delete(type);
 			}
 		},
+		requestAnimationFrame(callback) {
+			callback();
+			return 1;
+		},
+		cancelAnimationFrame() {},
+		ResizeObserver: class ResizeObserver {
+			constructor(callback) {
+				this.callback = callback;
+			}
+
+			observe() {}
+
+			disconnect() {}
+		},
 		scrollTo() {},
 	};
 
 	return { compactMedia, document, window, windowListeners, toc, tocContext, tocList };
 }
 
-function runScript(path, headingCount) {
+function runScript(path, headingCount, options = {}) {
 	const { compactMedia, document, window, windowListeners, toc, tocContext, tocList } =
-		createFixture(headingCount);
+		createFixture(headingCount, options);
 	vm.runInNewContext(extractInlineScript(path), { document, window });
 	const controls = tocList.querySelectorAll("button");
 	const labels = controls.map((button) => button.textContent);
+	const currentLocations = controls.map((button) => button.getAttribute("aria-current"));
 	const initialContext = tocContext.textContent;
 	const initialContextTop = tocContext.style.top;
 	let scrubContext = "";
@@ -277,6 +297,7 @@ function runScript(path, headingCount) {
 		initialContext,
 		initialContextTop,
 		labels,
+		currentLocations,
 		restoredControlCount,
 		restoredHidden,
 		restoredPointerListener,
@@ -300,6 +321,8 @@ for (const path of ["Calm.nnwtheme/template.html", "preview/index.html"]) {
 	assert.equal(headingRail.contextAfterScrub, articleTitle, `${path} should restore the current section after scrubbing`);
 	assert.equal(headingRail.initialContext, articleTitle, `${path} should synchronize the active heading label`);
 	assert.equal(headingRail.initialContextTop, "8px", `${path} should align the label to the active marker`);
+	assert.equal(headingRail.currentLocations[0], "location", `${path} should expose the active marker location`);
+	assert.ok(headingRail.currentLocations.slice(1).every((value) => value === ""), `${path} should expose only one current location`);
 	assert.equal(headingRail.initialPointerListener, true, `${path} should initialize wide pointer interaction`);
 	assert.equal(headingRail.initialScrollListener, true, `${path} should initialize wide scroll tracking`);
 	assert.equal(headingRail.compactHidden, true, `${path} should hide the rail after entering Split View`);
@@ -316,4 +339,30 @@ for (const path of ["Calm.nnwtheme/template.html", "preview/index.html"]) {
 	assert.equal(depthRail.headingBased, false, `${path} should not mark depth navigation as heading-based`);
 	assert.ok(depthRail.labels.includes("25%"), `${path} should preserve scroll-depth markers`);
 	assert.equal(depthRail.initialContext, "", `${path} should not expose section text for depth markers`);
+
+	const shortRail = runScript(path, 0, { scrollHeight: 1500, innerHeight: 800 });
+	assert.equal(shortRail.tocHidden, true, `${path} should hide the rail below two viewport heights`);
+	assert.equal(shortRail.labels.length, 0, `${path} should not create controls for a short article`);
+
+	const adaptiveRail = runScript(path, 0, {
+		headings: [
+			{ level: 2, text: "Opening" },
+			{ level: 3, text: "A supporting detail" },
+			{ level: 2, text: "OPENING" },
+			{ level: 2, text: "Advertisement" },
+			{ level: 2, text: "Context" },
+			{ level: 2, text: "Method" },
+			{ level: 2, text: "Evidence" },
+			{ level: 2, text: "Tradeoffs" },
+			{ level: 2, text: "Practice" },
+			{ level: 2, text: "Examples" },
+			{ level: 2, text: "Questions" },
+			{ level: 2, text: "Conclusion" },
+		],
+	});
+	assert.equal(adaptiveRail.headingBased, true, `${path} should use a coherent heading hierarchy`);
+	assert.ok(adaptiveRail.labels.length <= 9, `${path} should cap the title plus body markers at nine`);
+	assert.equal(adaptiveRail.labels.filter((label) => label.toLowerCase() === "opening").length, 1, `${path} should deduplicate headings`);
+	assert.ok(!adaptiveRail.labels.includes("Advertisement"), `${path} should filter utility headings`);
+	assert.ok(!adaptiveRail.labels.includes("A supporting detail"), `${path} should prefer the established top-level hierarchy`);
 }

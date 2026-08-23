@@ -17,7 +17,8 @@ The reading surface stays deliberately familiar: a narrow serif column, strong
 editorial headings, restrained links, soft source metadata, and system light
 and dark appearances.
 
-[Install](#install) ·
+[Install Calm](https://raisul.xyz/calm) ·
+[Live demo](https://raisul.xyz/projects/calm#calm-preview) ·
 [Latest release](https://github.com/raisulchowdhury/calm-nnwtheme/releases/latest) ·
 [Report a theme issue](https://github.com/raisulchowdhury/calm-nnwtheme/issues/new?template=theme_issue.yml) ·
 [Contribute](CONTRIBUTING.md)
@@ -26,15 +27,16 @@ and dark appearances.
 
 Calm's typography sets the mood. The reading map is the product idea.
 
-- It reads the article first. Five or more major headings become real section
-  destinations; simpler posts use evenly spaced depth markers instead of a
-  forced table of contents.
+- It reads the article first. A coherent hierarchy of five or more meaningful
+  headings becomes real section destinations; duplicates and utility headings
+  are removed, and the result is capped at eight body markers. Simpler posts
+  use five evenly spaced depth markers instead of a forced table of contents.
 - It supports direct navigation. Click or tap a marker to jump, or drag along
   the rail to scrub through the article. Wide Mac layouts reveal the active
   section name only while you interact.
 - It knows when to leave. The rail sits outside the unchanged reading measure on
   wide layouts, uses 44-point targets on iPad, and is removed completely from
-  compact layouts.
+  compact layouts and articles shorter than two viewport heights.
 - It keeps secondary information quiet. Source identity stays visible, reading
   time appears only for articles estimated at four minutes or longer, and
   there is no persistent progress bar, word count, or statistics footer.
@@ -60,6 +62,11 @@ from Naval’s Archive and
 by Yew Jin Lim.
 
 ## Install
+
+The dedicated [Calm installation page](https://raisul.xyz/calm) is the easiest
+place to install the theme, try the live reading-map demo, or recover if the
+one-click installer does not open. GitHub remains the technical home for source,
+release notes, and issue reporting.
 
 ### iPhone and iPad
 
@@ -101,8 +108,10 @@ and installer URL in its
 
 Calm follows NetNewsWire's documented theme bundle format and uses only the
 HTML, CSS, and JavaScript supported by that reader surface. Automated checks
-cover the theme on macOS runners, while the preview matrix covers desktop,
-iPad, Split View, iPhone, light, dark, precise-pointer, and coarse-pointer
+cover the package on macOS runners and exercise typography, adaptive
+navigation, real media reflow, Split View, and accessibility in WebKit. A
+canonical Chromium screenshot catches visual drift, and the preview matrix also
+covers desktop, iPad, iPhone, light, dark, precise-pointer, and coarse-pointer
 layouts.
 
 NetNewsWire and WebKit updates can still affect rendering. When reporting an
@@ -122,15 +131,15 @@ The theme includes:
 - system light and dark mode
 - iOS Dynamic Type support with a small Calm-specific size bump
 - an article-aware reading map beside the centered column on wider screens
-- major-heading destinations for structured articles and scroll-depth markers
-  for simpler articles
+- hierarchy-aware, deduplicated, capped heading destinations for structured
+  articles and scroll-depth markers for simpler long articles
 - click, tap, keyboard, and Tap + Scrub navigation
 - an intent-revealed active-section label on wide, precise-pointer layouts
 - 44-point marker targets and marker-only feedback on iPad
 - a rail-free compact layout for phone, Split View, and short coarse landscape
 - textual source identity and conditional reading time in the opening metadata
 - no persistent statistics footer or visible word count
-- image blending in light mode
+- undistorted authored image colors in light and dark appearances
 - restrained code, table, blockquote, and figure styling
 
 ## Development
@@ -153,6 +162,7 @@ Validate changes:
 
 ```sh
 scripts/validate.sh
+npm run test:browser
 ```
 
 The validator uses standard macOS tools (`plutil`, `ditto`, and `unzip`) plus

@@ -9,14 +9,14 @@ const specification = readFileSync(
 	"utf8",
 );
 const releaseNotes = readFileSync(
-	"docs/releases/2026-07-24-calm-1.4.0.md",
+	"docs/releases/2026-08-23-calm-1.4.1.md",
 	"utf8",
 );
 const workflow = readFileSync(".github/workflows/validate.yml", "utf8");
 
-assert.match(info, /<key>Version<\/key>\s*<integer>11<\/integer>/, "theme version should be 11");
-assert.match(changelog, /^## 1\.4\.0 - 2026-07-24$/m, "changelog should include v1.4.0");
-assert.match(releaseNotes, /^# Calm 1\.4\.0$/m, "release notes should identify Calm 1.4.0");
+assert.match(info, /<key>Version<\/key>\s*<integer>12<\/integer>/, "theme version should be 12");
+assert.match(changelog, /^## 1\.4\.1 - 2026-08-23$/m, "changelog should include v1.4.1");
+assert.match(releaseNotes, /^# Calm 1\.4\.1$/m, "release notes should identify Calm 1.4.1");
 assert.match(
 	specification,
 	/All four checkpoints were implemented, accepted, and synchronized/,
@@ -26,6 +26,11 @@ assert.ok(
 	!specification.includes("codex/calm-v1.4-staged") &&
 		!specification.includes("localhost:8765"),
 	"public specification should not include local review instructions",
+);
+assert.match(
+	readme,
+	/https:\/\/raisul\.xyz\/calm/,
+	"README should lead with the dedicated installation page",
 );
 assert.match(
 	readme,
@@ -54,6 +59,11 @@ assert.match(
 	workflow,
 	/actions\/checkout@v7[\s\S]*actions\/setup-node@v7[\s\S]*scripts\/validate\.sh/,
 	"GitHub Actions should run the release validator with current actions",
+);
+assert.match(
+	workflow,
+	/playwright install --with-deps webkit chromium[\s\S]*npm run test:browser/,
+	"GitHub Actions should run the WebKit and visual regression suite",
 );
 
 const communityFiles = [
