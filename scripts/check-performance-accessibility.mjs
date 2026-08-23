@@ -16,12 +16,12 @@ for (const path of ["Calm.nnwtheme/template.html", "preview/index.html"]) {
 	);
 	assert.match(
 		script,
-		/new window\.ResizeObserver\(scheduleLayoutRefresh\)/,
+		/new window\.ResizeObserver\(scheduleCallback\)/,
 		`${path} should observe article-height changes`,
 	);
 	assert.match(
 		script,
-		/body\.addEventListener\("load", scheduleLayoutRefresh, true\)/,
+		/body\.addEventListener\("load", scheduleCallback, true\)/,
 		`${path} should refresh offsets when embedded media loads`,
 	);
 	assert.match(
@@ -36,7 +36,7 @@ for (const path of ["Calm.nnwtheme/template.html", "preview/index.html"]) {
 	);
 	assert.match(
 		script,
-		/new window\.ResizeObserver\(scheduleShortArticleCheck\)/,
+		/observeLayoutChanges\(rebuildIfArticleGrows\)/,
 		`${path} should keep watching initially short articles for late content growth`,
 	);
 	assert.match(

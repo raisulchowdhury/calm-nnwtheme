@@ -180,8 +180,6 @@
 		var markerCenters = [];
 		var cachedTargetTops = [];
 		var scrollFrame = null;
-		var layoutFrame = null;
-		var resizeObserver = null;
 		var MAX_HEADING_MARKERS = 8;
 		var MIN_HEADING_MARKERS = 5;
 		var noisyHeadingPattern = /^(advertisement|sponsored|related(?: posts|stories)?|share(?: this)?|comments?|more(?: stories)?|newsletter|subscribe)$/i;
@@ -192,6 +190,40 @@
 
 		function getMarkerOffset() {
 			return Math.max(72, Math.min(128, window.innerHeight * 0.12));
+		}
+
+		function observeLayoutChanges(callback) {
+			var frame = null;
+			var observer = null;
+
+			function runCallback() {
+				frame = null;
+				callback();
+			}
+
+			function scheduleCallback() {
+				if (frame === null) {
+					frame = window.requestAnimationFrame(runCallback);
+				}
+			}
+
+			window.addEventListener("resize", scheduleCallback);
+			body.addEventListener("load", scheduleCallback, true);
+			if ("ResizeObserver" in window) {
+				observer = new window.ResizeObserver(scheduleCallback);
+				observer.observe(body);
+			}
+
+			return function stopObservingLayout() {
+				window.removeEventListener("resize", scheduleCallback);
+				body.removeEventListener("load", scheduleCallback, true);
+				if (observer) {
+					observer.disconnect();
+				}
+				if (frame !== null) {
+					window.cancelAnimationFrame(frame);
+				}
+			};
 		}
 
 		function normalizeHeadingText(text) {
@@ -242,11 +274,8 @@
 
 		if (root.scrollHeight < window.innerHeight * 2) {
 			toc.hidden = true;
-			var shortLayoutFrame = null;
-			var shortResizeObserver = null;
 
 			function rebuildIfArticleGrows() {
-				shortLayoutFrame = null;
 				if (root.scrollHeight < window.innerHeight * 2) {
 					return;
 				}
@@ -258,28 +287,10 @@
 				tocCleanup = initToc() || null;
 			}
 
-			function scheduleShortArticleCheck() {
-				if (shortLayoutFrame === null) {
-					shortLayoutFrame = window.requestAnimationFrame(rebuildIfArticleGrows);
-				}
-			}
-
-			window.addEventListener("resize", scheduleShortArticleCheck);
-			body.addEventListener("load", scheduleShortArticleCheck, true);
-			if ("ResizeObserver" in window) {
-				shortResizeObserver = new window.ResizeObserver(scheduleShortArticleCheck);
-				shortResizeObserver.observe(body);
-			}
+			var stopWatchingShortArticle = observeLayoutChanges(rebuildIfArticleGrows);
 
 			return function cleanupShortArticleWatch() {
-				window.removeEventListener("resize", scheduleShortArticleCheck);
-				body.removeEventListener("load", scheduleShortArticleCheck, true);
-				if (shortResizeObserver) {
-					shortResizeObserver.disconnect();
-				}
-				if (shortLayoutFrame !== null) {
-					window.cancelAnimationFrame(shortLayoutFrame);
-				}
+				stopWatchingShortArticle();
 				resetToc();
 			};
 		}
@@ -621,25 +632,9 @@
 			}
 		}
 
-		function runLayoutRefresh() {
-			layoutFrame = null;
-			refreshLayout();
-		}
-
-		function scheduleLayoutRefresh() {
-			if (layoutFrame === null) {
-				layoutFrame = window.requestAnimationFrame(runLayoutRefresh);
-			}
-		}
-
 		refreshLayout();
 		window.addEventListener("scroll", requestActiveUpdate, { passive: true });
-		window.addEventListener("resize", scheduleLayoutRefresh);
-		body.addEventListener("load", scheduleLayoutRefresh, true);
-		if ("ResizeObserver" in window) {
-			resizeObserver = new window.ResizeObserver(scheduleLayoutRefresh);
-			resizeObserver.observe(body);
-		}
+		var stopObservingLayout = observeLayoutChanges(refreshLayout);
 
 		return function cleanupToc() {
 			if (hasPointerEvents) {
@@ -658,16 +653,9 @@
 				control.removeEventListener("click", controlClickHandlers[index]);
 			});
 			window.removeEventListener("scroll", requestActiveUpdate);
-			window.removeEventListener("resize", scheduleLayoutRefresh);
-			body.removeEventListener("load", scheduleLayoutRefresh, true);
-			if (resizeObserver) {
-				resizeObserver.disconnect();
-			}
+			stopObservingLayout();
 			if (scrollFrame !== null) {
 				window.cancelAnimationFrame(scrollFrame);
-			}
-			if (layoutFrame !== null) {
-				window.cancelAnimationFrame(layoutFrame);
 			}
 			resetToc();
 		};

@@ -52,7 +52,8 @@ for (const [label, script] of [
 	assertContains(script, 'compactRailQuery.addEventListener("change", syncTocMode);', label);
 	assertContains(script, "tocCleanup = initToc() || null;", label);
 	assertContains(script, 'window.removeEventListener("scroll", requestActiveUpdate);', label);
-	assertContains(script, 'window.removeEventListener("resize", scheduleLayoutRefresh);', label);
+	assertContains(script, "function observeLayoutChanges(callback) {", label);
+	assertContains(script, "stopObservingLayout();", label);
 	assertContains(script, "shouldDisableRail()", label);
 	assertContains(script, "if (!body || !toc || !tocList || shouldDisableRail())", label);
 }
