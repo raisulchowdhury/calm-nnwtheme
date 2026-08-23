@@ -64,6 +64,7 @@ jobs:
         run: npm run test:browser -- --update-snapshots
 
       - name: Upload canonical browser snapshots
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: calm-browser-snapshots

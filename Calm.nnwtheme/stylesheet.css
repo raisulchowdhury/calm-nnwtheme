@@ -842,7 +842,7 @@ sub {
 	}
 
 	.articleBody {
-		--reader-font-size: 18.5px;
+		font-size: calc(var(--reader-font-size, var(--reader-base-size)) + 1px);
 		max-width: 100%;
 		line-height: 1.48;
 	}

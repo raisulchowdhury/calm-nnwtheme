@@ -2,8 +2,9 @@
 
 ## 1.4.1 - 2026-08-23
 
-- Fixed the WebKit cascade that reset compact iPhone articles to desktop line
-  height instead of the intended `1.48` rhythm.
+- Fixed the compact iPhone cascade so the intended one-point type bump and
+  `1.48` line-height rhythm both take effect without flattening text-size
+  preferences.
 - Removed global light-mode image blending so illustrations, screenshots,
   transparency, and authored colors render as supplied.
 - Throttled scroll-driven map updates with `requestAnimationFrame` and cached

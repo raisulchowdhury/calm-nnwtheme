@@ -24,7 +24,7 @@ function assertNotContains(source, forbidden, label) {
 assertContains(stylesheet, `@media ${compactQuery}`, "stylesheet.css");
 assertContains(stylesheet, ".readerToc,\n\t.readerToc:not([hidden]) {\n\t\tdisplay: none !important;\n\t}", "stylesheet.css compact rail rule");
 assertContains(stylesheet, "padding: 34px 16px 56px;", "stylesheet.css compact body padding");
-assertContains(stylesheet, "--reader-font-size: 18.5px;\n\t\tmax-width: 100%;\n\t\tline-height: 1.48;", "stylesheet.css compact article rhythm");
+assertContains(stylesheet, "font-size: calc(var(--reader-font-size, var(--reader-base-size)) + 1px);\n\t\tmax-width: 100%;\n\t\tline-height: 1.48;", "stylesheet.css compact article rhythm");
 assertContains(stylesheet, "@supports (-webkit-touch-callout: none) {\n\tbody {\n\t\tpadding: 30px 20px 56px;\n\t\tword-break: break-word;", "stylesheet.css centered WebKit reading column");
 assertContains(stylesheet, `@media ${compactQuery} {\n\t\tbody {\n\t\t\tpadding: 30px 16px 56px;`, "stylesheet.css WebKit compact body padding");
 assertContains(stylesheet, `@media ${compactQuery} {\n\t\tbody {\n\t\t\tpadding: 30px 16px 56px;\n\t\t}\n\n\t\t.articleBody {\n\t\t\tline-height: 1.48;`, "stylesheet.css WebKit compact article rhythm");
