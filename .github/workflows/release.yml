@@ -1,0 +1,74 @@
+name: Publish release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/release.yml
+      - Calm.nnwtheme/**
+      - Calm.nnwtheme.zip
+      - docs/releases/**
+      - package.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Validate release package
+        run: scripts/validate.sh
+
+      - name: Resolve release metadata
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(node --print "require('./package.json').version")"
+          tag="v${version}"
+          shopt -s nullglob
+          notes=(docs/releases/*-calm-"${version}".md)
+          if [[ "${#notes[@]}" -ne 1 ]]; then
+            echo "Expected exactly one release-notes file for ${version}." >&2
+            exit 1
+          fi
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "title=Calm ${version}" >> "$GITHUB_OUTPUT"
+          echo "notes=${notes[0]}" >> "$GITHUB_OUTPUT"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish GitHub release
+        if: steps.release.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_NOTES: ${{ steps.release.outputs.notes }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_TITLE: ${{ steps.release.outputs.title }}
+        run: |
+          gh release create "$RELEASE_TAG" Calm.nnwtheme.zip \
+            --target "$GITHUB_SHA" \
+            --title "$RELEASE_TITLE" \
+            --notes-file "$RELEASE_NOTES"

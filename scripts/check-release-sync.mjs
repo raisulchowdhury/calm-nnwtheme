@@ -13,6 +13,7 @@ const releaseNotes = readFileSync(
 	"utf8",
 );
 const workflow = readFileSync(".github/workflows/validate.yml", "utf8");
+const releaseWorkflow = readFileSync(".github/workflows/release.yml", "utf8");
 
 assert.match(info, /<key>Version<\/key>\s*<integer>12<\/integer>/, "theme version should be 12");
 assert.match(changelog, /^## 1\.4\.1 - 2026-08-23$/m, "changelog should include v1.4.1");
@@ -64,6 +65,16 @@ assert.match(
 	workflow,
 	/playwright install --with-deps webkit chromium[\s\S]*npm run test:browser/,
 	"GitHub Actions should run the WebKit and visual regression suite",
+);
+assert.match(
+	releaseWorkflow,
+	/permissions:\s*\n\s*contents: write/,
+	"the release workflow should request only the repository write permission it needs",
+);
+assert.match(
+	releaseWorkflow,
+	/scripts\/validate\.sh[\s\S]*gh release create[\s\S]*Calm\.nnwtheme\.zip/,
+	"the release workflow should validate and publish the installable package",
 );
 
 const communityFiles = [
