@@ -410,13 +410,6 @@ article {
 	margin: 0 auto;
 }
 
-@media (prefers-color-scheme: light) {
-	.articleBody img,
-	.articleBody svg {
-		mix-blend-mode: multiply;
-	}
-}
-
 .articleBody audio {
 	display: block;
 	width: 100%;
@@ -891,6 +884,10 @@ sub {
 		-webkit-hyphens: auto;
 	}
 
+	.articleBody {
+		line-height: 1.6;
+	}
+
 	@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
 		body {
 			padding: 30px 16px 56px;
@@ -899,10 +896,6 @@ sub {
 		.articleBody {
 			line-height: 1.48;
 		}
-	}
-
-	.articleBody {
-		line-height: 1.6;
 	}
 }
 

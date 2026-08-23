@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.4.1 - 2026-08-23
+
+- Fixed the WebKit cascade that reset compact iPhone articles to desktop line
+  height instead of the intended `1.48` rhythm.
+- Removed global light-mode image blending so illustrations, screenshots,
+  transparency, and authored colors render as supplied.
+- Throttled scroll-driven map updates with `requestAnimationFrame` and cached
+  target offsets between layout changes.
+- Recalculated map geometry after viewport changes, media loads, and observed
+  article-height changes.
+- Marked the active destination with `aria-current="location"` and preserved
+  clean listener, observer, and animation-frame teardown across Split View.
+- Made heading maps hierarchy-aware, removed duplicate and utility headings,
+  capped body markers at eight, and hid the map below two viewport heights.
+- Added WebKit browser coverage for compact typography, article length,
+  heading hierarchy, media growth, Split View, accessibility, and canonical
+  screenshot comparisons.
+- Bumped the internal theme version to `12`.
+
 ## 1.4.0 - 2026-07-24
 
 - Strengthened the responsive article-title hierarchy on rail-capable layouts

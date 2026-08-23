@@ -2,3 +2,5 @@
 *.nnwtheme.zip
 !Calm.nnwtheme.zip
 .superpowers/
+node_modules/
+test-results/

@@ -41,3 +41,30 @@ jobs:
           else
             git diff --check HEAD^ HEAD
           fi
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install browser test dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps webkit chromium
+
+      - name: Run WebKit regression suite
+        run: npm run test:browser -- --update-snapshots
+
+      - name: Upload canonical browser snapshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: calm-browser-snapshots
+          path: tests/theme.spec.mjs-snapshots/
