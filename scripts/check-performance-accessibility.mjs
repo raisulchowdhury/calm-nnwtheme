@@ -36,6 +36,16 @@ for (const path of ["Calm.nnwtheme/template.html", "preview/index.html"]) {
 	);
 	assert.match(
 		script,
+		/new window\.ResizeObserver\(scheduleShortArticleCheck\)/,
+		`${path} should keep watching initially short articles for late content growth`,
+	);
+	assert.match(
+		script,
+		/tocCleanup = initToc\(\) \|\| null/,
+		`${path} should rebuild the map after a short article becomes long`,
+	);
+	assert.match(
+		script,
 		/MAX_HEADING_MARKERS = 8/,
 		`${path} should cap body-heading markers`,
 	);

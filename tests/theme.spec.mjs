@@ -8,7 +8,7 @@ const articleTitle = "A Field Guide to Quiet Reading";
 const paragraph =
 	"A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.";
 
-function fixtureBody({ headings = [], paragraphCount = 24, image = false } = {}) {
+function fixtureBody({ headings = [], paragraphCount = 24, image = false, lateMedia = false } = {}) {
 	const sections = headings
 		.map(
 			({ level, text }) =>
@@ -19,7 +19,10 @@ function fixtureBody({ headings = [], paragraphCount = 24, image = false } = {})
 	const fixtureImage = image
 		? '<img id="fixture-image" alt="Warm abstract blocks" width="480" height="240" src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22480%22 height=%22240%22%3E%3Crect width=%22480%22 height=%22240%22 fill=%22%23f1b35c%22/%3E%3Ccircle cx=%22325%22 cy=%22120%22 r=%2280%22 fill=%22%236e70b8%22/%3E%3C/svg%3E">'
 		: "";
-	return `${fixtureImage}${sections}${paragraphs}`;
+	const lateMediaFixtures = lateMedia
+		? '<img id="late-image" alt="Late-loading abstract illustration"><video id="fixture-video" title="Silent reading demo" muted></video><audio id="fixture-audio" aria-label="Article audio"></audio>'
+		: "";
+	return `${fixtureImage}${lateMediaFixtures}${sections}${paragraphs}`;
 }
 
 async function loadFixture(page, options = {}) {
@@ -111,6 +114,31 @@ test("@webkit rebuilds across Split View and refreshes targets after content gro
 	await page.waitForTimeout(100);
 	await page.locator(".readerToc button").last().click();
 	await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(oldScrollMax + 500);
+});
+
+test("@webkit builds the map when late media turns a short article long", async ({ page }) => {
+	await page.setViewportSize({ width: 1180, height: 800 });
+	await loadFixture(page, { paragraphCount: 1, lateMedia: true });
+	await expect(page.locator(".readerToc")).toBeHidden();
+
+	await page.locator("#late-image").evaluate(async (image) => {
+		image.src =
+			"data:image/svg+xml," +
+			encodeURIComponent(
+				'<svg xmlns="http://www.w3.org/2000/svg" width="640" height="1800"><rect width="640" height="1800" fill="#f1b35c"/></svg>',
+			);
+		await image.decode();
+	});
+	await page.locator("#fixture-video").evaluate((video) => {
+		video.style.height = "240px";
+		video.dispatchEvent(new Event("loadedmetadata"));
+	});
+	await page.locator("#fixture-audio").evaluate((audio) => {
+		audio.dispatchEvent(new Event("loadedmetadata"));
+	});
+
+	await expect(page.locator(".readerToc")).toBeVisible();
+	await expect(page.locator(".readerToc button")).toHaveCount(5);
 });
 
 test("@visual matches the canonical compact reading surface", async ({ page }) => {

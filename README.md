@@ -109,9 +109,10 @@ and installer URL in its
 Calm follows NetNewsWire's documented theme bundle format and uses only the
 HTML, CSS, and JavaScript supported by that reader surface. Automated checks
 cover the package on macOS runners and exercise typography, adaptive
-navigation, media reflow, Split View, accessibility, and canonical screenshots
-in WebKit. The preview matrix also covers desktop, iPad, iPhone, light, dark,
-precise-pointer, and coarse-pointer layouts.
+navigation, real media reflow, Split View, and accessibility in WebKit. A
+canonical Chromium screenshot catches visual drift, and the preview matrix also
+covers desktop, iPad, iPhone, light, dark, precise-pointer, and coarse-pointer
+layouts.
 
 NetNewsWire and WebKit updates can still affect rendering. When reporting an
 issue, include your device, OS version, NetNewsWire version, Calm version,
@@ -138,7 +139,7 @@ The theme includes:
 - a rail-free compact layout for phone, Split View, and short coarse landscape
 - textual source identity and conditional reading time in the opening metadata
 - no persistent statistics footer or visible word count
-- image blending in light mode
+- undistorted authored image colors in light and dark appearances
 - restrained code, table, blockquote, and figure styling
 
 ## Development

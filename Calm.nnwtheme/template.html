@@ -223,7 +223,46 @@ body: The body of the article.
 
 		if (root.scrollHeight < window.innerHeight * 2) {
 			toc.hidden = true;
-			return;
+			var shortLayoutFrame = null;
+			var shortResizeObserver = null;
+
+			function rebuildIfArticleGrows() {
+				shortLayoutFrame = null;
+				if (root.scrollHeight < window.innerHeight * 2) {
+					return;
+				}
+				var cleanup = tocCleanup;
+				tocCleanup = null;
+				if (cleanup) {
+					cleanup();
+				}
+				tocCleanup = initToc() || null;
+			}
+
+			function scheduleShortArticleCheck() {
+				if (shortLayoutFrame === null) {
+					shortLayoutFrame = window.requestAnimationFrame(rebuildIfArticleGrows);
+				}
+			}
+
+			window.addEventListener("resize", scheduleShortArticleCheck);
+			body.addEventListener("load", scheduleShortArticleCheck, true);
+			if ("ResizeObserver" in window) {
+				shortResizeObserver = new window.ResizeObserver(scheduleShortArticleCheck);
+				shortResizeObserver.observe(body);
+			}
+
+			return function cleanupShortArticleWatch() {
+				window.removeEventListener("resize", scheduleShortArticleCheck);
+				body.removeEventListener("load", scheduleShortArticleCheck, true);
+				if (shortResizeObserver) {
+					shortResizeObserver.disconnect();
+				}
+				if (shortLayoutFrame !== null) {
+					window.cancelAnimationFrame(shortLayoutFrame);
+				}
+				resetToc();
+			};
 		}
 		toc.classList.toggle("is-heading-based", useHeadingTargets);
 

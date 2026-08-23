@@ -13,11 +13,12 @@
   article-height changes.
 - Marked the active destination with `aria-current="location"` and preserved
   clean listener, observer, and animation-frame teardown across Split View.
-- Made heading maps hierarchy-aware, removed duplicate and utility headings,
-  capped body markers at eight, and hid the map below two viewport heights.
+- Hardened the existing heading-map selection around coherent hierarchy,
+  removed duplicate and utility headings, capped body markers at eight, and
+  hid the map below two viewport heights while watching for late content growth.
 - Added WebKit browser coverage for compact typography, article length,
-  heading hierarchy, media growth, Split View, accessibility, and canonical
-  screenshot comparisons.
+  heading hierarchy, image/video/audio fixtures and media growth, Split View,
+  and accessibility, plus canonical Chromium screenshot comparisons.
 - Bumped the internal theme version to `12`.
 
 ## 1.4.0 - 2026-07-24
