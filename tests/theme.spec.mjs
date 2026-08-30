@@ -60,6 +60,17 @@ test("@webkit keeps compact WebKit typography readable and images undistorted", 
 	await expect(page.locator("#fixture-image")).toHaveCSS("mix-blend-mode", "normal");
 });
 
+test("@webkit uses ordinary paragraph wrapping in compact layouts", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, { paragraphCount: 1 });
+
+	const textWrap = await page
+		.locator(".articleBody p")
+		.first()
+		.evaluate((node) => getComputedStyle(node).getPropertyValue("text-wrap"));
+	expect(textWrap).toBe("wrap");
+});
+
 test("@webkit adapts markers to article length and heading hierarchy", async ({ page }) => {
 	await page.setViewportSize({ width: 1180, height: 800 });
 	await loadFixture(page, { paragraphCount: 1 });
