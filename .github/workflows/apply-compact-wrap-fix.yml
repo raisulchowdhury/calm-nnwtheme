@@ -1,0 +1,63 @@
+name: Apply compact wrap fix
+
+on:
+  push:
+    branches:
+      - fix/compact-text-wrap
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: macos-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7
+        with:
+          ref: fix/compact-text-wrap
+          fetch-depth: 0
+
+      - name: Apply fix and rebuild package
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("Calm.nnwtheme/stylesheet.css")
+          text = path.read_text()
+          marker = """\t.articleBody {
+          \t\tfont-size: calc(var(--reader-font-size, var(--reader-base-size)) + 1px);
+          \t\tmax-width: 100%;
+          \t\tline-height: 1.48;
+          \t}
+
+          \t.articleBody details {"""
+          replacement = """\t.articleBody {
+          \t\tfont-size: calc(var(--reader-font-size, var(--reader-base-size)) + 1px);
+          \t\tmax-width: 100%;
+          \t\tline-height: 1.48;
+          \t}
+
+          \t.articleBody p,
+          \t.articleBody li {
+          \t\ttext-wrap: wrap;
+          \t}
+
+          \t.articleBody details {"""
+          if replacement not in text:
+              if marker not in text:
+                  raise SystemExit("compact article marker not found")
+              path.write_text(text.replace(marker, replacement, 1))
+          PY
+
+          ditto -c -k --norsrc --keepParent Calm.nnwtheme Calm.nnwtheme.zip
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Calm.nnwtheme/stylesheet.css Calm.nnwtheme.zip
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "fix: restore compact paragraph wrapping"
+          git push origin HEAD:fix/compact-text-wrap
