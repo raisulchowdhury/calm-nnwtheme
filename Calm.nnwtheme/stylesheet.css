@@ -847,6 +847,11 @@ sub {
 		line-height: 1.48;
 	}
 
+	.articleBody p,
+	.articleBody li {
+		text-wrap: wrap;
+	}
+
 	.articleBody details {
 		padding-top: 0;
 		padding-bottom: 0;
