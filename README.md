@@ -29,6 +29,8 @@ pieces get five quiet depth markers. Tap a marker or scrub the rail to move
 through the article. On iPhone, Split View, and short landscape layouts, the map
 disappears entirely.
 
+<img src="assets/calm-map.gif" width="720" alt="Scrubbing Calm's reading map in NetNewsWire on a Mac: the article jumps from section to section as the pointer moves along the small markers beside the text">
+
 The reading surface stays deliberately familiar: a narrow serif column, strong
 editorial headings, restrained links, soft source metadata, and system light
 and dark appearances.
