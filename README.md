@@ -16,7 +16,7 @@ Calm is a NetNewsWire theme for long articles you want to enjoy, not rush. Every
   </picture>
 </a>
 
-Free for Mac, iPhone and iPad. One of the most downloaded themes on the
+Free for Mac, iPhone and iPad. 1,800+ downloads, and one of the most downloaded themes on the
 [NetNewsWire theme marketplace](https://dave-atx.github.io/nnw-theme-marketplace/).
 
 [Latest release](https://github.com/raisulchowdhury/calm-nnwtheme/releases/latest) ·
