@@ -7,6 +7,20 @@
 
 **Navigate long articles without distraction.**
 
+<a href="https://raisul.xyz/calm#get">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/install-button-dark.svg">
+    <img src="assets/install-button-light.svg" alt="Install in NetNewsWire" width="300" height="56">
+  </picture>
+</a>
+
+Free for Mac, iPhone and iPad. One of the most downloaded themes on the
+[NetNewsWire theme marketplace](https://dave-atx.github.io/nnw-theme-marketplace/).
+
+[Latest release](https://github.com/raisulchowdhury/calm-nnwtheme/releases/latest) ·
+[Report a theme issue](https://github.com/raisulchowdhury/calm-nnwtheme/issues/new?template=theme_issue.yml) ·
+[Contribute](CONTRIBUTING.md)
+
 Calm is a NetNewsWire theme that adapts its reading map to the article. On wider
 Mac and iPad layouts, structured pieces become a heading map while simpler
 pieces get five quiet depth markers. Tap a marker or scrub the rail to move
@@ -16,12 +30,6 @@ disappears entirely.
 The reading surface stays deliberately familiar: a narrow serif column, strong
 editorial headings, restrained links, soft source metadata, and system light
 and dark appearances.
-
-[Install Calm](https://raisul.xyz/calm) ·
-[Live demo](https://raisul.xyz/projects/calm#calm-preview) ·
-[Latest release](https://github.com/raisulchowdhury/calm-nnwtheme/releases/latest) ·
-[Report a theme issue](https://github.com/raisulchowdhury/calm-nnwtheme/issues/new?template=theme_issue.yml) ·
-[Contribute](CONTRIBUTING.md)
 
 ## What makes Calm different
 
@@ -63,12 +71,20 @@ by Yew Jin Lim.
 
 ## Install
 
-The dedicated [Calm installation page](https://raisul.xyz/calm) is the easiest
-place to install the theme, try the live reading-map demo, or recover if the
-one-click installer does not open. GitHub remains the technical home for source,
-release notes, and issue reporting.
+1. Get [NetNewsWire](https://netnewswire.com/) if you don't have it. It's free.
+2. On that device, open [raisul.xyz/calm](https://raisul.xyz/calm#get) and tap
+   **Install in NetNewsWire**, then confirm. Updating? Choose Overwrite.
+3. Choose Calm as your theme. On a Mac, it's in Settings, Appearance, Article
+   Theme. On iPhone and iPad, it's in Settings, Articles, Theme.
+
+GitHub can't link straight into NetNewsWire, so the button above opens the
+install page on raisul.xyz.
+
+<details>
+<summary>Install didn't work? Manual install</summary>
 
 ### iPhone and iPad
+
 
 GitHub removes non-HTTPS links from rendered Markdown. Copy the full installer
 URL below, paste it into Safari's address bar, and confirm that you want to open
@@ -103,6 +119,8 @@ The repository also keeps the current package at
 [Calm.nnwtheme.zip](Calm.nnwtheme.zip). NetNewsWire documents the bundle format
 and installer URL in its
 [theme technote](https://github.com/Ranchero-Software/NetNewsWire/blob/main/Technotes/Themes.md).
+
+</details>
 
 ## Compatibility
 
