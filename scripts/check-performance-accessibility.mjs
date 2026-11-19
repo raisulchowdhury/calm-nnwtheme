@@ -21,7 +21,7 @@ for (const path of ["Calm.nnwtheme/template.html", "preview/index.html"]) {
 	);
 	assert.match(
 		script,
-		/body\.addEventListener\("load", scheduleCallback, true\)/,
+		/layoutRoot\.addEventListener\("load", scheduleCallback, true\)/,
 		`${path} should refresh offsets when embedded media loads`,
 	);
 	assert.match(

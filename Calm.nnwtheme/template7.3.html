@@ -1,0 +1,705 @@
+<!-- Template Variables
+
+title: The title of the article
+preferred_link: The best link to associate with the article for linking out.
+
+external_link_label: A localized label for the external link.
+external_link_stripped: The external link minus the scheme. Useful for displaying the external link.
+external_link: The external link of the article if there is one provided by the author.
+
+feed_link_title: The name of the feed associated with this article.
+feed_link: The URL of the feed associated with this article.
+byline: HTML that combines all the authors and links to them if available.
+avatar_src: The image source URL for the feed icon / avatar.
+dateline_style: Either "articleDateline" or "articleDatelineTitle" depending on if the title was populated or not.
+
+datetime_long: Long version of a combined publish date and time.
+datetime_medium: Medium length version of a combined publish date and time.
+datetime_short: Short version of a combined publish date and time.
+
+date_long: Long version of the publish date.
+date_medium: Medium version of the publish date.
+date_short: Medium version of the publish date.
+
+time_long: Long version of the publish time.
+time_medium: Medium version of the publish time.
+time_short: Medium version of the publish time.
+
+text_size_class: The size class that the user has selected in Preferences for article text.
+body: The body of the article.
+
+NetNewsWire 7.3 and later use this file instead of template.html. It adds the
+article's primary media above the body and its other enclosures below it.
+Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
+
+-->
+
+<nav class="readerToc" aria-label="Article sections" hidden>
+	<div class="readerTocTitle">Sections</div>
+	<div class="readerTocContext" aria-hidden="true"></div>
+	<ol id="readerTocList"></ol>
+</nav>
+
+<header class="articleHeader" id="readerTop">
+	<div class="articleTitle"><h1><a href="[[preferred_link]]">[[title]]</a></h1></div>
+	<div class="articleMeta">
+		<span class="byline">[[byline]]</span>
+		<span class="metaDate"><a href="[[preferred_link]]">[[date_medium]]</a></span>
+		<span class="feedName"><a href="[[feed_link]]">[[feed_link_title]]</a></span>
+		<span class="readingTime" id="readingTime" hidden></span>
+	</div>
+	<div class="externalLink">[[external_link_label]] <a href="[[external_link]]">[[external_link_stripped]]</a></div>
+</header>
+
+<article>
+	[[primary_media]]
+	<div id="bodyContainer" class="articleBody [[text_size_class]]">[[body]]</div>
+	[[enclosures]]
+</article>
+
+<script>
+(function () {
+	var body = document.getElementById("bodyContainer");
+	var toc = document.querySelector(".readerToc");
+	var tocList = document.getElementById("readerTocList");
+	var tocContext = toc ? toc.querySelector(".readerTocContext") : null;
+	var readingTime = document.getElementById("readingTime");
+	var articleMeta = document.querySelector(".articleMeta");
+	var metadataItems = articleMeta ? articleMeta.children : [];
+	var title = document.querySelector(".articleTitle h1");
+	var header = document.getElementById("readerTop");
+	var externalLink = document.querySelector(".externalLink");
+	var externalLinkAnchor = externalLink ? externalLink.querySelector("a") : null;
+	var compactRailQuery = window.matchMedia ?
+		window.matchMedia("(max-width: 820px), (pointer: coarse) and (max-height: 500px)") :
+		null;
+	var tocCleanup = null;
+
+	function shouldDisableRail() {
+		return compactRailQuery && compactRailQuery.matches;
+	}
+
+	function isPlaceholderValue(value) {
+		return /^\s*\[\[[^\]]+\]\]\s*$/.test(value || "");
+	}
+
+	function hideEmptyExternalLink() {
+		if (!externalLink) {
+			return;
+		}
+
+		var href = externalLinkAnchor ? externalLinkAnchor.getAttribute("href") || "" : "";
+		var label = externalLink.textContent.trim();
+		var linkText = externalLinkAnchor ? externalLinkAnchor.textContent.trim() : "";
+		if (!externalLinkAnchor || !href || !linkText || isPlaceholderValue(href) || isPlaceholderValue(linkText) || isPlaceholderValue(label)) {
+			externalLink.hidden = true;
+		}
+	}
+
+	function normalizeMetadata() {
+		Array.prototype.forEach.call(metadataItems, function (metadataItem) {
+			if (metadataItem === readingTime) {
+				return;
+			}
+
+			var text = (metadataItem.textContent || "").trim();
+			metadataItem.hidden = !text || isPlaceholderValue(text);
+		});
+	}
+
+	function updateMetadataVisibility() {
+		if (!articleMeta) {
+			return;
+		}
+
+		var hasVisibleMetadata = Array.prototype.some.call(metadataItems, function (metadataItem) {
+			return !metadataItem.hidden;
+		});
+		articleMeta.hidden = !hasVisibleMetadata;
+	}
+
+	function hideReadingTime() {
+		if (!readingTime) {
+			return;
+		}
+		readingTime.hidden = true;
+		readingTime.textContent = "";
+		readingTime.removeAttribute("aria-label");
+	}
+
+	function updateReadingTime() {
+		if (!body || !readingTime) {
+			hideReadingTime();
+			return;
+		}
+
+		var text = (body.innerText || body.textContent || "").trim();
+		var words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+		var minutes = Math.ceil(words / 225);
+		if (minutes < 4) {
+			hideReadingTime();
+			return;
+		}
+
+		readingTime.textContent = minutes + " min";
+		readingTime.setAttribute("aria-label", "Estimated reading time: " + minutes + " minutes");
+		readingTime.hidden = false;
+	}
+
+	function initToc() {
+		if (!body || !toc || !tocList || shouldDisableRail()) {
+			if (toc) {
+				toc.hidden = true;
+			}
+			return;
+		}
+
+		var titleText = title ? title.textContent.trim() : "";
+		var markerCount = 5;
+		var root = document.documentElement;
+		var markerLabels = ["Top", "25%", "50%", "75%", "Bottom"];
+		var reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+		var hasPointerEvents = "PointerEvent" in window;
+		var isScrubbing = false;
+		var scrubIndex = -1;
+		var activePointerId = null;
+		var activeTouchId = null;
+		var markerCenters = [];
+		var cachedTargetTops = [];
+		var scrollFrame = null;
+		var MAX_HEADING_MARKERS = 8;
+		var MIN_HEADING_MARKERS = 5;
+		// Scroll positions round to whole or device pixels, so a heading scrolled
+		// to the marker line can sit a fraction below it. Count it as reached.
+		var ACTIVE_SECTION_TOLERANCE = 2;
+		var noisyHeadingPattern = /^(advertisement|sponsored|related(?: posts|stories)?|share(?: this)?|comments?|more(?: stories)?|newsletter|subscribe)$/i;
+
+		function getScrollMax() {
+			return Math.max(0, root.scrollHeight - window.innerHeight);
+		}
+
+		function getMarkerOffset() {
+			return Math.max(72, Math.min(128, window.innerHeight * 0.12));
+		}
+
+		function observeLayoutChanges(callback) {
+			var frame = null;
+			var observer = null;
+
+			function runCallback() {
+				frame = null;
+				callback();
+			}
+
+			function scheduleCallback() {
+				if (frame === null) {
+					frame = window.requestAnimationFrame(runCallback);
+				}
+			}
+
+			// NetNewsWire 7.3 places media beside the body inside <article>, so
+			// watch the whole article for late-loading images and size changes.
+			var layoutRoot = (body.closest && body.closest("article")) || body;
+			window.addEventListener("resize", scheduleCallback);
+			layoutRoot.addEventListener("load", scheduleCallback, true);
+			if ("ResizeObserver" in window) {
+				observer = new window.ResizeObserver(scheduleCallback);
+				observer.observe(layoutRoot);
+			}
+
+			return function stopObservingLayout() {
+				window.removeEventListener("resize", scheduleCallback);
+				layoutRoot.removeEventListener("load", scheduleCallback, true);
+				if (observer) {
+					observer.disconnect();
+				}
+				if (frame !== null) {
+					window.cancelAnimationFrame(frame);
+				}
+			};
+		}
+
+		function normalizeHeadingText(text) {
+			return text.replace(/\s+/g, " ").trim().toLowerCase();
+		}
+
+		function capHeadingMarkers(candidates) {
+			if (candidates.length <= MAX_HEADING_MARKERS) {
+				return candidates;
+			}
+			var sampled = [];
+			for (var index = 0; index < MAX_HEADING_MARKERS; index++) {
+				var sourceIndex = Math.round(index * (candidates.length - 1) / (MAX_HEADING_MARKERS - 1));
+				sampled.push(candidates[sourceIndex]);
+			}
+			return sampled;
+		}
+
+		var rawHeadings = Array.prototype.slice.call(body.querySelectorAll("h1, h2, h3, h4, h5, h6"))
+			.filter(function (heading) {
+				return heading.textContent.trim().length > 0;
+			});
+		var titleKey = normalizeHeadingText(titleText);
+		var seenHeadingKeys = {};
+		var sectionHeadings = rawHeadings.filter(function (heading) {
+			var text = heading.textContent.replace(/\s+/g, " ").trim();
+			var key = normalizeHeadingText(text);
+			if (!key || (titleKey && key === titleKey) || text.length > 100 || noisyHeadingPattern.test(text) || seenHeadingKeys[key]) {
+				return false;
+			}
+			seenHeadingKeys[key] = true;
+			return true;
+		});
+		var primaryLevel = sectionHeadings.reduce(function (level, heading) {
+			return Math.min(level, Number(heading.tagName.slice(1)));
+		}, 6);
+		var headingCandidates = sectionHeadings.filter(function (heading) {
+			var level = Number(heading.tagName.slice(1));
+			return level === primaryLevel;
+		});
+		if (headingCandidates.length < MIN_HEADING_MARKERS) {
+			headingCandidates = sectionHeadings.filter(function (heading) {
+				return Number(heading.tagName.slice(1)) <= primaryLevel + 1;
+			});
+		}
+		var headings = capHeadingMarkers(headingCandidates);
+		var useHeadingTargets = headings.length >= MIN_HEADING_MARKERS;
+
+		if (root.scrollHeight < window.innerHeight * 2) {
+			toc.hidden = true;
+
+			function rebuildIfArticleGrows() {
+				if (root.scrollHeight < window.innerHeight * 2) {
+					return;
+				}
+				var cleanup = tocCleanup;
+				tocCleanup = null;
+				if (cleanup) {
+					cleanup();
+				}
+				tocCleanup = initToc() || null;
+			}
+
+			var stopWatchingShortArticle = observeLayoutChanges(rebuildIfArticleGrows);
+
+			return function cleanupShortArticleWatch() {
+				stopWatchingShortArticle();
+				resetToc();
+			};
+		}
+		toc.classList.toggle("is-heading-based", useHeadingTargets);
+
+		if (titleText) {
+			markerLabels[0] = titleText;
+		}
+
+		function addTocItem(text, className) {
+			var item = document.createElement("li");
+			var control = document.createElement("button");
+			item.className = className;
+			control.type = "button";
+			control.setAttribute("aria-label", text);
+			control.setAttribute("data-label", text);
+			control.textContent = text;
+			item.appendChild(control);
+			tocList.appendChild(item);
+		}
+
+		tocList.textContent = "";
+		var sectionTargets = [];
+		if (useHeadingTargets) {
+			if (titleText && header) {
+				addTocItem(titleText, "article");
+				sectionTargets.push({ element: header, top: 0 });
+			}
+			headings.forEach(function (heading) {
+				addTocItem(heading.textContent.trim(), heading.tagName.toLowerCase());
+				sectionTargets.push({ element: heading });
+			});
+		} else {
+			for (var i = 0; i < markerCount; i++) {
+				var ratio = i / (markerCount - 1);
+				var label = markerLabels[i] || ("Section " + (i + 1));
+				var cssClass = i === 0 ? "article" : "section";
+				addTocItem(label, cssClass);
+				sectionTargets.push({ ratio: ratio });
+			}
+		}
+
+		if (tocList.children.length < 1) {
+			toc.hidden = true;
+			return;
+		}
+		toc.hidden = false;
+
+		var controls = Array.prototype.slice.call(tocList.querySelectorAll("button"));
+
+		function setActiveSection(activeIndex) {
+			controls.forEach(function (control, index) {
+				var item = control.parentElement;
+				var isActive = index === activeIndex;
+				control.classList.toggle("active", isActive);
+				if (isActive) {
+					control.setAttribute("aria-current", "location");
+				} else {
+					control.removeAttribute("aria-current");
+				}
+				if (!item) {
+					return;
+				}
+				item.classList.toggle("is-before", activeIndex > -1 && index < activeIndex);
+				item.classList.toggle("is-after", activeIndex > -1 && index > activeIndex);
+			});
+
+			var activeControl = activeIndex > -1 ? controls[activeIndex] : null;
+			if (tocContext && useHeadingTargets && activeControl) {
+				var activeRect = activeControl.getBoundingClientRect();
+				var tocRect = toc.getBoundingClientRect();
+				tocContext.textContent = activeControl.getAttribute("data-label") || "";
+				tocContext.style.top = (activeRect.top - tocRect.top + activeRect.height / 2) + "px";
+			} else if (tocContext) {
+				tocContext.textContent = "";
+				tocContext.style.top = "";
+			}
+		}
+
+		if (controls[0]) {
+			setActiveSection(0);
+		}
+
+		function getTargetTop(section) {
+			var scrollTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
+			if (section.element) {
+				return typeof section.top === "number" ? section.top : section.element.getBoundingClientRect().top + scrollTop;
+			}
+			return Math.round(getScrollMax() * section.ratio);
+		}
+
+		function cacheTargetOffsets() {
+			cachedTargetTops = sectionTargets.map(function (section) {
+				return getTargetTop(section);
+			});
+		}
+
+		function cacheMarkerCenters() {
+			markerCenters = controls.map(function (control) {
+				var rect = control.getBoundingClientRect();
+				return rect.top + rect.height / 2;
+			});
+		}
+
+		function getNearestMarkerIndexFromY(clientY) {
+			if (markerCenters.length < 1) {
+				return -1;
+			}
+
+			var activeIndex = 0;
+			var bestDistance = Infinity;
+			markerCenters.forEach(function (centerY, index) {
+				var distance = Math.abs(centerY - clientY);
+				if (distance < bestDistance) {
+					bestDistance = distance;
+					activeIndex = index;
+				}
+			});
+			return activeIndex;
+		}
+
+		function setScrubTargetFromY(clientY) {
+			var nextIndex = getNearestMarkerIndexFromY(clientY);
+			if (nextIndex !== scrubIndex) {
+				scrubIndex = nextIndex;
+				setActiveSection(scrubIndex);
+			}
+		}
+
+		function beginScrub(pointerId, clientY) {
+			isScrubbing = true;
+			activePointerId = pointerId;
+			cacheMarkerCenters();
+			setScrubTargetFromY(clientY);
+			toc.classList.add("isScrubbing");
+		}
+
+		function moveScrub(clientY) {
+			if (!isScrubbing) {
+				return;
+			}
+			setScrubTargetFromY(clientY);
+		}
+
+		function endScrub() {
+			if (!isScrubbing) {
+				return;
+			}
+			isScrubbing = false;
+			toc.classList.remove("isScrubbing");
+			activePointerId = null;
+			activeTouchId = null;
+			var indexToScroll = scrubIndex;
+			scrubIndex = -1;
+			if (indexToScroll > -1) {
+				scrollToSection(sectionTargets[indexToScroll], indexToScroll);
+			}
+			updateActiveFromScroll();
+		}
+
+		function getBehavior() {
+			if (reducedMotionQuery && reducedMotionQuery.matches) {
+				return "auto";
+			}
+			return "smooth";
+		}
+
+		function updateActiveFromScroll() {
+			if (sectionTargets.length < 1) {
+				return;
+			}
+
+			var markerOffset = getMarkerOffset();
+			var scrollTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
+			var scrollLimit = getScrollMax();
+			if (scrollLimit - scrollTop < markerOffset) {
+				setActiveSection(sectionTargets.length - 1);
+				return;
+			}
+
+			var activeIndex = 0;
+			cachedTargetTops.forEach(function (targetTop, index) {
+				if (scrollTop + markerOffset + ACTIVE_SECTION_TOLERANCE >= targetTop) {
+					activeIndex = index;
+				}
+			});
+			setActiveSection(activeIndex);
+		}
+
+		function scrollToSection(section, sectionIndex) {
+			if (!section) {
+				return;
+			}
+			var markerOffset = getMarkerOffset();
+			var targetTop = cachedTargetTops[sectionIndex];
+			if (typeof targetTop !== "number") {
+				targetTop = getTargetTop(section);
+			}
+			var nextTop = targetTop <= 0 ? 0 : targetTop - markerOffset;
+			var scrollMax = getScrollMax();
+			nextTop = Math.max(0, Math.min(scrollMax, nextTop));
+			try {
+				window.scrollTo({
+					top: nextTop,
+					left: 0,
+					behavior: getBehavior()
+				});
+			} catch (error) {
+				window.scrollTo(0, nextTop);
+			}
+		}
+
+		function getTouchPoint(event, touchId) {
+			var points = event.touches || event.changedTouches;
+			if (!points || points.length < 1) {
+				return null;
+			}
+			for (var i = 0; i < points.length; i++) {
+				var touch = points[i];
+				if (touch.identifier === touchId) {
+					return touch;
+				}
+			}
+			return points[0];
+		}
+
+		function onPointerDown(event) {
+			if (event.button && event.button !== 0) {
+				return;
+			}
+			if (!event.isPrimary) {
+				return;
+			}
+			event.preventDefault();
+			if (toc.setPointerCapture) {
+				try {
+					toc.setPointerCapture(event.pointerId);
+				} catch (error) {
+					// Without capture, the pointerleave listener still ends the scrub.
+				}
+			}
+			beginScrub(event.pointerId, event.clientY);
+		}
+
+		function onPointerMove(event) {
+			if (!isScrubbing || event.pointerId !== activePointerId) {
+				return;
+			}
+			event.preventDefault();
+			moveScrub(event.clientY);
+		}
+
+		function onPointerEnd(event) {
+			if (!isScrubbing) {
+				return;
+			}
+			if (activePointerId !== null && event.pointerId !== activePointerId) {
+				return;
+			}
+			event.preventDefault();
+			endScrub();
+		}
+
+		function onTouchStart(event) {
+			if (isScrubbing || !event.touches || event.touches.length < 1) {
+				return;
+			}
+			var touch = event.touches[0];
+			activeTouchId = touch.identifier;
+			event.preventDefault();
+			beginScrub(null, touch.clientY);
+		}
+
+		function onTouchMove(event) {
+			if (!isScrubbing || !event.touches || event.touches.length < 1) {
+				return;
+			}
+			var touch = getTouchPoint(event, activeTouchId);
+			if (!touch) {
+				return;
+			}
+			event.preventDefault();
+			moveScrub(touch.clientY);
+		}
+
+		function onTouchEnd(event) {
+			if (!isScrubbing) {
+				return;
+			}
+			if (!event.changedTouches || event.changedTouches.length < 1) {
+				return;
+			}
+			var touch = getTouchPoint(event, activeTouchId);
+			if (!touch) {
+				return;
+			}
+			event.preventDefault();
+			endScrub();
+		}
+
+		if (hasPointerEvents) {
+			toc.addEventListener("pointerdown", onPointerDown, { passive: false });
+			toc.addEventListener("pointermove", onPointerMove, { passive: false });
+			toc.addEventListener("pointerup", onPointerEnd, { passive: false });
+			toc.addEventListener("pointercancel", onPointerEnd, { passive: false });
+			toc.addEventListener("pointerleave", onPointerEnd, { passive: false });
+		} else {
+			toc.addEventListener("touchstart", onTouchStart, { passive: false });
+			toc.addEventListener("touchmove", onTouchMove, { passive: false });
+			toc.addEventListener("touchend", onTouchEnd, { passive: false });
+			toc.addEventListener("touchcancel", onTouchEnd, { passive: false });
+		}
+
+		var controlClickHandlers = controls.map(function (control, index) {
+			var clickHandler = function (event) {
+				event.preventDefault();
+				scrollToSection(sectionTargets[index], index);
+				setActiveSection(index);
+			};
+			control.addEventListener("click", clickHandler);
+			return clickHandler;
+		});
+
+		function refreshLayout() {
+			cacheTargetOffsets();
+			cacheMarkerCenters();
+			toc.hidden = root.scrollHeight < window.innerHeight * 2;
+			updateActiveFromScroll();
+		}
+
+		function runActiveUpdate() {
+			scrollFrame = null;
+			updateActiveFromScroll();
+		}
+
+		function requestActiveUpdate() {
+			if (scrollFrame === null) {
+				scrollFrame = window.requestAnimationFrame(runActiveUpdate);
+			}
+		}
+
+		refreshLayout();
+		window.addEventListener("scroll", requestActiveUpdate, { passive: true });
+		var stopObservingLayout = observeLayoutChanges(refreshLayout);
+
+		return function cleanupToc() {
+			if (hasPointerEvents) {
+				toc.removeEventListener("pointerdown", onPointerDown);
+				toc.removeEventListener("pointermove", onPointerMove);
+				toc.removeEventListener("pointerup", onPointerEnd);
+				toc.removeEventListener("pointercancel", onPointerEnd);
+				toc.removeEventListener("pointerleave", onPointerEnd);
+			} else {
+				toc.removeEventListener("touchstart", onTouchStart);
+				toc.removeEventListener("touchmove", onTouchMove);
+				toc.removeEventListener("touchend", onTouchEnd);
+				toc.removeEventListener("touchcancel", onTouchEnd);
+			}
+			controls.forEach(function (control, index) {
+				control.removeEventListener("click", controlClickHandlers[index]);
+			});
+			window.removeEventListener("scroll", requestActiveUpdate);
+			stopObservingLayout();
+			if (scrollFrame !== null) {
+				window.cancelAnimationFrame(scrollFrame);
+			}
+			resetToc();
+		};
+	}
+
+	function resetToc() {
+		if (!toc || !tocList) {
+			return;
+		}
+		toc.hidden = true;
+		toc.classList.remove("is-heading-based");
+		toc.classList.remove("isScrubbing");
+		tocList.textContent = "";
+		if (tocContext) {
+			tocContext.textContent = "";
+			tocContext.style.top = "";
+		}
+	}
+
+	function syncTocMode() {
+		if (!body || !toc || !tocList || shouldDisableRail()) {
+			if (tocCleanup) {
+				tocCleanup();
+				tocCleanup = null;
+			} else {
+				resetToc();
+			}
+			return;
+		}
+
+		if (!tocCleanup) {
+			tocCleanup = initToc() || null;
+		}
+	}
+
+	function observeCompactRail() {
+		if (!compactRailQuery) {
+			return;
+		}
+		if (compactRailQuery.addEventListener) {
+			compactRailQuery.addEventListener("change", syncTocMode);
+		} else if (compactRailQuery.addListener) {
+			compactRailQuery.addListener(syncTocMode);
+		}
+	}
+
+	normalizeMetadata();
+	hideEmptyExternalLink();
+	updateReadingTime();
+	updateMetadataVisibility();
+	observeCompactRail();
+	syncTocMode();
+})();
+</script>

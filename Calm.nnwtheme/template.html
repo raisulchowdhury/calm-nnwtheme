@@ -163,6 +163,9 @@ body: The body of the article.
 		var scrollFrame = null;
 		var MAX_HEADING_MARKERS = 8;
 		var MIN_HEADING_MARKERS = 5;
+		// Scroll positions round to whole or device pixels, so a heading scrolled
+		// to the marker line can sit a fraction below it. Count it as reached.
+		var ACTIVE_SECTION_TOLERANCE = 2;
 		var noisyHeadingPattern = /^(advertisement|sponsored|related(?: posts|stories)?|share(?: this)?|comments?|more(?: stories)?|newsletter|subscribe)$/i;
 
 		function getScrollMax() {
@@ -188,16 +191,19 @@ body: The body of the article.
 				}
 			}
 
+			// NetNewsWire 7.3 places media beside the body inside <article>, so
+			// watch the whole article for late-loading images and size changes.
+			var layoutRoot = (body.closest && body.closest("article")) || body;
 			window.addEventListener("resize", scheduleCallback);
-			body.addEventListener("load", scheduleCallback, true);
+			layoutRoot.addEventListener("load", scheduleCallback, true);
 			if ("ResizeObserver" in window) {
 				observer = new window.ResizeObserver(scheduleCallback);
-				observer.observe(body);
+				observer.observe(layoutRoot);
 			}
 
 			return function stopObservingLayout() {
 				window.removeEventListener("resize", scheduleCallback);
-				body.removeEventListener("load", scheduleCallback, true);
+				layoutRoot.removeEventListener("load", scheduleCallback, true);
 				if (observer) {
 					observer.disconnect();
 				}
@@ -454,7 +460,7 @@ body: The body of the article.
 
 			var activeIndex = 0;
 			cachedTargetTops.forEach(function (targetTop, index) {
-				if (scrollTop + markerOffset >= targetTop) {
+				if (scrollTop + markerOffset + ACTIVE_SECTION_TOLERANCE >= targetTop) {
 					activeIndex = index;
 				}
 			});
