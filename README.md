@@ -10,7 +10,7 @@
 <a href="https://raisul.xyz/calm#get">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/install-button-dark.svg">
-    <img src="assets/install-button-light.svg" alt="Install in NetNewsWire" width="300" height="56">
+    <img src="assets/install-button-light.svg" alt="Install in NetNewsWire" width="196" height="32">
   </picture>
 </a>
 
