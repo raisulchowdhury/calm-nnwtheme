@@ -5,7 +5,7 @@
   <img src="assets/social-preview.jpg" alt="Calm for NetNewsWire with undistorted light, dark, and iPhone article screenshots and the line Navigate long articles without distraction">
 </picture>
 
-**Navigate long articles without distraction.**
+**Calm is a NetNewsWire theme for long articles you want to enjoy, not rush. Everything you need, nothing you don't.**
 
 <a href="https://raisul.xyz/calm#get">
   <picture>
