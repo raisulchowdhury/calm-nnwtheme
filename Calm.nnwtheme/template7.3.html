@@ -194,16 +194,19 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 				}
 			}
 
+			// NetNewsWire 7.3 places media beside the body inside <article>, so
+			// watch the whole article for late-loading images and size changes.
+			var layoutRoot = (body.closest && body.closest("article")) || body;
 			window.addEventListener("resize", scheduleCallback);
-			body.addEventListener("load", scheduleCallback, true);
+			layoutRoot.addEventListener("load", scheduleCallback, true);
 			if ("ResizeObserver" in window) {
 				observer = new window.ResizeObserver(scheduleCallback);
-				observer.observe(body);
+				observer.observe(layoutRoot);
 			}
 
 			return function stopObservingLayout() {
 				window.removeEventListener("resize", scheduleCallback);
-				body.removeEventListener("load", scheduleCallback, true);
+				layoutRoot.removeEventListener("load", scheduleCallback, true);
 				if (observer) {
 					observer.disconnect();
 				}

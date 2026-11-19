@@ -269,3 +269,26 @@ test("@webkit keeps NetNewsWire 7.3 media inside the reading measure", async ({ 
 	expect(geometry.imageRatio).toBeCloseTo(2.5, 1);
 	await expect(page.locator(".nnw-enclosure-caption")).toHaveCSS("color", "rgb(112, 107, 100)");
 });
+
+test("@webkit builds the map when NetNewsWire 7.3 primary media outside the body loads late", async ({ page }) => {
+	await page.setViewportSize({ width: 1180, height: 800 });
+	await loadFixture(page, { paragraphCount: 1 });
+	await expect(page.locator(".readerToc")).toBeHidden();
+
+	await page.evaluate(async () => {
+		const media = document.createElement("div");
+		media.className = "nnw-primary-media";
+		const image = document.createElement("img");
+		media.appendChild(image);
+		document.querySelector("article").prepend(media);
+		image.src =
+			"data:image/svg+xml," +
+			encodeURIComponent(
+				'<svg xmlns="http://www.w3.org/2000/svg" width="640" height="2400"><rect width="640" height="2400" fill="#6e70b8"/></svg>',
+			);
+		await image.decode();
+	});
+
+	await expect(page.locator(".readerToc")).toBeVisible();
+	await expect(page.locator(".readerToc button")).toHaveCount(5);
+});

@@ -10,8 +10,10 @@
 - Added `template7.3.html` so NetNewsWire 7.3 and later place an article's
   primary media above the body and its other enclosures below it, inside the
   reading measure, with quiet captions.
-- Shipped the compact paragraph wrapping fix from August under a new version
-  number, so existing installs see it as an update.
+- Shipped the compact paragraph wrapping fix from August under its own version
+  number.
+- The reading map now watches the whole article, including 7.3 media, so a
+  late-loading cover image or enclosure refreshes its markers.
 - Credited Flexoki for the dark palette's base values.
 - Bumped the internal theme version to `13`.
 
