@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.4.2 - 2026-11-18
+
+- Fixed NetNewsWire footnote popovers, which rendered with every line stacked
+  on top of the others because the popover inherited the superscript's zero
+  line height and reduced size
+  ([#13](https://github.com/raisulchowdhury/calm-nnwtheme/issues/13)). The
+  popover and footnote marker now use Calm's light and dark surfaces.
+- Added `template7.3.html` so NetNewsWire 7.3 and later place an article's
+  primary media above the body and its other enclosures below it, inside the
+  reading measure, with quiet captions.
+- Shipped the compact paragraph wrapping fix from August under a new version
+  number, so existing installs see it as an update.
+- Credited Flexoki for the dark palette's base values.
+- Bumped the internal theme version to `13`.
+
 ## 1.4.1 - 2026-08-23
 
 - Fixed the compact iPhone cascade so the intended one-point type bump and

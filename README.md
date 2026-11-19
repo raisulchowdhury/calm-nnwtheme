@@ -141,6 +141,13 @@ The theme includes:
 - no persistent statistics footer or visible word count
 - undistorted authored image colors in light and dark appearances
 - restrained code, table, blockquote, and figure styling
+- legible NetNewsWire footnote popovers in Calm's light and dark surfaces
+- NetNewsWire 7.3 primary media and enclosures inside the reading measure
+
+## Credits
+
+Calm's dark palette uses base values from
+[Flexoki](https://stephango.com/flexoki) by Steph Ango (MIT License).
 
 ## Development
 
@@ -156,7 +163,13 @@ The bundle must contain exactly:
 Info.plist
 stylesheet.css
 template.html
+template7.3.html
 ```
+
+NetNewsWire 7.3 and later load `template7.3.html`, which adds the article's
+primary media above the body and its other enclosures below it. Older versions
+ignore it and load `template.html`. Keep the two files identical apart from
+those media tags; the validator enforces this.
 
 Validate changes:
 

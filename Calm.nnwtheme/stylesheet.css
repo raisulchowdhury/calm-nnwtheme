@@ -3,6 +3,9 @@
  * Matches the plain reader surface in the supplied screenshots:
  * a narrow serif article column, quiet metadata, light/dark system colors,
  * desktop section rail, and image-first article rendering.
+ *
+ * Dark palette base values from Flexoki by Steph Ango (MIT License):
+ * https://stephango.com/flexoki
  */
 
 :root {
@@ -17,6 +20,8 @@
 	--reader-code-bg: #f7f0e4;
 	--reader-progress: rgba(36, 32, 29, 0.18);
 	--reader-selection: rgba(201, 154, 68, 0.22);
+	--reader-popover-bg: #ffffff;
+	--reader-popover-shadow: 0 10px 30px rgba(36, 32, 29, 0.12), 0 1px 3px rgba(36, 32, 29, 0.1);
 
 	--reader-serif-display: "Iowan Old Style", "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, "Times New Roman", Times, serif;
 	--reader-serif-body: "Iowan Old Style", "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, "Times New Roman", Times, serif;
@@ -53,6 +58,8 @@
 		--reader-code-bg: #1c1b1a;
 		--reader-progress: rgba(255, 252, 240, 0.18);
 		--reader-selection: rgba(218, 169, 95, 0.24);
+		--reader-popover-bg: #1c1b1a;
+		--reader-popover-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
 	}
 }
 
@@ -448,6 +455,70 @@ article {
 	height: 100% !important;
 }
 
+/*
+ * NetNewsWire 7.3 article media (template7.3.html). The primary image, audio,
+ * or video sits above the body and other enclosures follow it, all inside the
+ * reading measure.
+ */
+.nnw-primary-media {
+	margin: 0 0 2.15rem;
+}
+
+.nnw-enclosures {
+	margin-top: 2.5rem;
+}
+
+.nnw-enclosure {
+	margin: 1.5rem 0;
+}
+
+.nnw-primary-media img,
+.nnw-primary-media video,
+.nnw-enclosure img,
+.nnw-enclosure video {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	margin: 0 auto;
+	border-radius: var(--reader-radius);
+}
+
+.nnw-primary-media iframe,
+.nnw-enclosure iframe {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 9;
+	border: 0;
+	border-radius: var(--reader-radius);
+}
+
+.nnw-primary-media audio,
+.nnw-enclosure audio {
+	display: block;
+	width: 100%;
+}
+
+.nnw-primary-image-caption,
+.nnw-enclosure-caption {
+	margin-top: 0.6rem;
+	color: var(--reader-muted);
+	font-family: var(--reader-sans);
+	font-size: 0.82rem;
+	font-weight: 500;
+	line-height: 1.35;
+	overflow-wrap: anywhere;
+}
+
+.nnw-primary-image-caption {
+	text-align: center;
+}
+
+.nnw-primary-image-caption a,
+.nnw-enclosure-caption a {
+	color: inherit;
+}
+
 code,
 pre {
 	background: var(--reader-code-bg);
@@ -533,6 +604,68 @@ sup {
 
 sub {
 	bottom: -0.2em;
+}
+
+/*
+ * NetNewsWire footnotes. newsfoot.js inserts the popover inside the reference's
+ * <sup>, so it would inherit the superscript's size and zero line height.
+ * Reset both, then give the popover Calm's surface, rule, and text colors.
+ */
+.articleBody a.footnote,
+.articleBody a.footnote:visited {
+	margin-left: 0.1em;
+	background: var(--reader-code-bg);
+	color: var(--reader-muted);
+	font-family: var(--reader-sans);
+	font-variant-numeric: lining-nums;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background-color 120ms ease, color 120ms ease;
+}
+
+.articleBody a.footnote:hover,
+.articleBody .newsfoot-footnote-popover + a.footnote {
+	background: var(--reader-rule);
+	color: var(--reader-heading);
+}
+
+.newsfoot-footnote-popover {
+	padding: 1px;
+	background: var(--reader-rule);
+	box-shadow: var(--reader-popover-shadow);
+	color: var(--reader-text);
+	font-family: var(--reader-serif-body);
+	font-size: calc(var(--reader-font-size, var(--reader-base-size)) * 0.9);
+	font-style: normal;
+	font-weight: 400;
+	line-height: 1.5;
+	letter-spacing: 0;
+	text-align: left;
+	text-transform: none;
+	white-space: normal;
+}
+
+.newsfoot-footnote-popover-inner {
+	background: var(--reader-popover-bg);
+}
+
+.newsfoot-footnote-popover-arrow {
+	border: 1px solid var(--reader-rule);
+	background: var(--reader-popover-bg);
+}
+
+.newsfoot-footnote-popover-inner p {
+	margin: 0.6em 0;
+}
+
+.newsfoot-footnote-popover-inner sup {
+	line-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.articleBody a.footnote {
+		transition: none;
+	}
 }
 
 .systemMessage {

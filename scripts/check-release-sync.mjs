@@ -9,15 +9,15 @@ const specification = readFileSync(
 	"utf8",
 );
 const releaseNotes = readFileSync(
-	"docs/releases/2026-08-23-calm-1.4.1.md",
+	"docs/releases/2026-11-18-calm-1.4.2.md",
 	"utf8",
 );
 const workflow = readFileSync(".github/workflows/validate.yml", "utf8");
 const releaseWorkflow = readFileSync(".github/workflows/release.yml", "utf8");
 
-assert.match(info, /<key>Version<\/key>\s*<integer>12<\/integer>/, "theme version should be 12");
-assert.match(changelog, /^## 1\.4\.1 - 2026-08-23$/m, "changelog should include v1.4.1");
-assert.match(releaseNotes, /^# Calm 1\.4\.1$/m, "release notes should identify Calm 1.4.1");
+assert.match(info, /<key>Version<\/key>\s*<integer>13<\/integer>/, "theme version should be 13");
+assert.match(changelog, /^## 1\.4\.2 - 2026-11-18$/m, "changelog should include v1.4.2");
+assert.match(releaseNotes, /^# Calm 1\.4\.2$/m, "release notes should identify Calm 1.4.2");
 assert.match(
 	specification,
 	/All four checkpoints were implemented, accepted, and synchronized/,
