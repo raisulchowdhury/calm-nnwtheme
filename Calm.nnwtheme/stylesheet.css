@@ -1054,3 +1054,21 @@ sub {
 		display: none !important;
 	}
 }
+
+/* iPhone and iPad follow the system text size (Dynamic Type), the way
+   NetNewsWire's own theme does. On iOS, NetNewsWire replaces the font-size
+   macro below with the system body size (17px at the default setting).
+   Anywhere else the declaration stays invalid and is ignored, so the Mac
+   keeps NetNewsWire's text size setting. The multipliers keep Calm's
+   default sizes: 17.5px on iPad and 18.5px on iPhone. */
+@supports (-webkit-touch-callout: none) {
+	.articleBody {
+		font-size: calc([[font-size]]px * 1.03);
+	}
+
+	@media (max-width: 820px), (pointer: coarse) and (max-height: 500px) {
+		.articleBody {
+			font-size: calc([[font-size]]px * 1.09);
+		}
+	}
+}

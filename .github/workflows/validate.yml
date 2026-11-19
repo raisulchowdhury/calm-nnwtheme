@@ -45,6 +45,12 @@ jobs:
   browser:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    # Playwright's image already has the WebKit and Chromium system libraries,
+    # so the install step below finds nothing to download. Installing them on
+    # the bare runner timed out twice on Nov 19, 2026 on slow apt mirrors.
+    # Keep the tag in step with @playwright/test in package.json.
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
