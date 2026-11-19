@@ -14,6 +14,10 @@
   number.
 - The reading map now watches the whole article, including 7.3 media, so a
   late-loading cover image or enclosure refreshes its markers.
+- After you click a section on the reading map, that section is now the one
+  marked as current. Before, the map often highlighted and labeled the
+  previous section, because the heading landed a fraction of a pixel below
+  the marker line.
 - Credited Flexoki for the dark palette's base values.
 - Bumped the internal theme version to `13`.
 

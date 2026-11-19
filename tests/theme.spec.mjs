@@ -104,6 +104,23 @@ test("@webkit adapts markers to article length and heading hierarchy", async ({ 
 	expect(labels).not.toContain("Supporting detail");
 });
 
+test("@webkit marks the clicked section as current when its heading lands on a fractional marker line", async ({ page }) => {
+	// 780px tall gives a 93.6px marker line, so the heading lands a fraction
+	// below it after the browser rounds the scroll position.
+	await page.setViewportSize({ width: 1160, height: 780 });
+	await loadFixture(page, {
+		paragraphCount: 16,
+		headings: ["Context", "Method", "Evidence", "Tradeoffs", "Practice"].map((text) => ({ level: 2, text })),
+	});
+	const markers = page.locator(".readerToc button");
+	await expect(markers).toHaveCount(6);
+	for (let index = 1; index < 6; index++) {
+		await markers.nth(index).click();
+		await page.waitForTimeout(150);
+		await expect(markers.nth(index)).toHaveAttribute("aria-current", "location");
+	}
+});
+
 test("@webkit rebuilds across Split View and refreshes targets after content growth", async ({ page }) => {
 	await page.setViewportSize({ width: 1024, height: 800 });
 	await loadFixture(page, { paragraphCount: 36 });

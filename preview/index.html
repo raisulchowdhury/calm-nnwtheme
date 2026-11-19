@@ -182,6 +182,9 @@
 		var scrollFrame = null;
 		var MAX_HEADING_MARKERS = 8;
 		var MIN_HEADING_MARKERS = 5;
+		// Scroll positions round to whole or device pixels, so a heading scrolled
+		// to the marker line can sit a fraction below it. Count it as reached.
+		var ACTIVE_SECTION_TOLERANCE = 2;
 		var noisyHeadingPattern = /^(advertisement|sponsored|related(?: posts|stories)?|share(?: this)?|comments?|more(?: stories)?|newsletter|subscribe)$/i;
 
 		function getScrollMax() {
@@ -476,7 +479,7 @@
 
 			var activeIndex = 0;
 			cachedTargetTops.forEach(function (targetTop, index) {
-				if (scrollTop + markerOffset >= targetTop) {
+				if (scrollTop + markerOffset + ACTIVE_SECTION_TOLERANCE >= targetTop) {
 					activeIndex = index;
 				}
 			});
