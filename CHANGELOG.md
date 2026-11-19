@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.4.3 - 2026-11-19
+
+- The reading map now reaches the end of every article. Headings that all
+  fit on the article's last screen each get their own stretch of scrolling,
+  so each one can become the current section, and the "Bottom" depth marker
+  scrolls to the true end instead of stopping about 96px short.
+- On iPhone and iPad, article text follows the system text size (Dynamic
+  Type), the way NetNewsWire's own theme does. Default sizes are unchanged.
+- Theme version 14.
+
 ## 1.4.2 - 2026-11-18
 
 - Fixed NetNewsWire footnote popovers, which rendered with every line stacked

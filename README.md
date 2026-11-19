@@ -129,7 +129,8 @@ Calm uses the system serif stack that best matches Apple's reader surfaces:
 The theme includes:
 
 - system light and dark mode
-- iOS Dynamic Type support with a small Calm-specific size bump
+- the system text size (Dynamic Type) on iPhone and iPad, slightly larger
+  on iPhone; NetNewsWire's text size setting on the Mac
 - an article-aware reading map beside the centered column on wider screens
 - hierarchy-aware, deduplicated, capped heading destinations for structured
   articles and scroll-depth markers for simpler long articles

@@ -121,6 +121,67 @@ test("@webkit marks the clicked section as current when its heading lands on a f
 	}
 });
 
+test("@webkit reaches every final-screen heading and the true bottom", async ({ page }) => {
+	await page.setViewportSize({ width: 1180, height: 800 });
+	// Five sections up front, then three short sections that all fit on the last screen.
+	await loadFixture(page, {
+		paragraphCount: 0,
+		headings: ["Context", "Method", "Evidence", "Tradeoffs", "Practice", "Questions", "Sources", "Thanks"].map((text, index) => ({
+			level: 2,
+			text,
+			...(index < 5 ? {} : {}),
+		})),
+	});
+	await page.evaluate(() => {
+		const body = document.querySelector(".articleBody");
+		const headings = [...body.querySelectorAll("h2")];
+		for (const heading of headings.slice(0, 5)) {
+			for (let i = 0; i < 6; i++) {
+				const p = document.createElement("p");
+				p.textContent = "A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.";
+				heading.after(p);
+			}
+		}
+		window.dispatchEvent(new Event("resize"));
+	});
+	await page.waitForTimeout(200);
+	const markers = page.locator(".readerToc button");
+	await expect(markers).toHaveCount(9);
+	for (let index = 1; index < 9; index++) {
+		await markers.nth(index).click();
+		await page.waitForTimeout(150);
+		await expect(markers.nth(index)).toHaveAttribute("aria-current", "location");
+	}
+	await expect
+		.poll(() =>
+			page.evaluate(() => {
+				const root = document.scrollingElement || document.documentElement;
+				return root.scrollHeight - window.innerHeight - window.scrollY;
+			}),
+		)
+		.toBeLessThanOrEqual(2);
+});
+
+test("@webkit sends the Bottom depth marker to the end of the article", async ({ page }) => {
+	await page.setViewportSize({ width: 1180, height: 800 });
+	await loadFixture(page, { paragraphCount: 36 });
+	const markers = page.locator(".readerToc button");
+	await expect(markers).toHaveCount(5);
+	await markers.nth(4).click();
+	await expect
+		.poll(() =>
+			page.evaluate(() => {
+				const root = document.scrollingElement || document.documentElement;
+				return root.scrollHeight - window.innerHeight - window.scrollY;
+			}),
+		)
+		.toBeLessThanOrEqual(2);
+	await expect(markers.nth(4)).toHaveAttribute("aria-current", "location");
+	await markers.nth(2).click();
+	await page.waitForTimeout(150);
+	await expect(markers.nth(2)).toHaveAttribute("aria-current", "location");
+});
+
 test("@webkit rebuilds across Split View and refreshes targets after content growth", async ({ page }) => {
 	await page.setViewportSize({ width: 1024, height: 800 });
 	await loadFixture(page, { paragraphCount: 36 });

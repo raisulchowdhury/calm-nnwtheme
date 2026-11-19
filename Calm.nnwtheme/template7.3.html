@@ -375,10 +375,43 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 			return Math.round(getScrollMax() * section.ratio);
 		}
 
+		// Cache where the page should scroll for each marker, not where each
+		// target sits. Headings scroll to the marker line, depth markers to their
+		// share of the scroll range, so "Bottom" reaches the true end.
+		function getTargetScrollTop(section, markerOffset, scrollMax) {
+			var top = getTargetTop(section);
+			if (section.element) {
+				top = top <= 0 ? 0 : top - markerOffset;
+			}
+			return Math.max(0, Math.min(scrollMax, top));
+		}
+
 		function cacheTargetOffsets() {
+			var markerOffset = getMarkerOffset();
+			var scrollMax = getScrollMax();
 			cachedTargetTops = sectionTargets.map(function (section) {
-				return getTargetTop(section);
+				return getTargetScrollTop(section, markerOffset, scrollMax);
 			});
+
+			// Headings on the article's last screen can't scroll up to the marker
+			// line, so they would all share the bottom position and only the last
+			// could ever be current. Spread them across the final stretch of
+			// scrolling, in order, so each one gets its own place.
+			var firstUnreachable = -1;
+			for (var index = 0; index < cachedTargetTops.length; index++) {
+				if (index > 0 && cachedTargetTops[index] >= scrollMax) {
+					firstUnreachable = index;
+					break;
+				}
+			}
+			if (firstUnreachable < 0) {
+				return;
+			}
+			var start = cachedTargetTops[firstUnreachable - 1];
+			var count = cachedTargetTops.length - firstUnreachable;
+			for (var step = 0; step < count; step++) {
+				cachedTargetTops[firstUnreachable + step] = Math.round(start + (scrollMax - start) * (step + 1) / count);
+			}
 		}
 
 		function cacheMarkerCenters() {
@@ -456,17 +489,10 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 				return;
 			}
 
-			var markerOffset = getMarkerOffset();
 			var scrollTop = window.pageYOffset || root.scrollTop || document.body.scrollTop || 0;
-			var scrollLimit = getScrollMax();
-			if (scrollLimit - scrollTop < markerOffset) {
-				setActiveSection(sectionTargets.length - 1);
-				return;
-			}
-
 			var activeIndex = 0;
-			cachedTargetTops.forEach(function (targetTop, index) {
-				if (scrollTop + markerOffset + ACTIVE_SECTION_TOLERANCE >= targetTop) {
+			cachedTargetTops.forEach(function (targetScrollTop, index) {
+				if (scrollTop + ACTIVE_SECTION_TOLERANCE >= targetScrollTop) {
 					activeIndex = index;
 				}
 			});
@@ -477,14 +503,10 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 			if (!section) {
 				return;
 			}
-			var markerOffset = getMarkerOffset();
-			var targetTop = cachedTargetTops[sectionIndex];
-			if (typeof targetTop !== "number") {
-				targetTop = getTargetTop(section);
+			var nextTop = cachedTargetTops[sectionIndex];
+			if (typeof nextTop !== "number") {
+				nextTop = getTargetScrollTop(section, getMarkerOffset(), getScrollMax());
 			}
-			var nextTop = targetTop <= 0 ? 0 : targetTop - markerOffset;
-			var scrollMax = getScrollMax();
-			nextTop = Math.max(0, Math.min(scrollMax, nextTop));
 			try {
 				window.scrollTo({
 					top: nextTop,
