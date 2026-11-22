@@ -7,7 +7,7 @@
 
 **Not everything is meant to be scrolled.**
 
-Calm is a NetNewsWire theme for long articles you want to enjoy, not rush. Everything you need, nothing you don't.
+Calm is a free, open-source NetNewsWire theme for long reads. On wider Mac and iPad layouts, its interactive reading map lets you jump between sections.
 
 <a href="https://raisul.xyz/calm#get">
   <picture>
@@ -23,11 +23,10 @@ Free for Mac, iPhone and iPad. 2,000+ downloads, and one of the most downloaded 
 [Report a theme issue](https://github.com/raisulchowdhury/calm-nnwtheme/issues/new?template=theme_issue.yml) ·
 [Contribute](CONTRIBUTING.md)
 
-Calm is a NetNewsWire theme that adapts its reading map to the article. On wider
-Mac and iPad layouts, structured pieces become a heading map while simpler
-pieces get five quiet depth markers. Tap a marker or scrub the rail to move
-through the article. On iPhone, Split View, and short landscape layouts, the map
-disappears entirely.
+The reading map adapts to the article. Structured pieces get a heading map
+while simpler pieces get five quiet depth markers. Tap a marker or scrub the
+rail to move through the article. On iPhone, Split View, and short landscape
+layouts, the map disappears entirely.
 
 <img src="assets/calm-map.gif" width="720" alt="Scrubbing Calm's reading map in NetNewsWire on a Mac: the article jumps from section to section as the pointer moves along the small markers beside the text">
 
