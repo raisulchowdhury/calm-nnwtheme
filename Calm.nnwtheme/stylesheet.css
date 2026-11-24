@@ -221,6 +221,39 @@ article {
 	margin-top: 0;
 }
 
+/*
+ * Feed cleanup. The template script marks blocks with no text and no media
+ * (an editor's blank line, Blogger's separators) so they add no gap.
+ */
+.articleBody [data-calm-blank] {
+	display: none;
+}
+
+.articleBody [data-calm-blank="clear"] {
+	display: block;
+	height: 0;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+/*
+ * Some feeds give a block a fixed width inline. WordPress's classic captions
+ * do (style="width: 1034px"), which pushed the image past the column and off
+ * an iPhone screen. Keep every block inside the measure. NetNewsWire's
+ * footnote popover sizes itself, so it is left alone.
+ */
+.articleBody :is(div, figure, section, p, blockquote):not([class*="newsfoot"]) {
+	max-width: 100%;
+}
+
+/* Substack's restack and expand buttons under each image only work on Substack. */
+.articleBody .image-link-expand,
+.articleBody [data-sanitized-class~="image-link-expand"],
+.articleBody a:has(img) button {
+	display: none;
+}
+
 .articleBody p,
 .articleBody li,
 .articleBody td,

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.4 - 2026-11-24
+
+- Empty paragraphs and divs that feeds leave behind, such as an editor's
+  blank line or Blogger's separators, no longer add gaps. A block is hidden
+  only when it has no text, no media, and nothing a link could point to.
+  Blocks drawn with a border or background stay, and a clearing block keeps
+  clearing floats without taking space.
+- Feed blocks with a fixed width now stay inside the reading measure.
+  WordPress's classic image captions (`style="width: 1034px"`) pushed images
+  off the edge of an iPhone screen.
+- Substack's restack and expand buttons under images are hidden, since they
+  only work on Substack.
+- The README now points to Calm's release feed, so you can hear about new
+  versions in NetNewsWire.
+- Theme version 15.
+
 ## 1.4.3 - 2026-11-19
 
 - The reading map now reaches the end of every article. Headings that all

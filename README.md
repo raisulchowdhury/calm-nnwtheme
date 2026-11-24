@@ -80,6 +80,10 @@ by Yew Jin Lim.
 3. Choose Calm as your theme. On a Mac, it's in Settings, Appearance, Article
    Theme. On iPhone and iPad, it's in Settings, Articles, Theme.
 
+To hear about new versions, subscribe to Calm's
+[release feed](https://github.com/raisulchowdhury/calm-nnwtheme/releases.atom)
+in NetNewsWire.
+
 GitHub can't link straight into NetNewsWire, so the button above opens the
 install page on raisul.xyz.
 

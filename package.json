@@ -1,6 +1,6 @@
 {
   "name": "calm-nnwtheme",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "private": true,
   "scripts": {
     "test": "scripts/validate.sh",

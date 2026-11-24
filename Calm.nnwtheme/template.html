@@ -90,6 +90,32 @@ body: The body of the article.
 		}
 	}
 
+	// Feeds often pad an article with empty paragraphs or divs, such as an
+	// editor's blank line or Blogger's separators, and each one adds a gap.
+	// Mark a block only when it has no text, no media, and nothing a link
+	// could point to. Blocks drawn with a background or border stay. A
+	// clearing block keeps clearing floats but takes no height.
+	function hideBlankBlocks() {
+		if (!body) {
+			return;
+		}
+
+		var invisibleText = /^[\s\u00a0\u200b\u200c\u200d\u2060\ufeff]*$/;
+		var keepInside = "img, picture, video, audio, iframe, object, embed, svg, canvas, hr, table, input, select, textarea, button, [id], a[name]";
+		Array.prototype.forEach.call(body.querySelectorAll("p, div"), function (block) {
+			var style = block.getAttribute("style") || "";
+			if (
+				!invisibleText.test(block.textContent || "") ||
+				block.id ||
+				/background|border/i.test(style) ||
+				block.querySelector(keepInside)
+			) {
+				return;
+			}
+			block.setAttribute("data-calm-blank", /clear/i.test(style) ? "clear" : "");
+		});
+	}
+
 	function normalizeMetadata() {
 		Array.prototype.forEach.call(metadataItems, function (metadataItem) {
 			if (metadataItem === readingTime) {
@@ -711,6 +737,7 @@ body: The body of the article.
 		}
 	}
 
+	hideBlankBlocks();
 	normalizeMetadata();
 	hideEmptyExternalLink();
 	updateReadingTime();
