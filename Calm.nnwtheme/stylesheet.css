@@ -1105,3 +1105,29 @@ sub {
 		}
 	}
 }
+
+/* Update line: after a long article, in the week after a Calm release. */
+.calmUpdate {
+	width: min(100%, var(--reader-measure));
+	margin: 3.5rem auto 0;
+	color: var(--reader-faint);
+	font-family: var(--reader-sans);
+	font-size: 0.86rem;
+	line-height: 1.4;
+}
+
+.calmUpdate[hidden] {
+	display: none;
+}
+
+.calmUpdate a,
+.calmUpdate a:visited {
+	color: var(--reader-muted);
+	text-decoration: underline;
+	text-decoration-color: var(--reader-rule);
+	text-underline-offset: 0.25em;
+}
+
+.calmUpdate a:hover {
+	text-decoration-color: currentColor;
+}

@@ -12,6 +12,10 @@
   off the edge of an iPhone screen.
 - Substack's restack and expand buttons under images are hidden, since they
   only work on Substack.
+- In the two weeks after a new Calm release, long articles end with one
+  faint line, "Calm 1.4.5 is out. Update", that installs it. Calm reads
+  `updates.json` from GitHub at most once a week, only from articles of 250
+  words or more, and sends nothing about the article.
 - The README now points to Calm's release feed, so you can hear about new
   versions in NetNewsWire.
 - Theme version 15.

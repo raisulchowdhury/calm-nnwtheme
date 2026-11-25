@@ -80,7 +80,12 @@ by Yew Jin Lim.
 3. Choose Calm as your theme. On a Mac, it's in Settings, Appearance, Article
    Theme. On iPhone and iPad, it's in Settings, Articles, Theme.
 
-To hear about new versions, subscribe to Calm's
+In the two weeks after a new release, Calm ends long articles with one faint
+line and an Update link. To know about a release, Calm asks GitHub for its
+latest version at most once a week, only while you read an article of 250
+words or more, and sends nothing about what you read. To turn this off, turn off
+JavaScript for articles in NetNewsWire's settings. You can also subscribe to
+Calm's
 [release feed](https://github.com/raisulchowdhury/calm-nnwtheme/releases.atom)
 in NetNewsWire.
 
@@ -165,6 +170,7 @@ The theme includes:
 - a rail-free compact layout for phone, Split View, and short coarse landscape
 - textual source identity and conditional reading time in the opening metadata
 - no persistent statistics footer or visible word count
+- one faint update line after long articles, only in a release's first two weeks
 - undistorted authored image colors in light and dark appearances
 - restrained code, table, blockquote, and figure styling
 - legible NetNewsWire footnote popovers in Calm's light and dark surfaces
