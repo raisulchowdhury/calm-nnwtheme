@@ -69,6 +69,10 @@
 			<p>The quiet payoff is recognition. A move that once demanded attention becomes available when you need it, leaving more room to read the situation instead of the instructions.</p>
 		</div>
 	</article>
+<footer class="calmUpdate" id="calmUpdate" hidden>
+	<span class="calmUpdateText"></span>
+	<a href="netnewswire://theme/add?url=https%3A%2F%2Fgithub.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Freleases%2Flatest%2Fdownload%2FCalm.nnwtheme.zip">Update</a>
+</footer>
 
 <script>
 (function () {
@@ -763,6 +767,47 @@
 	updateMetadataVisibility();
 	observeCompactRail();
 	syncTocMode();
+})();
+(function () {
+	// Update line. In the two weeks after a Calm release, a long article can
+	// end with one faint line naming the new version and a link that installs
+	// it. Calm asks GitHub at most once a week, only from long articles, and
+	// sends nothing about what you read.
+	var BUILD = 15;
+	var SOURCE = "https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/updates.json";
+	var DAY = 24 * 60 * 60 * 1000;
+	var CHECK_EVERY = 7 * DAY;
+	var WINDOW = 14 * DAY;
+	var KEY = "calm.updates";
+	var line = document.getElementById("calmUpdate");
+	var body = document.getElementById("bodyContainer");
+	if (!line || !body) return;
+
+	var words = (body.textContent || "").split(/\s+/).filter(Boolean).length;
+	if (words < 250) return;
+
+	function show(entry) {
+		if (!entry || !(entry.build > BUILD)) return;
+		var released = Date.parse(entry.released);
+		if (!(Date.now() - released < WINDOW)) return;
+		line.querySelector(".calmUpdateText").textContent = "Calm " + entry.version + " is out.";
+		line.hidden = false;
+	}
+
+	var cached = null;
+	try { cached = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+	if (cached && Date.now() - cached.at < CHECK_EVERY) {
+		show(cached.entry);
+		return;
+	}
+	if (typeof fetch !== "function") return;
+	fetch(SOURCE, { credentials: "omit", referrerPolicy: "no-referrer", cache: "no-store" })
+		.then(function (r) { return r.ok ? r.json() : null; })
+		.then(function (entry) {
+			try { localStorage.setItem(KEY, JSON.stringify({ at: Date.now(), entry: entry })); } catch (e) {}
+			show(entry);
+		})
+		.catch(function () {});
 })();
 </script>
 </body>
