@@ -53,6 +53,15 @@ an issue so the interaction can be discussed before implementation.
    ```
 
 7. Include before-and-after screenshots for visual changes.
+8. For a release, bump `package.json`, the `Version` in `Info.plist`, and add
+   `docs/releases/YYYY-MM-DD-calm-VERSION.md`, then regenerate the file that
+   tells installed copies about the new version:
+
+   ```sh
+   node scripts/updates-json.mjs --write
+   ```
+
+   `scripts/validate.sh` fails if `updates.json` is out of date.
 
 Do not edit the zip directly. The committed package must match
 `Calm.nnwtheme/` exactly.
