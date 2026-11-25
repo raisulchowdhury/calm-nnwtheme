@@ -8,7 +8,7 @@ const articleTitle = "A Field Guide to Quiet Reading";
 const paragraph =
 	"A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.";
 
-function fixtureBody({ headings = [], paragraphCount = 24, image = false, lateMedia = false } = {}) {
+function fixtureBody({ headings = [], paragraphCount = 24, image = false, lateMedia = false, html = "" } = {}) {
 	const sections = headings
 		.map(
 			({ level, text }) =>
@@ -22,7 +22,7 @@ function fixtureBody({ headings = [], paragraphCount = 24, image = false, lateMe
 	const lateMediaFixtures = lateMedia
 		? '<img id="late-image" alt="Late-loading abstract illustration"><video id="fixture-video" title="Silent reading demo" muted></video><audio id="fixture-audio" aria-label="Article audio"></audio>'
 		: "";
-	return `${fixtureImage}${lateMediaFixtures}${sections}${paragraphs}`;
+	return `${fixtureImage}${lateMediaFixtures}${sections}${paragraphs}${html}`;
 }
 
 async function loadFixture(page, options = {}) {
@@ -369,4 +369,70 @@ test("@webkit builds the map when NetNewsWire 7.3 primary media outside the body
 
 	await expect(page.locator(".readerToc")).toBeVisible();
 	await expect(page.locator(".readerToc button")).toHaveCount(5);
+});
+
+test("@webkit removes the gaps that feeds' empty blocks leave", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 0,
+		html: `<p id="before">${paragraph}</p>
+			<p data-test="blank-p">&nbsp;</p>
+			<div data-test="blank-div"><br></div>
+			<p data-test="zero-width">\u200b</p>
+			<div data-test="clear" style="clear: both;"></div>
+			<div data-test="rule" style="border-top: 1px solid;"></div>
+			<p id="anchor-target" data-test="anchor-target"></p>
+			<div data-test="kept-image"><img alt="" width="10" height="10" src="data:image/gif;base64,R0lGODlhAQABAAAAACw="></div>
+			<p><a name="old-anchor"></a></p>
+			<p id="after">${paragraph}</p>`,
+	});
+	const state = await page.evaluate(() => {
+		const find = (name) => document.querySelector(`[data-test="${name}"]`);
+		const display = (name) => getComputedStyle(find(name)).display;
+		const anchorParent = document.querySelector('a[name="old-anchor"]').parentElement;
+		return {
+			blankP: display("blank-p"),
+			blankDiv: display("blank-div"),
+			zeroWidth: display("zero-width"),
+			clear: display("clear"),
+			clearHeight: find("clear").getBoundingClientRect().height,
+			rule: display("rule"),
+			anchorTarget: display("anchor-target"),
+			keptImage: display("kept-image"),
+			oldAnchor: getComputedStyle(anchorParent).display,
+		};
+	});
+	expect(state).toEqual({
+		blankP: "none",
+		blankDiv: "none",
+		zeroWidth: "none",
+		clear: "block",
+		clearHeight: 0,
+		rule: "block",
+		anchorTarget: "block",
+		keptImage: "block",
+		oldAnchor: "block",
+	});
+});
+
+test("@webkit keeps fixed-width feed blocks and Substack image buttons in check", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	const wide = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221034%22 height=%22500%22%3E%3Crect width=%221034%22 height=%22500%22 fill=%22%236e70b8%22/%3E%3C/svg%3E';
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<div id="caption" class="wp-caption" style="width: 1034px"><img src="${wide}" alt=""><p class="wp-caption-text">A caption</p></div>
+			<div class="captioned-image-container"><figure><a class="image-link" href="#"><img src="${wide}" alt=""><div class="image-link-expand"><button id="restack">Restack</button></div></a></figure></div>`,
+	});
+	const state = await page.evaluate(() => {
+		const body = document.getElementById("bodyContainer").getBoundingClientRect();
+		const caption = document.getElementById("caption").getBoundingClientRect();
+		return {
+			fits: caption.right <= body.right + 0.5,
+			pageWidth: document.documentElement.scrollWidth,
+			viewport: document.documentElement.clientWidth,
+		};
+	});
+	expect(state.fits).toBe(true);
+	expect(state.pageWidth).toBeLessThanOrEqual(state.viewport);
+	await expect(page.locator("#restack")).toBeHidden();
 });

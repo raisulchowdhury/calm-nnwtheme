@@ -41,7 +41,7 @@ function runScript(path, wordCount, includeBody = true, metadataText = ["Author"
 		hidden: false,
 	};
 	const text = Array.from({ length: wordCount }, () => "word").join(" ");
-	const body = includeBody ? { innerText: text, textContent: text } : null;
+	const body = includeBody ? { innerText: text, textContent: text, querySelectorAll: () => [] } : null;
 	const document = {
 		getElementById(id) {
 			return {

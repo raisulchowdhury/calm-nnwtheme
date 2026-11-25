@@ -13,6 +13,7 @@ node scripts/check-interaction-polish.mjs
 node scripts/check-performance-accessibility.mjs
 node scripts/check-reading-time.mjs
 node scripts/check-rail-context.mjs
+node scripts/check-feed-cleanup.mjs
 node scripts/check-release-sync.mjs
 
 social_width="$(sips -g pixelWidth assets/social-preview.jpg 2>/dev/null | awk '/pixelWidth/ { print $2 }')"
