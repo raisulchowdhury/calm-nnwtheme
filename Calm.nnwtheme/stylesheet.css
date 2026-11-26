@@ -42,7 +42,7 @@
 	--feedlink-color: var(--reader-muted);
 	--header-color: var(--reader-muted);
 	--header-table-border-color: var(--reader-rule);
-	--system-message-color: var(--reader-faint);
+	--system-message-color: var(--reader-muted);
 	--table-cell-border-color: var(--reader-rule);
 	--block-quote-border-color: var(--reader-rule);
 }
@@ -60,6 +60,28 @@
 		--reader-selection: rgba(218, 169, 95, 0.24);
 		--reader-popover-bg: #1c1b1a;
 		--reader-popover-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+	}
+}
+
+/*
+ * Increase Contrast (Accessibility settings on Mac, iPhone, and iPad).
+ * Secondary text and rules get darker in light mode and lighter in dark mode.
+ */
+@media (prefers-contrast: more) {
+	:root {
+		--reader-text: #1a1714;
+		--reader-muted: #4d4842;
+		--reader-faint: #6f6a63;
+		--reader-rule: #cbbfa9;
+	}
+}
+
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+	:root {
+		--reader-text: #e6e4d9;
+		--reader-muted: #b7b5ac;
+		--reader-faint: #8f8d87;
+		--reader-rule: #5a5855;
 	}
 }
 
@@ -141,6 +163,15 @@ article {
 	font-size: 0.96rem;
 	font-weight: 500;
 	line-height: 1.35;
+}
+
+/* Posts with no title (Bluesky, Mastodon, micro.blog) start at the source line. */
+.articleHeader.isUntitled .articleTitle {
+	display: none;
+}
+
+.articleHeader.isUntitled .articleMeta {
+	margin-top: 0;
 }
 
 .articleMeta > span:not([hidden]) ~ span:not([hidden])::before {
@@ -441,6 +472,55 @@ article {
 	text-decoration: none;
 }
 
+/*
+ * Icons and emoji drawn as images stay in the line at text size. The script
+ * marks them (data-calm-inline); the class and style selectors cover them
+ * when Article JavaScript is off. Without this, the forced image height
+ * above turns a 1em icon into a full-size image on its own line.
+ */
+.articleBody img[data-calm-inline],
+.articleBody img.wp-smiley,
+.articleBody img.emoji,
+.articleBody img[src*="/images/core/emoji/"],
+.articleBody img[style*="height: 1em"],
+.articleBody img[style*="height:1em"] {
+	display: inline;
+	width: auto;
+	height: 1em !important;
+	max-height: 1.25em;
+	margin: 0 0.05em;
+	border-radius: 0;
+	background: none;
+	vertical-align: -0.12em;
+}
+
+/*
+ * Floated images (align="left", WordPress's alignleft, an inline float) sit
+ * beside the text at no more than half the column, with room on the text
+ * side. Compact layouts unfloat them below.
+ */
+.articleBody img:is([align="left"], .alignleft, [style*="float: left"], [style*="float:left"]),
+.articleBody :is(figure, div).alignleft {
+	float: left;
+	max-width: 50%;
+	margin: 0.35em 1.5em 0.9em 0;
+}
+
+.articleBody img:is([align="right"], .alignright, [style*="float: right"], [style*="float:right"]),
+.articleBody :is(figure, div).alignright {
+	float: right;
+	max-width: 50%;
+	margin: 0.35em 0 0.9em 1.5em;
+}
+
+.articleBody :is(figure, div):is(.alignleft, .alignright) img {
+	margin: 0;
+}
+
+.articleBody :is(h1, h2, h3, hr, figure:not(.alignleft):not(.alignright)) {
+	clear: both;
+}
+
 .articleBody figure {
 	margin: 2.15em 0;
 }
@@ -486,6 +566,19 @@ article {
 	left: 0;
 	width: 100% !important;
 	height: 100% !important;
+}
+
+/* An embedded post that reported its height (see sizeEmbeddedPosts). */
+.iframeWrap.isSizedEmbed {
+	padding-top: 0;
+}
+
+.iframeWrap.isSizedEmbed iframe,
+.articleBody iframe.isSizedEmbed {
+	position: static;
+	max-width: 550px;
+	margin-right: auto;
+	margin-left: auto;
 }
 
 /*
@@ -685,6 +778,10 @@ sub {
 .newsfoot-footnote-popover-arrow {
 	border: 1px solid var(--reader-rule);
 	background: var(--reader-popover-bg);
+}
+
+.newsfoot-footnote-popover a[href*="#fnref"] {
+	display: none;
 }
 
 .newsfoot-footnote-popover-inner p {
@@ -1040,6 +1137,14 @@ sub {
 		margin-top: 2rem;
 		margin-bottom: 2rem;
 	}
+
+	/* A float on a phone leaves a strip of a few words beside it. */
+	.articleBody img:is([align="left"], [align="right"], .alignleft, .alignright, [style*="float"]),
+	.articleBody :is(figure, div):is(.alignleft, .alignright) {
+		float: none !important;
+		max-width: 100%;
+		margin: 2rem auto !important;
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1110,7 +1215,7 @@ sub {
 .calmUpdate {
 	width: min(100%, var(--reader-measure));
 	margin: 3.5rem auto 0;
-	color: var(--reader-faint);
+	color: var(--reader-muted);
 	font-family: var(--reader-sans);
 	font-size: 0.86rem;
 	line-height: 1.4;
@@ -1122,7 +1227,7 @@ sub {
 
 .calmUpdate a,
 .calmUpdate a:visited {
-	color: var(--reader-muted);
+	color: inherit;
 	text-decoration: underline;
 	text-decoration-color: var(--reader-rule);
 	text-underline-offset: 0.25em;

@@ -139,6 +139,173 @@
 		});
 	}
 
+	// Some feeds wrap every block in line breaks (MacRumors sends
+	// "<p><br><br><img><br><br>"), and each break adds a blank line around
+	// images and paragraphs. Remove breaks at the start or end of a block and
+	// next to an image shown on its own line. Breaks inside a run of text,
+	// such as a poem or an address, stay.
+	function removeStrayBreaks() {
+		if (!body) {
+			return;
+		}
+
+		function isBlank(node) {
+			return node && node.nodeType === 3 && !/[^\s ​﻿]/.test(node.textContent);
+		}
+
+		function isBreak(node) {
+			return node && node.nodeType === 1 && node.tagName === "BR";
+		}
+
+		function isBlockImage(node) {
+			return node && node.nodeType === 1 && node.tagName === "IMG" && !node.hasAttribute("data-calm-inline");
+		}
+
+		function sibling(node, direction) {
+			var next = node[direction];
+			while (isBlank(next)) {
+				next = next[direction];
+			}
+			return next;
+		}
+
+		Array.prototype.forEach.call(body.querySelectorAll("br"), function (br) {
+			var parent = br.parentNode;
+			if (!parent || br.closest("pre, code, td, th") || (parent !== body && !/^(?:P|DIV|LI|BLOCKQUOTE|FIGURE|FIGCAPTION|SECTION|ARTICLE|DD|DT)$/.test(parent.tagName))) {
+				return;
+			}
+			var before = sibling(br, "previousSibling");
+			var after = sibling(br, "nextSibling");
+			var run = [br];
+			while (isBreak(after)) {
+				run.push(after);
+				after = sibling(after, "nextSibling");
+			}
+			while (isBreak(before)) {
+				run.unshift(before);
+				before = sibling(before, "previousSibling");
+			}
+			if (!before || !after || isBlockImage(before) || isBlockImage(after)) {
+				run.forEach(function (node) {
+					if (node.parentNode) {
+						node.parentNode.removeChild(node);
+					}
+				});
+			}
+		});
+	}
+
+	// Icons and emoji drawn as images (Daring Fireball's 1em menu icons,
+	// WordPress and Mastodon emoji) belong inside the line. Calm shows other
+	// images as blocks, so mark these to keep them at text size. NetNewsWire's
+	// image cleanup can't do it once Calm forces image heights, and Feedbin
+	// strips the class and style that would say so.
+	function markInlineImages() {
+		if (!body) {
+			return;
+		}
+
+		var emojiSource = /\/images\/core\/emoji\/|\/emoji\/|twemoji|emojis?\.(?:png|svg)|\/custom_emojis\//i;
+		Array.prototype.forEach.call(body.querySelectorAll("img"), function (image) {
+			var height = (image.style && image.style.height) || "";
+			var sizedInEm = /^(?:0?\.\d+|1(?:\.\d+)?|2)(?:em|rem)$/.test(height);
+			var smallPixels = /^\d+(?:\.\d+)?px$/.test(height) && parseFloat(height) <= 32;
+			var attributeHeight = parseInt(image.getAttribute("height"), 10);
+			var attributeWidth = parseInt(image.getAttribute("width"), 10);
+			var smallAttributes = attributeHeight > 0 && attributeHeight <= 32 && (!attributeWidth || attributeWidth <= 64);
+			var emoji = /(?:^|\s)(?:emoji|wp-smiley|custom-emoji|twemoji)(?:\s|$)/.test(image.className || "") || emojiSource.test(image.getAttribute("src") || "");
+			if (attributeHeight === 1 && attributeWidth === 1) {
+				image.setAttribute("data-calm-blank", "");
+			} else if (sizedInEm || smallPixels || smallAttributes || emoji) {
+				image.setAttribute("data-calm-inline", "");
+			}
+		});
+	}
+
+	// Six Colors and other WordPress sites link footnotes to the site's home
+	// page plus the note's id ("https://sixcolors.com#fn-1"), so NetNewsWire
+	// doesn't see them as footnotes and a tap leaves the app. When the note is
+	// in this article, mark the link so it opens NetNewsWire's popover.
+	function markFootnotes() {
+		if (!body) {
+			return;
+		}
+
+		Array.prototype.forEach.call(body.querySelectorAll("sup a[href*='#'], a[rel='footnote'][href*='#']"), function (link) {
+			if (link.classList.contains("footnote")) {
+				return;
+			}
+			var hash = link.hash ? decodeURIComponent(link.hash.slice(1)) : "";
+			if (!/^(?:fn|footnote)/i.test(hash) || /^fnref/i.test(hash)) {
+				return;
+			}
+			var note = document.getElementById(hash);
+			if (note && body.contains(note) && !note.contains(link)) {
+				link.classList.add("footnote");
+			}
+		});
+	}
+
+	// Bluesky, Mastodon, and micro.blog posts have no title. Drop the empty
+	// heading so the post starts right under its source and date.
+	function markUntitled() {
+		if (!header || !title) {
+			return;
+		}
+		var text = title.textContent.trim();
+		if (!text || isPlaceholderValue(text)) {
+			header.classList.add("isUntitled");
+		}
+	}
+
+	// Posts embedded from X, Bluesky, and Mastodon arrive as frames with no
+	// height, which NetNewsWire boxes at 16:9 and so cuts off. Each frame
+	// reports its real height in a message once it renders; use it.
+	function sizeEmbeddedPosts() {
+		if (!body || !window.addEventListener) {
+			return;
+		}
+
+		window.addEventListener("message", function (event) {
+			var data = event.data;
+			if (typeof data === "string") {
+				try {
+					data = JSON.parse(data);
+				} catch (error) {
+					return;
+				}
+			}
+			if (!data || typeof data !== "object") {
+				return;
+			}
+			// X sends twttr.private.resize, Bluesky sends { height }, and Mastodon
+			// sends { type: "setHeight", height } from whichever server hosts the post.
+			var origin = event.origin || "";
+			var twitter = origin === "https://platform.twitter.com" ? data["twttr.embed"] : null;
+			var height = NaN;
+			if (twitter && twitter.method === "twttr.private.resize" && twitter.params && twitter.params[0]) {
+				height = Number(twitter.params[0].height);
+			} else if (origin === "https://embed.bsky.app" || data.type === "setHeight") {
+				height = Number(data.height);
+			}
+			if (!(height >= 40 && height <= 5000)) {
+				return;
+			}
+			Array.prototype.some.call(body.querySelectorAll("iframe"), function (frame) {
+				if (frame.contentWindow !== event.source) {
+					return false;
+				}
+				var wrap = frame.parentElement;
+				if (wrap && wrap.classList.contains("iframeWrap")) {
+					wrap.classList.add("isSizedEmbed");
+				}
+				frame.classList.add("isSizedEmbed");
+				frame.style.setProperty("height", Math.ceil(height) + "px", "important");
+				return true;
+			});
+		});
+	}
+
 	function normalizeMetadata() {
 		Array.prototype.forEach.call(metadataItems, function (metadataItem) {
 			if (metadataItem === readingTime) {
@@ -760,6 +927,11 @@
 		}
 	}
 
+	markInlineImages();
+	removeStrayBreaks();
+	markFootnotes();
+	markUntitled();
+	sizeEmbeddedPosts();
 	hideBlankBlocks();
 	normalizeMetadata();
 	hideEmptyExternalLink();

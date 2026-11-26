@@ -36,7 +36,7 @@ async function loadFixture(page, options = {}) {
 				<ol id="readerTocList"></ol>
 			</nav>
 			<header class="articleHeader" id="readerTop">
-				<div class="articleTitle"><h1><a href="#">${articleTitle}</a></h1></div>
+				<div class="articleTitle"><h1><a href="#">${options.title ?? articleTitle}</a></h1></div>
 				<div class="articleMeta"><span class="feedName">Field Notes</span></div>
 				<div class="externalLink" hidden></div>
 			</header>
@@ -435,4 +435,132 @@ test("@webkit keeps fixed-width feed blocks and Substack image buttons in check"
 	expect(state.fits).toBe(true);
 	expect(state.pageWidth).toBeLessThanOrEqual(state.viewport);
 	await expect(page.locator("#restack")).toBeHidden();
+});
+
+const svg = (width, height, fill = "%236e70b8") =>
+	`data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22${width}%22 height=%22${height}%22%3E%3Crect width=%22${width}%22 height=%22${height}%22 fill=%22${fill}%22/%3E%3C/svg%3E`;
+
+test("@webkit keeps icons and emoji drawn as images inside the line", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 0,
+		html: `<p id="df">There are no <img id="em-icon" alt="" style="height: 1em;" src="${svg(120, 120)}"> buttons in the menu bar.</p>
+			<p>A <img id="attr-icon" alt="" width="16" height="16" src="${svg(64, 64)}"> icon and an emoji<img id="wp-emoji" alt="" src="${svg(72, 72)}#/images/core/emoji/15/svg/1f634.svg"> in the line.</p>
+			<p id="pixel-p"><img id="pixel" alt="" width="1" height="1" src="${svg(1, 1)}"></p>
+			<p><img id="photo" alt="" width="1200" height="600" src="${svg(1200, 600)}"></p>`,
+	});
+	const state = await page.evaluate(() => {
+		const line = Number.parseFloat(getComputedStyle(document.querySelector("#df")).fontSize);
+		const box = (id) => document.getElementById(id).getBoundingClientRect();
+		return {
+			line,
+			icons: ["em-icon", "attr-icon", "wp-emoji"].map((id) => ({
+				id,
+				height: box(id).height,
+				display: getComputedStyle(document.getElementById(id)).display,
+			})),
+			pixel: getComputedStyle(document.getElementById("pixel")).display,
+			photo: { display: getComputedStyle(document.getElementById("photo")).display, width: box("photo").width },
+		};
+	});
+	for (const icon of state.icons) {
+		expect(icon.display, icon.id).toBe("inline");
+		expect(icon.height, icon.id).toBeLessThanOrEqual(state.line * 1.3);
+	}
+	expect(state.pixel).toBe("none");
+	expect(state.photo.display).toBe("block");
+	expect(state.photo.width).toBeGreaterThan(300);
+});
+
+test("@webkit gives floated images room beside the text, and unfloats them on iPhone", async ({ page }) => {
+	const html = `<p><img id="float" align="left" alt="" width="400" height="300" src="${svg(400, 300)}">${paragraph} ${paragraph}</p>`;
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await loadFixture(page, { paragraphCount: 0, html });
+	const wide = await page.evaluate(() => {
+		const image = document.getElementById("float");
+		const style = getComputedStyle(image);
+		return {
+			float: style.float,
+			width: image.getBoundingClientRect().width,
+			column: document.getElementById("bodyContainer").getBoundingClientRect().width,
+			gap: Number.parseFloat(style.marginRight),
+		};
+	});
+	expect(wide.float).toBe("left");
+	expect(wide.width).toBeLessThanOrEqual(wide.column / 2 + 0.5);
+	expect(wide.gap).toBeGreaterThanOrEqual(16);
+
+	await page.setViewportSize({ width: 390, height: 844 });
+	await expect(page.locator("#float")).toHaveCSS("float", "none");
+});
+
+test("@webkit removes line breaks around blocks and images but keeps them inside text", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 0,
+		html: `<p id="lead">${paragraph}<br><br/></p><p id="image-p"><br/><br><img id="hero" alt="" width="600" height="300" src="${svg(600, 300)}"><br><br/><br>After the image.<br><br/></p>
+			<p id="poem">Roses are red,<br>violets are blue.</p>
+			<pre id="code">line one<br>line two</pre>`,
+	});
+	const state = await page.evaluate(() => ({
+		lead: document.querySelectorAll("#lead br").length,
+		imageParagraph: document.querySelectorAll("#image-p br").length,
+		poem: document.querySelectorAll("#poem br").length,
+		code: document.querySelectorAll("#code br").length,
+	}));
+	expect(state).toEqual({ lead: 0, imageParagraph: 0, poem: 1, code: 1 });
+});
+
+test("@webkit opens footnotes that link through the site's home page", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 0,
+		html: `<p>${paragraph}<sup id="fnref-1-x"><a id="ref" href="https://sixcolors.com#fn-1-x" class="jetpack-footnote">1</a></sup></p>
+			<p>A link elsewhere<sup><a id="other" href="https://example.com#fn-9">2</a></sup>.</p>
+			<div class="footnotes"><hr><ol><li id="fn-1-x">The note. <a id="back" href="https://sixcolors.com#fnref-1-x">↩</a></li></ol></div>`,
+	});
+	await expect(page.locator("#ref")).toHaveClass(/(^|\s)footnote(\s|$)/);
+	await expect(page.locator("#other")).not.toHaveClass(/(^|\s)footnote(\s|$)/);
+	await expect(page.locator("#back")).not.toHaveClass(/(^|\s)footnote(\s|$)/);
+});
+
+test("@webkit starts a post with no title at its source line", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, { paragraphCount: 2, title: "" });
+	await expect(page.locator("#readerTop")).toHaveClass(/isUntitled/);
+	await expect(page.locator(".articleTitle")).toBeHidden();
+	const gap = await page.evaluate(
+		() => document.querySelector(".articleMeta").getBoundingClientRect().top - document.body.getBoundingClientRect().top,
+	);
+	expect(gap).toBeLessThan(60);
+
+	await loadFixture(page, { paragraphCount: 2 });
+	await expect(page.locator(".articleTitle")).toBeVisible();
+});
+
+test("@webkit sizes embedded posts to the height they report", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<div class="iframeWrap"><iframe id="post" src="about:blank"></iframe></div><div class="iframeWrap"><iframe id="video" src="about:blank"></iframe></div>`,
+	});
+	await page.evaluate(() => {
+		const post = document.getElementById("post").contentWindow;
+		const video = document.getElementById("video").contentWindow;
+		const resize = { "twttr.embed": { method: "twttr.private.resize", params: [{ width: 358, height: 584 }] } };
+		window.dispatchEvent(new MessageEvent("message", { data: JSON.stringify(resize), origin: "https://platform.twitter.com", source: post }));
+		window.dispatchEvent(new MessageEvent("message", { data: { height: 900 }, origin: "https://www.youtube.com", source: video }));
+	});
+	const heights = await page.evaluate(() => ["post", "video"].map((id) => document.getElementById(id).getBoundingClientRect().height));
+	expect(heights[0]).toBeCloseTo(584, 0);
+	expect(heights[1]).toBeLessThan(260);
+});
+
+test("@webkit keeps readable text above 4.5:1 and darkens it under Increase Contrast", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, { paragraphCount: 1, html: '<p class="systemMessage" id="message">No article selected</p>' });
+	const color = () => page.locator("#message").evaluate((node) => getComputedStyle(node).color);
+	expect(await color()).toBe("rgb(112, 107, 100)");
+	await page.emulateMedia({ contrast: "more" });
+	expect(await color()).toBe("rgb(77, 72, 66)");
 });
