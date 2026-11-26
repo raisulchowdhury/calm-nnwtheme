@@ -22,10 +22,6 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/iphone/podcast-caption.jpg" width="720" alt="A podcast player caption: before, a file name and h:mm:ss; after, just the length, 1 hr 24 min">
 
-### duplicate-cover
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/iphone/duplicate-cover.jpg" width="720" alt="A Latent Space episode: before, the cover picture twice in a row; after, once">
-
 ### x-embed-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/iphone/x-embed-dark.jpg" width="720" alt="An embedded X post in dark mode: before, a white card; after, a dark card">
