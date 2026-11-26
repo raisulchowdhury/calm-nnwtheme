@@ -26,8 +26,8 @@ function fixtureBody({ headings = [], paragraphCount = 24, image = false, lateMe
 }
 
 async function loadFixture(page, options = {}) {
-	await page.setContent(`<!doctype html>
-		<html>
+	// No doctype: NetNewsWire's page.html has none, so articles render in quirks mode.
+	await page.setContent(`<html dir="auto">
 		<head><meta name="viewport" content="width=device-width, initial-scale=1"><style>${stylesheet}</style></head>
 		<body>
 			<nav class="readerToc" aria-label="Article sections" hidden>
@@ -599,18 +599,35 @@ test("@webkit marks Japanese, Chinese, Korean, Arabic, and Hebrew articles for t
 });
 
 test("@webkit lays out Ghost gallery rows side by side at one height", async ({ page }) => {
-	await page.setViewportSize({ width: 1280, height: 800 });
+	await page.setViewportSize({ width: 390, height: 844 });
 	await loadFixture(page, {
 		paragraphCount: 1,
-		html: `<figure class="kg-card kg-gallery-card"><div class="kg-gallery-container"><div class="kg-gallery-row">
-			<div class="kg-gallery-image"><img id="g1" width="1600" height="2000" src="${svg(1600, 2000)}" alt=""></div>
-			<div class="kg-gallery-image"><img id="g2" width="2000" height="1600" src="${svg(2000, 1600, "%23f1b35c")}" alt=""></div>
-		</div></div></figure>`,
+		html: `<figure class="kg-card kg-gallery-card kg-width-wide"><div class="kg-gallery-container"><div class="kg-gallery-row">
+			<div class="kg-gallery-image"><img id="g1" width="1600" height="2000" loading="lazy" sizes="(min-width: 720px) 720px" alt=""></div>
+			<div class="kg-gallery-image"><img id="g2" width="2000" height="1600" loading="lazy" sizes="(min-width: 720px) 720px" alt=""></div>
+		</div></div></figure>
+			<figure class="wp-block-gallery has-nested-images is-cropped"><figure class="wp-block-image"><img id="wp1" width="1200" height="926" alt=""></figure></figure>`,
 	});
-	const [a, b] = await page.evaluate(() => ["g1", "g2"].map((id) => document.getElementById(id).getBoundingClientRect().toJSON()));
+	// Bitmaps, since WebKit reports an SVG's natural size as its shown size.
+	await page.evaluate(async () => {
+		for (const [id, width, height] of [["g1", 800, 1000], ["g2", 1000, 800], ["wp1", 600, 463]]) {
+			const canvas = document.createElement("canvas");
+			canvas.width = width;
+			canvas.height = height;
+			canvas.getContext("2d").fillRect(0, 0, width, height);
+			const image = document.getElementById(id);
+			image.src = canvas.toDataURL("image/png");
+			await image.decode();
+		}
+	});
+	const [a, b, wp] = await page.evaluate(() => ["g1", "g2", "wp1"].map((id) => document.getElementById(id).getBoundingClientRect().toJSON()));
 	expect(Math.abs(a.top - b.top)).toBeLessThan(1);
 	expect(Math.abs(a.height - b.height)).toBeLessThan(2);
 	expect(b.left).toBeGreaterThan(a.right);
+	// Each picture keeps its own shape instead of stretching to the screen height.
+	expect(Math.abs(a.height - a.width * 2000 / 1600)).toBeLessThan(3);
+	expect(Math.abs(b.height - b.width * 1600 / 2000)).toBeLessThan(3);
+	expect(Math.abs(wp.height - wp.width * 926 / 1200)).toBeLessThan(3);
 });
 
 test("@webkit shows Substack and Ghost link cards as one quiet box", async ({ page }) => {

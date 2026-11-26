@@ -1291,9 +1291,8 @@ sub {
 .articleBody .kg-gallery-image img {
 	display: block;
 	width: 100%;
-	height: 100% !important;
+	height: auto !important;
 	margin: 0;
-	object-fit: cover;
 }
 
 .articleBody .wp-block-gallery {
@@ -1311,11 +1310,6 @@ sub {
 .articleBody .wp-block-gallery > figure img {
 	width: 100%;
 	margin: 0;
-}
-
-.articleBody .wp-block-gallery.is-cropped > figure img {
-	height: 100% !important;
-	object-fit: cover;
 }
 
 .articleBody .wp-block-gallery > figcaption {
