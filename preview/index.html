@@ -306,6 +306,237 @@
 		});
 	}
 
+	// NetNewsWire leaves the page's language unset, so Chinese, Japanese,
+	// Korean, Arabic, and Hebrew articles get Latin line breaking and whatever
+	// font the system picks. When most of the opening text is one of those
+	// scripts, say so; the stylesheet then picks a serif for it.
+	function markArticleLanguage() {
+		if (!body || !body.closest || body.closest("[lang]")) {
+			return;
+		}
+		var sample = (body.textContent || "").slice(0, 1500);
+		var letters = sample.replace(/[\s\d\p{P}\p{S}]/gu, "").length;
+		if (letters < 20) {
+			return;
+		}
+		function share(pattern) {
+			return (sample.match(pattern) || []).length / letters;
+		}
+		var lang = "";
+		if (share(/[぀-ヿ]/g) > 0.1) {
+			lang = "ja";
+		} else if (share(/[가-힯]/g) > 0.3) {
+			lang = "ko";
+		} else if (share(/[一-鿿]/g) > 0.3) {
+			lang = "zh";
+		} else if (share(/[؀-ۿ]/g) > 0.3) {
+			lang = "ar";
+		} else if (share(/[֐-׿]/g) > 0.3) {
+			lang = "he";
+		}
+		if (lang) {
+			body.setAttribute("lang", lang);
+			if (header) {
+				header.setAttribute("lang", lang);
+			}
+		}
+	}
+
+	// Ghost galleries come as rows of images that Ghost's own script sizes.
+	// Give each image a share of its row in proportion to its shape, so a row
+	// lines up at one height the way it does on the site.
+	function layoutGalleries() {
+		if (!body) {
+			return;
+		}
+		Array.prototype.forEach.call(body.querySelectorAll(".kg-gallery-image"), function (cell) {
+			var image = cell.querySelector("img");
+			var width = image ? parseFloat(image.getAttribute("width")) : 0;
+			var height = image ? parseFloat(image.getAttribute("height")) : 0;
+			if (width > 0 && height > 0) {
+				cell.style.flex = (width / height).toFixed(4) + " 1 0%";
+			}
+		});
+	}
+
+	// NetNewsWire captions a podcast player with "title · duration · size",
+	// and with the audio file's name when the feed gives no title. Keep the
+	// title and say the duration in words; drop the file name and size.
+	function quietAudioCaptions() {
+		var captions = document.querySelectorAll ? document.querySelectorAll(".nnw-enclosure-audio .nnw-enclosure-caption") : [];
+		Array.prototype.forEach.call(captions, function (caption) {
+			var parts = caption.innerHTML.split(" · ");
+			var kept = [];
+			parts.forEach(function (part) {
+				var text = part.replace(/<[^>]*>/g, "").trim();
+				var time = /^(?:(\d+):)?(\d{1,2}):(\d{2})$/.exec(text);
+				if (!text || /^[\d.,]+\s?(?:bytes|KB|MB|GB)$/i.test(text) || (/^<a\b/i.test(part.trim()) && /\.(?:mp3|m4a|aac|ogg|oga|opus|wav|flac|mp4|m4v|mov)$/i.test(text))) {
+					return;
+				}
+				if (time) {
+					var hours = Number(time[1] || 0);
+					var minutes = Math.round(Number(time[2]) + Number(time[3]) / 60);
+					if (minutes === 60) {
+						hours += 1;
+						minutes = 0;
+					}
+					kept.push(hours ? hours + " hr" + (minutes ? " " + minutes + " min" : "") : Math.max(minutes, 1) + " min");
+					return;
+				}
+				kept.push(part);
+			});
+			if (kept.length) {
+				caption.innerHTML = kept.join(" · ");
+			} else {
+				caption.hidden = true;
+			}
+		});
+	}
+
+	// On the Mac, a picture shown smaller than its real size opens larger on
+	// click, on a plain backdrop with its caption. iPhone and iPad have
+	// NetNewsWire's own image viewer, so this stays off there. Linked images
+	// keep their links.
+	function enableImageViewer() {
+		var fineHover = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)");
+		if (!body || !fineHover || !fineHover.matches || /iPhone|iPad/.test(navigator.userAgent) || ("ontouchend" in document && navigator.maxTouchPoints > 1)) {
+			return;
+		}
+
+		var viewer = null;
+		var lastFocus = null;
+
+		function isZoomable(image) {
+			return image.naturalWidth > image.getBoundingClientRect().width * 1.25 && image.naturalWidth >= 400;
+		}
+
+		function close() {
+			if (!viewer) {
+				return;
+			}
+			viewer.remove();
+			viewer = null;
+			document.removeEventListener("keydown", onKey, true);
+			if (lastFocus && lastFocus.focus) {
+				lastFocus.focus();
+			}
+		}
+
+		function onKey(event) {
+			if (event.key === "Escape" || event.key === " ") {
+				event.preventDefault();
+				close();
+			}
+		}
+
+		function open(image) {
+			lastFocus = document.activeElement;
+			viewer = document.createElement("div");
+			viewer.className = "calmViewer";
+			viewer.setAttribute("role", "dialog");
+			viewer.setAttribute("aria-modal", "true");
+			viewer.setAttribute("aria-label", image.alt || "Image");
+			viewer.tabIndex = -1;
+			var large = document.createElement("img");
+			large.src = image.currentSrc || image.src;
+			large.alt = image.alt || "";
+			viewer.appendChild(large);
+			var figure = image.closest("figure");
+			var captionSource = figure ? figure.querySelector("figcaption") : null;
+			var captionText = captionSource ? captionSource.textContent.trim() : "";
+			if (captionText) {
+				var caption = document.createElement("p");
+				caption.className = "calmViewerCaption";
+				caption.textContent = captionText;
+				viewer.appendChild(caption);
+			}
+			viewer.addEventListener("click", close);
+			document.body.appendChild(viewer);
+			document.addEventListener("keydown", onKey, true);
+			viewer.focus();
+		}
+
+		// Decide when the pointer reaches a picture, once it is laid out and
+		// loaded, so a resized window or a late image is judged correctly.
+		body.addEventListener("mouseover", function (event) {
+			var image = event.target;
+			if (!image || image.tagName !== "IMG" || image.closest("a, button") || image.hasAttribute("data-calm-inline")) {
+				return;
+			}
+			image.classList.toggle("isZoomable", image.complete && isZoomable(image));
+		});
+
+		body.addEventListener("click", function (event) {
+			var image = event.target && event.target.closest ? event.target.closest("img.isZoomable") : null;
+			if (image && isZoomable(image)) {
+				event.preventDefault();
+				open(image);
+			}
+		});
+	}
+
+	// On the Mac, a code block shows a quiet Copy button while the pointer is
+	// over it. Touch screens select text instead, so they get no button.
+	function enableCodeCopy() {
+		var fineHover = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)");
+		if (!body || !fineHover || !fineHover.matches) {
+			return;
+		}
+
+		function copyText(text, done) {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text).then(done, function () {
+					copyWithSelection(text, done);
+				});
+			} else {
+				copyWithSelection(text, done);
+			}
+		}
+
+		function copyWithSelection(text, done) {
+			var area = document.createElement("textarea");
+			area.value = text;
+			area.setAttribute("readonly", "");
+			area.style.position = "fixed";
+			area.style.opacity = "0";
+			document.body.appendChild(area);
+			area.select();
+			var copied = false;
+			try {
+				copied = document.execCommand("copy");
+			} catch (error) {}
+			area.remove();
+			if (copied) {
+				done();
+			}
+		}
+
+		Array.prototype.forEach.call(body.querySelectorAll("pre"), function (pre) {
+			var text = (pre.innerText || pre.textContent || "").replace(/\n$/, "");
+			if (pre.closest("table") || text.split("\n").length < 2 && text.length < 40) {
+				return;
+			}
+			var wrap = document.createElement("div");
+			wrap.className = "calmCode";
+			pre.parentNode.insertBefore(wrap, pre);
+			wrap.appendChild(pre);
+			var button = document.createElement("button");
+			button.type = "button";
+			button.className = "calmCopy";
+			button.textContent = "Copy";
+			button.setAttribute("aria-label", "Copy code");
+			button.addEventListener("click", function () {
+				copyText((pre.innerText || pre.textContent || "").replace(/\n$/, ""), function () {
+					button.textContent = "Copied";
+					setTimeout(function () {
+						button.textContent = "Copy";
+					}, 1400);
+				});
+			});
+			wrap.appendChild(button);
+		});
+	}
+
 	function normalizeMetadata() {
 		Array.prototype.forEach.call(metadataItems, function (metadataItem) {
 			if (metadataItem === readingTime) {
@@ -932,11 +1163,16 @@
 	markFootnotes();
 	markUntitled();
 	sizeEmbeddedPosts();
+	markArticleLanguage();
+	layoutGalleries();
+	quietAudioCaptions();
 	hideBlankBlocks();
 	normalizeMetadata();
 	hideEmptyExternalLink();
 	updateReadingTime();
 	updateMetadataVisibility();
+	enableCodeCopy();
+	enableImageViewer();
 	observeCompactRail();
 	syncTocMode();
 })();

@@ -564,3 +564,109 @@ test("@webkit keeps readable text above 4.5:1 and darkens it under Increase Cont
 	await page.emulateMedia({ contrast: "more" });
 	expect(await color()).toBe("rgb(77, 72, 66)");
 });
+
+test("@webkit quiets NetNewsWire 7.3 podcast captions", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.setContent(`<!doctype html><html><head><style>${stylesheet}</style></head><body>
+		<header class="articleHeader" id="readerTop"><div class="articleTitle"><h1><a href="#">${articleTitle}</a></h1></div></header>
+		<article>
+			<div class="nnw-primary-media"><div class="nnw-enclosure nnw-enclosure-audio" id="untitled"><audio controls preload="none"></audio><div class="nnw-enclosure-caption"><a href="https://example.com/a9606f26acc6870494c29aa0a5007a9d.mp3">a9606f26acc6870494c29aa0a5007a9d.mp3</a> · 53.8 MB</div></div></div>
+			<div id="bodyContainer" class="articleBody mediumText"><p>${paragraph}</p></div>
+			<div class="nnw-enclosures"><div class="nnw-enclosure nnw-enclosure-audio" id="titled"><audio controls preload="none"></audio><div class="nnw-enclosure-caption">Episode 311 · 1:54:09 · 54.9 MB</div></div>
+			<div class="nnw-enclosure nnw-enclosure-audio" id="short"><audio controls preload="none"></audio><div class="nnw-enclosure-caption">42:31</div></div></div>
+		</article>
+		<script>${themeScript}</script></body></html>`);
+	await expect(page.locator("#untitled .nnw-enclosure-caption")).toBeHidden();
+	await expect(page.locator("#titled .nnw-enclosure-caption")).toHaveText("Episode 311 · 1 hr 54 min");
+	await expect(page.locator("#short .nnw-enclosure-caption")).toHaveText("43 min");
+});
+
+test("@webkit marks Japanese, Chinese, Korean, Arabic, and Hebrew articles for their own serif", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	const samples = {
+		ja: "静かな読書のための画面は、言葉が自分のリズムを作るための余白を与えます。ここではそれを確かめます。",
+		zh: "安静的阅读界面让文字有足够的空间建立自己的节奏，而不会增加另一层界面。我们在这里检查它。",
+		ko: "조용한 읽기 화면은 글이 스스로 리듬을 만들 수 있도록 충분한 여백을 줍니다. 여기서 확인합니다.",
+		ar: "تمنح واجهة القراءة الهادئة الكلمات مساحة كافية لتأسيس إيقاعها الخاص دون إضافة طبقة أخرى.",
+		he: "משטח קריאה שקט נותן למילים מספיק מקום כדי לבסס את הקצב שלהן בלי להוסיף עוד שכבה.",
+	};
+	for (const [lang, text] of Object.entries(samples)) {
+		await loadFixture(page, { paragraphCount: 0, html: `<p>${text}</p><p>${text}</p>` });
+		await expect(page.locator("#bodyContainer")).toHaveAttribute("lang", lang);
+	}
+	await loadFixture(page, { paragraphCount: 2 });
+	await expect(page.locator("#bodyContainer")).not.toHaveAttribute("lang", /.+/);
+});
+
+test("@webkit lays out Ghost gallery rows side by side at one height", async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<figure class="kg-card kg-gallery-card"><div class="kg-gallery-container"><div class="kg-gallery-row">
+			<div class="kg-gallery-image"><img id="g1" width="1600" height="2000" src="${svg(1600, 2000)}" alt=""></div>
+			<div class="kg-gallery-image"><img id="g2" width="2000" height="1600" src="${svg(2000, 1600, "%23f1b35c")}" alt=""></div>
+		</div></div></figure>`,
+	});
+	const [a, b] = await page.evaluate(() => ["g1", "g2"].map((id) => document.getElementById(id).getBoundingClientRect().toJSON()));
+	expect(Math.abs(a.top - b.top)).toBeLessThan(1);
+	expect(Math.abs(a.height - b.height)).toBeLessThan(2);
+	expect(b.left).toBeGreaterThan(a.right);
+});
+
+test("@webkit shows Substack and Ghost link cards as one quiet box", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<div class="embedded-post-wrap"><a class="embedded-post" href="https://example.com/p"><div class="embedded-post-header"><span class="embedded-post-publication-name">SemiAnalysis</span></div><div class="embedded-post-title-wrapper"><div class="embedded-post-title">A post</div></div><div class="embedded-post-body">${paragraph} ${paragraph}</div><div class="embedded-post-cta-wrapper"><span class="embedded-post-cta">Read more</span></div><div class="embedded-post-meta" id="meta">7 days ago · 338 likes · 4 comments</div></a></div>
+			<figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" id="bookmark" href="https://example.com/b"><div class="kg-bookmark-content"><div class="kg-bookmark-title">A bookmark</div><div class="kg-bookmark-description">${paragraph}</div></div></a></figure>`,
+	});
+	await expect(page.locator("#meta")).toBeHidden();
+	await expect(page.locator(".embedded-post-cta")).toBeHidden();
+	await expect(page.locator(".embedded-post")).toHaveCSS("text-decoration-line", "none");
+	await expect(page.locator("#bookmark")).toHaveCSS("border-top-style", "solid");
+});
+
+test("@webkit offers a Copy button on code blocks with a mouse", async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await loadFixture(page, { paragraphCount: 1, html: "<pre id=\"code\"><code>make all\nmake install</code></pre><pre id=\"tiny\">ls</pre>" });
+	const button = page.locator(".calmCopy");
+	await expect(button).toHaveCount(1);
+	await expect(button).toHaveCSS("opacity", "0");
+	await page.locator("#code").hover();
+	await expect(button).toHaveCSS("opacity", "1");
+});
+
+test("@webkit opens a picture shown smaller than its size, and closes it with Escape", async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<figure><img id="big" alt="Blocks"><figcaption>Warm blocks</figcaption></figure><a href="https://example.com"><img id="linked" alt=""></a><img id="small" alt="">`,
+	});
+	// A bitmap, since WebKit reports an SVG's natural width as its shown width.
+	await page.evaluate(async () => {
+		const bitmap = (width, height) => {
+			const canvas = document.createElement("canvas");
+			canvas.width = width;
+			canvas.height = height;
+			canvas.getContext("2d").fillRect(0, 0, width, height);
+			return canvas.toDataURL("image/png");
+		};
+		const big = bitmap(2400, 1200);
+		for (const [id, src] of [["big", big], ["linked", big], ["small", bitmap(300, 150)]]) {
+			const image = document.getElementById(id);
+			image.src = src;
+			await image.decode();
+		}
+	});
+	await page.locator("#linked").hover();
+	await expect(page.locator("#linked")).not.toHaveClass(/isZoomable/);
+	await page.locator("#small").hover();
+	await expect(page.locator("#small")).not.toHaveClass(/isZoomable/);
+	await page.locator("#big").hover();
+	await expect(page.locator("#big")).toHaveClass(/isZoomable/);
+	await page.locator("#big").click();
+	await expect(page.locator(".calmViewer")).toBeVisible();
+	await expect(page.locator(".calmViewerCaption")).toHaveText("Warm blocks");
+	await page.keyboard.press("Escape");
+	await expect(page.locator(".calmViewer")).toHaveCount(0);
+});
