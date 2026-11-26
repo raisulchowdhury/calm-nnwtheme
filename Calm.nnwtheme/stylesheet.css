@@ -1439,6 +1439,19 @@ sub {
 	transition: opacity 120ms ease;
 }
 
+/* A one-line command scrolls under the button, so the button becomes a
+   full-height cap at the line's end and hides what runs beneath it. */
+.calmCodeOneLine .calmCopy {
+	top: 0;
+	right: 0;
+	bottom: 0;
+	padding: 0 0.9rem;
+	border: 0;
+	border-left: 1px solid var(--reader-rule);
+	border-radius: 0 var(--reader-radius) var(--reader-radius) 0;
+	background: var(--reader-code-bg);
+}
+
 .calmCode:hover .calmCopy,
 .calmCopy:focus-visible {
 	opacity: 1;

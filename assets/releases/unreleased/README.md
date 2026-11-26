@@ -29,3 +29,11 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### Gallery row, in the NetNewsWire app (Mac)
 
 <img src="gallery-row-in-app.jpg" alt="Gallery row in NetNewsWire: before, each photo is a cropped full-height block; after, three photos share one row">
+
+### Copy button on one-line commands, in the NetNewsWire app (Mac)
+
+<img src="code-copy-one-line-in-app.jpg" alt="Before, the Copy button sits over the end of a one-line command; after, it is a full-height cap at the line's end">
+
+### Link card, in the NetNewsWire app (Mac)
+
+<img src="link-card-in-app.jpg" alt="Link card in NetNewsWire: before, a run of underlined text; after, a bordered card with title and summary">

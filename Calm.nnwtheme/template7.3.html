@@ -513,7 +513,8 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 				return;
 			}
 			var wrap = document.createElement("div");
-			wrap.className = "calmCode";
+			// A one-line command gets a full-height Copy cap (see .calmCodeOneLine).
+			wrap.className = text.indexOf("\n") < 0 ? "calmCode calmCodeOneLine" : "calmCode";
 			pre.parentNode.insertBefore(wrap, pre);
 			wrap.appendChild(pre);
 			var button = document.createElement("button");

@@ -653,6 +653,18 @@ test("@webkit offers a Copy button on code blocks with a mouse", async ({ page }
 	await expect(button).toHaveCSS("opacity", "1");
 });
 
+test("@webkit caps a one-line command with a full-height Copy button", async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	// A long single line scrolls under the button, as on Latent Space's Ollama command.
+	const line = "OLLAMA_HOST=127.0.0.1:11434 OLLAMA_NO_CLOUD=1 OLLAMA_CONTEXT_LENGTH=65536 ollama serve";
+	await loadFixture(page, { paragraphCount: 1, html: `<pre id="one">${line}</pre>` });
+	const pre = await page.locator("#one").boundingBox();
+	const button = await page.locator(".calmCopy").boundingBox();
+	expect(Math.abs(button.y - pre.y)).toBeLessThanOrEqual(1);
+	expect(Math.abs(button.height - pre.height)).toBeLessThanOrEqual(1);
+	expect(Math.abs(button.x + button.width - (pre.x + pre.width))).toBeLessThanOrEqual(1);
+});
+
 test("@webkit opens a picture shown smaller than its size, and closes it with Escape", async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 800 });
 	await loadFixture(page, {
