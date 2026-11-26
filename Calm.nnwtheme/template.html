@@ -505,8 +505,8 @@ body: The body of the article.
 	}
 
 	// X's embed script draws a white card unless the blockquote asks for dark.
-	// It often runs before this script, so ask early where we can and redraw
-	// any light card in dark with X's own API once it has loaded.
+	// Ask before it draws. Never reload or redraw a card afterwards: the swap
+	// shows as a late, flickering card. A card X already drew stays as it is.
 	function matchTweetTheme() {
 		var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
 		if (!body || !dark) {
@@ -517,46 +517,6 @@ body: The body of the article.
 				quote.setAttribute("data-theme", "dark");
 			}
 		});
-		// Some feeds (Latent Space on beehiiv) embed X's card frame directly, with
-		// no theme. Ask that frame for its dark card.
-		Array.prototype.forEach.call(body.querySelectorAll('iframe[src^="https://platform.twitter.com/embed/Tweet.html"]'), function (frame) {
-			var source = frame.getAttribute("src") || "";
-			if (!frame.closest(".twitter-tweet") && !/[?&#]theme=/.test(source)) {
-				frame.setAttribute("src", source.replace(/#.*$/, "") + (source.indexOf("?") < 0 ? "?" : "&") + "theme=dark");
-			}
-		});
-		if (!body.querySelector(".twitter-tweet, iframe")) {
-			return;
-		}
-		var tries = 0;
-		function redrawLightCards() {
-			var widgets = window.twttr && window.twttr.widgets;
-			var frames = body.querySelectorAll('iframe[src^="https://platform.twitter.com/embed/Tweet.html"]');
-			if (!widgets || !widgets.createTweet || !frames.length) {
-				if (++tries < 40) {
-					setTimeout(redrawLightCards, 250);
-				}
-				return;
-			}
-			Array.prototype.forEach.call(frames, function (frame) {
-				var source = frame.getAttribute("src") || "";
-				var id = (source.match(/[?&#]id=(\d+)/) || [])[1];
-				if (!id || !/[?&#]theme=light\b/.test(source)) {
-					return;
-				}
-				var old = frame.closest(".twitter-tweet") || frame;
-				var holder = document.createElement("div");
-				old.parentNode.insertBefore(holder, old);
-				widgets.createTweet(id, holder, { theme: "dark", dnt: true }).then(function (made) {
-					if (made) {
-						old.parentNode && old.parentNode.removeChild(old);
-					} else {
-						holder.parentNode && holder.parentNode.removeChild(holder);
-					}
-				});
-			});
-		}
-		redrawLightCards();
 	}
 
 	// On the Mac, a code block shows a quiet Copy button while the pointer is

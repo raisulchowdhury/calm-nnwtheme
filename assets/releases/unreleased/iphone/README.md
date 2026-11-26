@@ -33,11 +33,3 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### video-embed
 
 <img src="video-embed.jpg" alt="A Latent Space post on iPhone: before, the YouTube video covers the first line below it; after, the line is clear">
-
-### x-frame-dark
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/iphone/x-frame-dark.jpg" width="720" alt="A Latent Space post with X card frame embedded directly, in dark mode: before, a white card; after, a dark card">
-
-### x-frame-dark
-
-<img src="x-frame-dark.jpg" alt="A Latent Space post in dark mode with X's card frame embedded directly: before, a white card; after, a dark card">
