@@ -45,3 +45,15 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### X posts follow dark mode, in the NetNewsWire app (Mac)
 
 <img src="x-embed-dark-in-app.jpg" alt="Embedded X post: before, a white card on the dark page; after, a dark card">
+
+### Podcast caption, in the NetNewsWire app (Mac)
+
+<img src="podcast-caption-in-app.jpg" alt="Dwarkesh episode: before, the player caption shows a hashed .mp3 file name; after, the caption is quiet">
+
+### Footnotes, in the NetNewsWire app (Mac)
+
+<img src="footnote-in-app.jpg" alt="Six Colors footnote popover: same popover, without the stray back-link arrow">
+
+### Untitled posts, in the NetNewsWire app (Mac)
+
+<img src="untitled-post-in-app.jpg" alt="Manton Reece post with no title: after, the empty title gap above the date is gone">
