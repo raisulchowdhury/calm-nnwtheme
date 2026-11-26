@@ -6,7 +6,7 @@
 // Articles live in .corpus/<id>.json (gitignored: feed content stays local). Use free,
 // public feeds only for anything published.
 //
-// Usage: node scripts/before-after.mjs [--base origin/main] [--label "Calm 1.5.0"] [--out assets/releases/unreleased] [case ...]
+// Usage: node scripts/before-after.mjs [--base origin/main] [--label "Calm 1.5.0"] [--out assets/releases/unreleased] [--scheme light|dark] [case ...]
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -19,6 +19,7 @@ const flag = (name, fallback) => { const i = args.indexOf(name); if (i < 0) retu
 const base = flag("--base", "origin/main");
 const label = flag("--label", "This change");
 const out = flag("--out", "assets/releases/unreleased");
+const scheme = flag("--scheme", "light");
 const only = args;
 const root = new URL("..", import.meta.url).pathname;
 
@@ -29,6 +30,9 @@ export const cases = [
 	{ slug: "gallery-row", id: "gallery-2", alt: "A Ghost photo gallery: before, photos stacked full width; after, one row at a single height", sel: ".kg-gallery-row", maxH: 640 },
 	{ slug: "link-card", id: "bookmark-2", alt: "A Substack link card: before, raw text, buttons and comment counts; after, one quiet card with source, title and a few lines", sel: ".embedded-post, .kg-bookmark-container" },
 	{ slug: "podcast-caption", id: "podcast-1", alt: "A podcast player caption: before, a file name and h:mm:ss; after, just the length, 1 hr 24 min", sel: ".nnw-primary-media", scope: "body", maxH: 760 },
+	{ slug: "duplicate-cover", id: "cover-1", alt: "A Latent Space episode: before, the cover picture twice in a row; after, once", top: 1100 },
+	{ slug: "x-embed-dark", id: "xembed-1", alt: "An embedded X post in dark mode: before, a white card; after, a dark card", sel: ".twitter-tweet", maxH: 900, wait: 6000 },
+	{ slug: "podcast-caption-file-name", id: "podcast-2", alt: "A Dwarkesh episode: before, the player caption is a hashed .mp3 file name; after, just the length", sel: ".nnw-primary-media", scope: "body", maxH: 760 },
 	{ slug: "code-copy", id: "pre-3", alt: "A code block on the Mac: after, a quiet Copy button appears on hover", sel: "pre", hasText: "paperjam: $(OBJS)", width: 900, act: "hover" },
 ];
 
@@ -44,9 +48,9 @@ async function shoot(c, which) {
 	const html = join(beforeDir, `${c.slug}-${which}.html`);
 	writeFileSync(html, buildPage({ theme: themes[which], article }));
 	const width = c.width || 390;
-	const page = await browser.newPage({ viewport: { width, height: 1600 }, deviceScaleFactor: 2 });
+	const page = await browser.newPage({ viewport: { width, height: 1600 }, deviceScaleFactor: 2, colorScheme: scheme });
 	await page.goto("file://" + html, { waitUntil: "load", timeout: 30000 }).catch(() => {});
-	await page.waitForTimeout(2000);
+	await page.waitForTimeout(c.wait || 2000);
 	let clip = { x: 0, y: 0, width, height: c.top || 520 };
 	if (c.sel) {
 		const el = page.locator(`${c.scope || "#bodyContainer"} :is(${c.sel})`).filter(c.hasText ? { hasText: c.hasText } : {}).first();
