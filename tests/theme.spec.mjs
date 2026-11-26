@@ -348,6 +348,45 @@ test("@webkit keeps NetNewsWire 7.3 media inside the reading measure", async ({ 
 	await expect(page.locator(".nnw-enclosure-caption")).toHaveCSS("color", "rgb(112, 107, 100)");
 });
 
+test("@webkit hides NetNewsWire's lead picture when the body opens with the same one", async ({ page }) => {
+	await page.setViewportSize({ width: 1180, height: 800 });
+	// As on Latent Space: the same file behind two different image-CDN paths.
+	const page73 = (bodyStart) => `<html dir="auto">
+		<head><style>${stylesheet}</style></head>
+		<body>
+			<header class="articleHeader" id="readerTop"><div class="articleTitle"><h1><a href="#">${articleTitle}</a></h1></div></header>
+			<article>
+				<div class="nnw-primary-media"><div class="nnw-primary-image"><img id="lead" src="https://media.example.com/uploads/asset/thumb.png" alt=""></div></div>
+				<div id="bodyContainer" class="articleBody mediumText">${bodyStart}<p>${paragraph}</p></div>
+			</article>
+			<script>${themeScript}</script>
+		</body>
+		</html>`;
+	const opening = `<div><a href="https://youtu.be/x"><img id="inBody" src="https://media.example.com/cdn-cgi/image/fit=scale-down,quality=80/uploads/asset/thumb.png?t=1" alt=""></a><small><a href="https://youtu.be/x">Open video on YouTube</a></small></div>`;
+
+	await page.setContent(page73(opening));
+	await expect(page.locator(".nnw-primary-media")).toHaveAttribute("hidden", "");
+	await expect(page.locator("#inBody")).toBeAttached();
+
+	// The same picture later in the text is a reprise, not a duplicate cover.
+	await page.setContent(page73(`<p>${paragraph}</p>${opening}`));
+	await expect(page.locator(".nnw-primary-media")).not.toHaveAttribute("hidden", "");
+});
+
+test("@webkit asks X embeds for a dark card in dark mode, and leaves light mode alone", async ({ page }) => {
+	await page.setViewportSize({ width: 1180, height: 800 });
+	const tweet = `<blockquote class="twitter-tweet"><p>Post</p>&mdash; Someone <a href="https://twitter.com/someone/status/1">March 26, 2026</a></blockquote><blockquote class="twitter-tweet" data-theme="light" id="chosen"><p>Post</p></blockquote>`;
+	await page.emulateMedia({ colorScheme: "dark" });
+	await loadFixture(page, { paragraphCount: 1, html: tweet });
+	await expect(page.locator("blockquote.twitter-tweet").first()).toHaveAttribute("data-theme", "dark");
+	// A theme the feed chose stays as it is.
+	await expect(page.locator("#chosen")).toHaveAttribute("data-theme", "light");
+
+	await page.emulateMedia({ colorScheme: "light" });
+	await loadFixture(page, { paragraphCount: 1, html: tweet });
+	await expect(page.locator("blockquote.twitter-tweet").first()).not.toHaveAttribute("data-theme", /./);
+});
+
 test("@webkit builds the map when NetNewsWire 7.3 primary media outside the body loads late", async ({ page }) => {
 	await page.setViewportSize({ width: 1180, height: 800 });
 	await loadFixture(page, { paragraphCount: 1 });

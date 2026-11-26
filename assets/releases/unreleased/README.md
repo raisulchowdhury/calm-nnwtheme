@@ -37,3 +37,11 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### Link card, in the NetNewsWire app (Mac)
 
 <img src="link-card-in-app.jpg" alt="Link card in NetNewsWire: before, a run of underlined text; after, a bordered card with title and summary">
+
+### Cover shown once, in the NetNewsWire app (Mac)
+
+<img src="duplicate-cover-in-app.jpg" alt="Latent Space episode: before, the cover appears twice; after, once">
+
+### X posts follow dark mode, in the NetNewsWire app (Mac)
+
+<img src="x-embed-dark-in-app.jpg" alt="Embedded X post: before, a white card on the dark page; after, a dark card">

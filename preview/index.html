@@ -483,6 +483,92 @@
 		});
 	}
 
+	// NetNewsWire 7.3 can show a feed's own lead picture above the body as
+	// primary media. When the body opens with that same picture (Latent Space
+	// does), the reader sees it twice; keep the body's copy, which carries the
+	// feed's link and caption.
+	function dropDuplicateLeadImage() {
+		var lead = document.querySelector(".nnw-primary-image img");
+		if (!body || !lead) {
+			return;
+		}
+		function pictureKey(image) {
+			var source = image.getAttribute("data-nnw-src") || image.getAttribute("src") || "";
+			try {
+				source = decodeURIComponent(new URL(source, document.baseURI).pathname);
+			} catch (error) {
+				source = source.split(/[?#]/)[0];
+			}
+			// Image CDNs put resizing options in the path, so compare the file name.
+			return source.split("/").filter(Boolean).pop() || "";
+		}
+		var key = pictureKey(lead);
+		var first = body.querySelector("img");
+		if (!key || !first || pictureKey(first) !== key) {
+			return;
+		}
+		// Only when the picture opens the body, before any real text.
+		var range = document.createRange();
+		range.setStart(body, 0);
+		range.setEndBefore(first);
+		if (range.toString().trim().length > 40) {
+			return;
+		}
+		var media = lead.closest(".nnw-primary-media");
+		var image = lead.closest(".nnw-primary-image");
+		image.hidden = true;
+		if (media && !media.querySelector(".nnw-enclosure, video, audio, iframe")) {
+			media.hidden = true;
+		}
+	}
+
+	// X's embed script draws a white card unless the blockquote asks for dark.
+	// It often runs before this script, so ask early where we can and redraw
+	// any light card in dark with X's own API once it has loaded.
+	function matchTweetTheme() {
+		var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+		if (!body || !dark) {
+			return;
+		}
+		Array.prototype.forEach.call(body.querySelectorAll("blockquote.twitter-tweet"), function (quote) {
+			if (!quote.hasAttribute("data-theme")) {
+				quote.setAttribute("data-theme", "dark");
+			}
+		});
+		if (!body.querySelector(".twitter-tweet, iframe")) {
+			return;
+		}
+		var tries = 0;
+		function redrawLightCards() {
+			var widgets = window.twttr && window.twttr.widgets;
+			var frames = body.querySelectorAll('iframe[src^="https://platform.twitter.com/embed/Tweet.html"]');
+			if (!widgets || !widgets.createTweet || !frames.length) {
+				if (++tries < 40) {
+					setTimeout(redrawLightCards, 250);
+				}
+				return;
+			}
+			Array.prototype.forEach.call(frames, function (frame) {
+				var source = frame.getAttribute("src") || "";
+				var id = (source.match(/[?&#]id=(\d+)/) || [])[1];
+				if (!id || !/[?&#]theme=light\b/.test(source)) {
+					return;
+				}
+				var old = frame.closest(".twitter-tweet") || frame;
+				var holder = document.createElement("div");
+				old.parentNode.insertBefore(holder, old);
+				widgets.createTweet(id, holder, { theme: "dark", dnt: true }).then(function (made) {
+					if (made) {
+						old.parentNode && old.parentNode.removeChild(old);
+					} else {
+						holder.parentNode && holder.parentNode.removeChild(holder);
+					}
+				});
+			});
+		}
+		redrawLightCards();
+	}
+
 	// On the Mac, a code block shows a quiet Copy button while the pointer is
 	// over it. Touch screens select text instead, so they get no button.
 	function enableCodeCopy() {
@@ -1202,6 +1288,8 @@
 	safely(markArticleLanguage);
 	safely(layoutGalleries);
 	safely(quietAudioCaptions);
+	safely(dropDuplicateLeadImage);
+	safely(matchTweetTheme);
 	hideBlankBlocks();
 	normalizeMetadata();
 	hideEmptyExternalLink();
