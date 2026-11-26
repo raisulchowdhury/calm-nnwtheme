@@ -33,6 +33,7 @@ export const cases = [
 	{ slug: "duplicate-cover", id: "cover-1", alt: "A Latent Space episode: before, the cover picture twice in a row; after, once", top: 1100 },
 	{ slug: "x-embed-dark", id: "xembed-1", alt: "An embedded X post in dark mode: before, a white card; after, a dark card", sel: ".twitter-tweet", maxH: 900, wait: 6000 },
 	{ slug: "podcast-caption-file-name", id: "podcast-2", alt: "A Dwarkesh episode: before, the player caption is a hashed .mp3 file name; after, just the length", sel: ".nnw-primary-media", scope: "body", maxH: 760 },
+	{ slug: "x-frame-dark", id: "xembed-2", alt: "A Latent Space post with X card frame embedded directly, in dark mode: before, a white card; after, a dark card", sel: "iframe[src*=\"platform.twitter.com\"]", maxH: 900, wait: 6000 },
 	{ slug: "code-copy", id: "pre-3", alt: "A code block on the Mac: after, a quiet Copy button appears on hover", sel: "pre", hasText: "paperjam: $(OBJS)", width: 900, act: "hover" },
 ];
 

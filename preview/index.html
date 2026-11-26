@@ -535,6 +535,14 @@
 				quote.setAttribute("data-theme", "dark");
 			}
 		});
+		// Some feeds (Latent Space on beehiiv) embed X's card frame directly, with
+		// no theme. Ask that frame for its dark card.
+		Array.prototype.forEach.call(body.querySelectorAll('iframe[src^="https://platform.twitter.com/embed/Tweet.html"]'), function (frame) {
+			var source = frame.getAttribute("src") || "";
+			if (!frame.closest(".twitter-tweet") && !/[?&#]theme=/.test(source)) {
+				frame.setAttribute("src", source.replace(/#.*$/, "") + (source.indexOf("?") < 0 ? "?" : "&") + "theme=dark");
+			}
+		});
 		if (!body.querySelector(".twitter-tweet, iframe")) {
 			return;
 		}

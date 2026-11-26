@@ -387,6 +387,21 @@ test("@webkit asks X embeds for a dark card in dark mode, and leaves light mode 
 	await expect(page.locator("blockquote.twitter-tweet").first()).not.toHaveAttribute("data-theme", /./);
 });
 
+test("@webkit asks an X card frame embedded directly for its dark card", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 800 });
+	await page.route("https://platform.twitter.com/**", (route) => route.fulfill({ body: "" }));
+	// Latent Space (beehiiv) puts X's card frame straight into the post, with no theme.
+	const frame = `<div class="social-embed"><iframe id="card" src="https://platform.twitter.com/embed/Tweet.html?id=2124894800654504419"></iframe></div><iframe id="chosen" src="https://platform.twitter.com/embed/Tweet.html?id=1&theme=light"></iframe>`;
+	await page.emulateMedia({ colorScheme: "dark" });
+	await loadFixture(page, { paragraphCount: 1, html: frame });
+	await expect(page.locator("#card")).toHaveAttribute("src", "https://platform.twitter.com/embed/Tweet.html?id=2124894800654504419&theme=dark");
+	await expect(page.locator("#chosen")).toHaveAttribute("src", /theme=light$/);
+
+	await page.emulateMedia({ colorScheme: "light" });
+	await loadFixture(page, { paragraphCount: 1, html: frame });
+	await expect(page.locator("#card")).toHaveAttribute("src", /id=2124894800654504419$/);
+});
+
 test("@webkit builds the map when NetNewsWire 7.3 primary media outside the body loads late", async ({ page }) => {
 	await page.setViewportSize({ width: 1180, height: 800 });
 	await loadFixture(page, { paragraphCount: 1 });
