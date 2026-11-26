@@ -25,3 +25,7 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### code-copy
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/code-copy.jpg" width="720" alt="A code block on the Mac: after, a quiet Copy button appears on hover">
+
+### Gallery row, in the NetNewsWire app (Mac)
+
+<img src="gallery-row-in-app.jpg" alt="Gallery row in NetNewsWire: before, each photo is a cropped full-height block; after, three photos share one row">
