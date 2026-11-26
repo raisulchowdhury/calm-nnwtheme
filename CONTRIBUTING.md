@@ -80,3 +80,16 @@ For responsive changes, review at least:
 Check light and dark appearance where the change applies. Interaction changes
 should also be exercised with keyboard focus, precise pointer, coarse pointer,
 and reduced motion.
+
+## Before and after images
+
+Every visible change gets a before/after image for its pull request and the
+release notes. `npm run before-after` renders real articles through
+NetNewsWire's own page shell and scripts, with the theme at `origin/main` on
+the left and the working tree on the right, and saves one image per case in
+`assets/releases/unreleased/` with a paste-ready `README.md`. Add a case to
+the list at the top of `scripts/before-after.mjs` for each new change.
+
+Articles come from `.corpus/<id>.json`, which is gitignored so feed content
+stays local. Use free, public feeds for anything published. At release, rename
+the images to `<version>-<slug>.jpg` in `assets/releases/`.

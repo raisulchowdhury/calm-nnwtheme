@@ -3,6 +3,7 @@
   "version": "1.4.4",
   "private": true,
   "scripts": {
+    "before-after": "node scripts/before-after.mjs",
     "test": "scripts/validate.sh",
     "test:browser": "playwright test"
   },
