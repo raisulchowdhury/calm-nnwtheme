@@ -670,3 +670,16 @@ test("@webkit opens a picture shown smaller than its size, and closes it with Es
 	await page.keyboard.press("Escape");
 	await expect(page.locator(".calmViewer")).toHaveCount(0);
 });
+
+test("@webkit keeps a malformed footnote link and an emoji story's screenshot from breaking the page", async ({ page }) => {
+	await page.setViewportSize({ width: 1180, height: 800 });
+	await loadFixture(page, {
+		paragraphCount: 36,
+		html: `<p>x<sup><a href="#fn-%">1</a></sup></p><p data-test="blank">&nbsp;</p>
+			<p><img id="shot" alt="" width="1200" height="800" src="${svg(1200, 800)}#/new-emoji.png"></p>`,
+	});
+	await expect(page.locator('[data-test="blank"]')).toBeHidden();
+	await expect(page.locator(".readerToc button")).toHaveCount(5);
+	const height = await page.locator("#shot").evaluate((node) => node.getBoundingClientRect().height);
+	expect(height).toBeGreaterThan(200);
+});

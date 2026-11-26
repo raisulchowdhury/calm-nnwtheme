@@ -187,7 +187,7 @@ body: The body of the article.
 			return;
 		}
 
-		var emojiSource = /\/images\/core\/emoji\/|\/emoji\/|twemoji|emojis?\.(?:png|svg)|\/custom_emojis\//i;
+		var emojiSource = /\/images\/core\/emoji\/|twemoji|\/custom_emojis\//i;
 		Array.prototype.forEach.call(body.querySelectorAll("img"), function (image) {
 			var height = (image.style && image.style.height) || "";
 			var sizedInEm = /^(?:0?\.\d+|1(?:\.\d+)?|2)(?:em|rem)$/.test(height);
@@ -196,6 +196,9 @@ body: The body of the article.
 			var attributeWidth = parseInt(image.getAttribute("width"), 10);
 			var smallAttributes = attributeHeight > 0 && attributeHeight <= 32 && (!attributeWidth || attributeWidth <= 64);
 			var emoji = /(?:^|\s)(?:emoji|wp-smiley|custom-emoji|twemoji)(?:\s|$)/.test(image.className || "") || emojiSource.test(image.getAttribute("src") || "");
+			if (attributeWidth > 64 || attributeHeight > 64) {
+				return;
+			}
 			if (attributeHeight === 1 && attributeWidth === 1) {
 				image.setAttribute("data-calm-blank", "");
 			} else if (sizedInEm || smallPixels || smallAttributes || emoji) {
@@ -217,7 +220,12 @@ body: The body of the article.
 			if (link.classList.contains("footnote")) {
 				return;
 			}
-			var hash = link.hash ? decodeURIComponent(link.hash.slice(1)) : "";
+			var hash = "";
+			try {
+				hash = link.hash ? decodeURIComponent(link.hash.slice(1)) : "";
+			} catch (error) {
+				return;
+			}
 			if (!/^(?:fn|footnote)/i.test(hash) || /^fnref/i.test(hash)) {
 				return;
 			}
@@ -517,6 +525,32 @@ body: The body of the article.
 			});
 			wrap.appendChild(button);
 		});
+	}
+
+	// Mastodon's embed page reports its height only when asked.
+	function askMastodonForHeights() {
+		if (!body) {
+			return;
+		}
+		Array.prototype.forEach.call(body.querySelectorAll("iframe"), function (frame, index) {
+			if (!/\/@[^\/]+\/\d+\/embed/.test(frame.getAttribute("src") || "")) {
+				return;
+			}
+			function ask() {
+				try {
+					frame.contentWindow.postMessage({ type: "setHeight", id: index }, "*");
+				} catch (error) {}
+			}
+			ask();
+			frame.addEventListener("load", ask);
+		});
+	}
+
+	// One odd feed shouldn't stop the reading map or the steps after it.
+	function safely(step) {
+		try {
+			step();
+		} catch (error) {}
 	}
 
 	function normalizeMetadata() {
@@ -1140,21 +1174,22 @@ body: The body of the article.
 		}
 	}
 
-	markInlineImages();
-	removeStrayBreaks();
-	markFootnotes();
-	markUntitled();
-	sizeEmbeddedPosts();
-	markArticleLanguage();
-	layoutGalleries();
-	quietAudioCaptions();
+	safely(markInlineImages);
+	safely(removeStrayBreaks);
+	safely(markFootnotes);
+	safely(markUntitled);
+	safely(sizeEmbeddedPosts);
+	safely(askMastodonForHeights);
+	safely(markArticleLanguage);
+	safely(layoutGalleries);
+	safely(quietAudioCaptions);
 	hideBlankBlocks();
 	normalizeMetadata();
 	hideEmptyExternalLink();
 	updateReadingTime();
 	updateMetadataVisibility();
-	enableCodeCopy();
-	enableImageViewer();
+	safely(enableCodeCopy);
+	safely(enableImageViewer);
 	observeCompactRail();
 	syncTocMode();
 })();
