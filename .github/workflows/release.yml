@@ -18,7 +18,14 @@ concurrency:
 
 jobs:
   publish:
-    if: github.event.workflow_run.conclusion == 'success'
+    # Publish only after a push to this repository's main. The branches filter
+    # above matches the branch name alone, so a pull request from a fork whose
+    # branch is also named main would otherwise run its own code here with
+    # write access and could replace the release zip every install fetches.
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: macos-latest
     timeout-minutes: 10
     steps:
