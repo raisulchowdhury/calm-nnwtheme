@@ -704,6 +704,23 @@ test("@webkit caps a one-line command with a full-height Copy button", async ({ 
 	expect(Math.abs(button.x + button.width - (pre.x + pre.width))).toBeLessThanOrEqual(1);
 });
 
+test("@webkit keeps an unsized video inside its box, clear of the next paragraph", async ({ page }) => {
+	// NetNewsWire's main.js wraps an iframe with no height in .iframeWrap and pins it
+	// to the box, as on Latent Space's beehiiv YouTube embeds.
+	for (const width of [390, 1280]) {
+		await page.setViewportSize({ width, height: 800 });
+		await loadFixture(page, {
+			paragraphCount: 1,
+			html: `<div class="video-embed"><div class="iframeWrap" id="wrap"><iframe id="video" src="about:blank"></iframe></div></div><p id="next">AI News for 11/25.</p>`,
+		});
+		const wrap = await page.locator("#wrap").boundingBox();
+		const video = await page.locator("#video").boundingBox();
+		const next = await page.locator("#next").boundingBox();
+		expect(Math.abs(video.y - wrap.y)).toBeLessThanOrEqual(1);
+		expect(video.y + video.height).toBeLessThanOrEqual(next.y);
+	}
+});
+
 test("@webkit opens a picture shown smaller than its size, and closes it with Escape", async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 800 });
 	await loadFixture(page, {

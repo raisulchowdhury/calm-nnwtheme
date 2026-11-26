@@ -557,15 +557,19 @@ article {
 .iframeWrap {
 	position: relative;
 	display: block;
+	margin: 2.15em 0;
 	padding-top: 56.25%;
 }
 
-.iframeWrap iframe {
+/* NetNewsWire pins an unsized video to its 16:9 box, so the spacing lives on
+   the box. A margin on the video itself would push it out over the next line. */
+.articleBody .iframeWrap iframe {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100% !important;
 	height: 100% !important;
+	margin: 0;
 }
 
 /* An embedded post that reported its height (see sizeEmbeddedPosts). */
@@ -1133,7 +1137,8 @@ sub {
 	.articleBody img,
 	.articleBody video,
 	.articleBody figure,
-	.articleBody iframe {
+	.articleBody iframe,
+	.articleBody .iframeWrap {
 		margin-top: 2rem;
 		margin-bottom: 2rem;
 	}
