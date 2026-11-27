@@ -454,7 +454,7 @@ article {
 .articleBody blockquote {
 	margin: 1.6em 0;
 	padding: 0 0 0 1em;
-	border-left: 2px solid var(--reader-rule);
+	border-left: 2px solid var(--reader-faint);
 	/* Upright, in the text colour: the rule and indent already say "quoted",
 	   and a quote can run for paragraphs (Daring Fireball), where muted
 	   italic tires the eye. */
@@ -541,11 +541,13 @@ article {
  * dark mode a soft paper tone sits behind pictures whose file type can be
  * transparent (PNG, GIF, SVG). Photos (JPEG, WebP, AVIF) keep the page
  * colour. Icons and emoji in the line (the same signs as the inline rule
- * below) and link cards' site icons stay as they are. An opaque
+ * below), link cards' site icons, and pictures the publisher already drew for
+ * dark mode (a <picture> with a dark source, GitHub's #gh-dark-mode-only)
+ * stay as they are. An opaque
  * PNG covers the backing, so it only shows while one loads.
  */
 @media (prefers-color-scheme: dark) {
-	.articleBody img:is([src*=".png" i], [src*=".gif" i], [src*=".svg" i], [src^="data:image/svg" i], [src^="data:image/png" i], [src^="data:image/gif" i]):not([data-calm-inline], .wp-smiley, .emoji, [src*="/images/core/emoji/"], [style*="height: 1em"], [style*="height:1em"], .kg-bookmark-icon, .embedded-post-header img) {
+	.articleBody img:is([src*=".png" i], [src*=".gif" i], [src*=".svg" i], [src^="data:image/svg" i], [src^="data:image/png" i], [src^="data:image/gif" i]):not([data-calm-inline], .wp-smiley, .emoji, [src*="/images/core/emoji/"], [style*="height: 1em"], [style*="height:1em"], .kg-bookmark-icon, .embedded-post-header img, [src*="#gh-dark-mode-only"], picture:has(source[media*="dark"]) img) {
 		background: #d8d3c6;
 	}
 }
@@ -1565,7 +1567,7 @@ sub {
 	color: var(--reader-heading);
 	font-family: var(--reader-serif-body);
 	font-size: 0.95em;
-	font-weight: 500;
+	font-weight: 400;
 	line-height: 1.35;
 }
 
@@ -1609,7 +1611,7 @@ sub {
 .articleBody :is(a.button, a.btn, a.wp-block-button__link, a.kg-btn, a.kg-cta-button, a.sqs-block-button-element):visited {
 	display: inline-block;
 	max-width: 100%;
-	padding: 0.75em 1.3em;
+	padding: 0.82em 1.3em;
 	border: 1px solid transparent;
 	border-radius: 999px;
 	background: var(--reader-code-bg) !important;
@@ -1625,6 +1627,13 @@ sub {
 
 .articleBody :is(a.button, a.btn, a.wp-block-button__link, a.kg-btn, a.kg-cta-button, a.sqs-block-button-element):hover {
 	border-color: var(--reader-muted);
+}
+
+/* With Increase Contrast the faint tint alone is not enough: outline it. */
+@media (prefers-contrast: more) {
+	.articleBody :is(a.button, a.btn, a.wp-block-button__link, a.kg-btn, a.kg-cta-button, a.sqs-block-button-element) {
+		border-color: var(--reader-rule);
+	}
 }
 
 .articleBody :is(.button-wrapper, .kg-button-card, .wp-block-buttons) {

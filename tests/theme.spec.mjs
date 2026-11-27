@@ -683,7 +683,7 @@ test("@webkit shows Substack and Ghost link cards as one quiet box", async ({ pa
 	await expect(page.locator(".embedded-post")).toHaveCSS("text-decoration-line", "none");
 	await expect(page.locator("#bookmark")).toHaveCSS("border-top-style", "solid");
 	// Quiet: the title in the body's weight, not a second headline, and two lines of text.
-	for (const title of [".embedded-post-title", ".kg-bookmark-title"]) await expect(page.locator(title)).toHaveCSS("font-weight", "500");
+	for (const title of [".embedded-post-title", ".kg-bookmark-title"]) await expect(page.locator(title)).toHaveCSS("font-weight", "400");
 	for (const text of [".embedded-post-body", ".kg-bookmark-description"]) await expect(page.locator(text)).toHaveCSS("-webkit-line-clamp", "2");
 });
 
@@ -1529,5 +1529,12 @@ test("@webkit fills a button with the code-block tint and gives it a full-size t
 	const tint = await page.evaluate(() => { const probe = document.createElement("div"); probe.style.background = "var(--reader-code-bg)"; document.body.append(probe); const c = getComputedStyle(probe).backgroundColor; probe.remove(); return c; });
 	const state = await page.evaluate(() => { const b = document.getElementById("b"); return { background: getComputedStyle(b).backgroundColor, height: b.getBoundingClientRect().height }; });
 	expect(state.background).toBe(tint);
-	expect(state.height).toBeGreaterThanOrEqual(40);
+	expect(state.height).toBeGreaterThanOrEqual(44);
+});
+
+test("@webkit outlines buttons under Increase Contrast", async ({ page }) => {
+	await page.emulateMedia({ contrast: "more" });
+	await loadCase(page, `<p class="button-wrapper"><a class="button" id="b" href="https://example.com/subscribe">Subscribe</a></p>`);
+	const rule = await tokenColor(page, "--reader-rule");
+	await expect(page.locator("#b")).toHaveCSS("border-top-color", rule);
 });

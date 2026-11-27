@@ -182,14 +182,6 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/link-card-quiet-dark.jpg" width="720" alt="The same link card in dark mode">
 
-### quote-upright
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright.jpg" width="720" alt="A long quoted passage on Daring Fireball, on iPhone: before, muted italic; after, upright in the text colour, still set off by its rule">
-
-### quote-upright-dark
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright-dark.jpg" width="720" alt="The same quote in dark mode">
-
 ### heading-steps
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/heading-steps.jpg" width="720" alt="Headings on iPhone: before, an h2 and an h3 that read as the same level; after, a clearly larger h2 over a smaller h3">
@@ -205,6 +197,14 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### line-art-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/line-art-dark.jpg" width="720" alt="A transparent line chart and a photo in dark mode on iPhone: before, the chart's black lines vanish into the dark page; after, the chart sits on a soft paper tone and the photo is unchanged">
+
+### quote-upright
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright.jpg" width="720" alt="A long quoted passage on Daring Fireball, on iPhone: before, muted italic; after, upright in the text colour, still set off by its rule">
+
+### quote-upright-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright-dark.jpg" width="720" alt="The same quote in dark mode">
 
 ### button-tinted
 

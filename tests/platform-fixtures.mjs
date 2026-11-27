@@ -314,5 +314,7 @@ export const lineArtCases = [
 	{ platform: "Photo as JPEG (must not trigger)", html: `<img id="i" src="https://example.com/photo.jpg" width="600" height="400" alt="">`, backed: false },
 	{ platform: "Photo as WebP (must not trigger)", html: `<img id="i" src="https://example.com/photo.webp" width="600" height="400" alt="">`, backed: false },
 	{ platform: "WordPress emoji PNG in the line (must not trigger)", html: `<p>Done <img id="i" class="wp-smiley" src="https://s.w.org/images/core/emoji/15.0.3/72x72/1f600.png" alt="😀" style="height: 1em; max-height: 1em;"> today.</p>`, backed: false },
+	{ platform: "Picture with its own dark-mode source (must not trigger)", html: `<picture><source media="(prefers-color-scheme: dark)" srcset="https://example.com/diagram-dark.png"><img id="i" src="https://example.com/diagram.png" width="600" height="300" alt=""></picture>`, backed: false },
+	{ platform: "GitHub dark-mode-only image (must not trigger)", html: `<img id="i" src="https://example.com/logo-white.png#gh-dark-mode-only" width="600" height="300" alt="">`, backed: false },
 	{ platform: "Ghost link card's site icon (must not trigger)", html: `<figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://example.com/b"><div class="kg-bookmark-content"><div class="kg-bookmark-title">A bookmark</div><div class="kg-bookmark-metadata"><img id="i" class="kg-bookmark-icon" src="https://example.com/favicon.png" alt=""><span>Example</span></div></div></a></figure>`, backed: false },
 ];
