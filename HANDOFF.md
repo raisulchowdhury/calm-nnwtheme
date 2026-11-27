@@ -1,47 +1,48 @@
-# Handoff: Calm 1.5 (2026-11-27)
+# Handoff: Calm 1.5.0, ready to release (2026-11-27)
 
 Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 
 ## Where things are
 
-- **Branch:** `calm-roadmap-fixes`. **Draft PR:** https://github.com/raisulchowdhury/calm-nnwtheme/pull/31. Last theme commit: 80d69b1.
-- **Tests at that commit:** 170 passed and 2 skipped. 1 `@visual` failure is expected on Mac, because the reference image is Linux-only.
-- **CI (Linux) has been red since d4514f9:** the speed and layout-shift tests added there never passed on Linux; the Mac numbers above don't cover CI. The layout shift was a real Ghost video bug, fixed in the commit after fe3ed8f. The headings step got a Linux-only budget of 100 ms (Mac stays 30 ms), Raisul's pick.
-- **Design pass:**
-  - Report, with Raisul's picks table and known limits: `docs/design-pass-2026-11-27.md`.
-  - Options he chose from: `docs/design-pass-options.html`, published at https://claude.ai/artifact/6UZX4Kqv5EC1ZQhLyEMHNE.
-- **Before/after:**
-  - Images for the release notes are in `assets/releases/unreleased/`.
-  - Gallery of all 27 fixes, ordered by value to readers, every image regenerated against the branch on 2026-11-27: https://claude.ai/artifact/Qy8d9ts9shZ4kTierahtM1. Its source is in the old session's scratchpad (`calm-gallery/`). To update it from a new session, read the artifact first, then republish from that read.
-- **iPhone test build:**
-  - Branch `preview/calmdev`, rebuilt at 80d69b1.
-  - Install by pasting this link into Safari and choosing Overwrite: `netnewswire://theme/add?url=https%3A%2F%2Fraw.githubusercontent.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Fpreview%2Fcalmdev%2FCalmDev.nnwtheme.zip`.
-  - Delete the branch once testing is done; Raisul was promised this.
-- **Mac test install:** `~/Library/Containers/com.ranchero.NetNewsWire-Evergreen/Data/Library/Application Support/NetNewsWire/Themes/CalmDev.nnwtheme/`. It matches 80d69b1.
+- **Branch:** `calm-roadmap-fixes`. **PR:** https://github.com/raisulchowdhury/calm-nnwtheme/pull/31.
+- **The release is prepared, not published.** Merging the PR to `main` publishes it: `release.yml` tags `v1.5.0` and uploads `Calm.nnwtheme.zip` once Validate passes. Merging needs Raisul's go.
+- **Version:** 1.5.0, theme version 16, dated 2026-11-30.
+  - If the merge happens on another day, change the date in three places: the `CHANGELOG.md` heading, the release-notes filename `docs/releases/2026-11-30-calm-1.5.0.md`, and the two lines that name it in `scripts/check-release-sync.mjs`. Then run `node scripts/updates-json.mjs --write`.
+  - The build number lives in `Info.plist` and in `var BUILD` in all three script copies. `check-release-sync.mjs` now fails if they differ.
+- **Tests:** `npm test`, then `npx playwright test --trace off --reporter=line`. On a Mac one `@visual` failure is expected, because the reference image is Linux-only; delete the `*darwin*.png` it leaves. CI on Linux passes everything.
+- **Release notes:** `docs/releases/2026-11-30-calm-1.5.0.md`. **Launch plan with post drafts:** `docs/launch/2026-11-30-calm-1.5-launch-plan.md`.
+- **Before/after images:** `assets/releases/1.5.0-<slug>.jpg`, one per case in `scripts/before-after.mjs`, all remade against 1.4.4 on 2026-11-27. `assets/releases/unreleased/` is empty again for the next change.
+- **Gallery of every fix:** https://claude.ai/artifact/Qy8d9ts9shZ4kTierahtM1. Its source was in the old session's scratchpad. To update it from a new session, read the artifact first, then republish from that read.
+- **Design pass record:** `docs/design-pass-2026-11-27.md`, with Raisul's picks and the two independent reviews.
+- **iPhone test build:** branch `preview/calmdev`, built from the 1.5.0 candidate. Install by pasting this into Safari and choosing Overwrite: `netnewswire://theme/add?url=https%3A%2F%2Fraw.githubusercontent.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Fpreview%2Fcalmdev%2FCalmDev.nnwtheme.zip`. Delete the branch once testing is done; Raisul was promised this.
+- **Mac test install:** `~/Library/Containers/com.ranchero.NetNewsWire-Evergreen/Data/Library/Application Support/NetNewsWire/Themes/CalmDev.nnwtheme/`, same build.
 
 ## Decided by Raisul on 2026-11-27
 
 - **Sign-up forms:** hidden forms become one quiet button.
 - **Task-list boxes:** muted grey, not amber.
-- **Picks from the design options:**
-  - Link cards: quiet card.
-  - Quotes: upright, in the text colour.
-  - Headings: clearer steps.
-  - Paragraph gaps: scale with text size.
-  - Buttons: tinted pill (Proposal B).
-- **Footnotes:**
-  - The marker is a plain number.
-  - Tapping it opens the note in mono below the line, pushing the text down. This was chosen after an overlay version kept cutting the line underneath.
+- **Picks from the design options:** quiet link card; upright quotes in the text colour; clearer heading steps; paragraph gaps that scale with text size; tinted pill buttons (Proposal B).
+- **Footnotes:** a plain number; tapping it opens the note in mono below the line and pushes the text down. Chosen after an overlay version kept cutting the line underneath.
 - **Dark-mode paper backing for line art:** dropped, because it flashed a light box while PNGs loaded.
-- **Late updates:** articles never wait on Calm. "Avoid loading delays because of calm" is a rule in `AGENTS.md`.
-- **Next-article glitches on iPhone:** the black panel, the stalled slide and pictures popping in also happen in the Default theme. They are NetNewsWire's, not Calm's. A bug report for NetNewsWire's GitHub was offered and not yet answered; posting it needs his OK.
+- **Late updates:** articles never wait on Calm. This is a rule in `AGENTS.md`.
+- **No yellow:** "i don't love the yellow color you're using as placeholder/ accent. Should be some version of light/dark grey depending on light/dark theme". The light-mode tint and hairlines are grey (3b129fa). The selection and `<mark>` highlight were left amber and reported to him.
+- **CI speed budget:** the headings step gets 100 ms on Linux; the Mac stays at 30 ms.
 
-## Open
+## After the merge
 
-1. Raisul tests the iPhone build and reports anything slow or off.
-2. Nothing from the design pass has been checked inside NetNewsWire itself. Look at it in the Mac app.
-3. Known limits are listed in the report:
-   - Black line art on a transparent background still disappears in dark mode.
-   - A 1 px black line may appear under video in dark mode. It was seen in one render only.
-4. The plain-caption style costs +3 ms on 200 captions, against `AGENTS.md`'s "no rise". The cost equals a figcaption's. Raisul hasn't ruled on it.
-5. When testing is done: mark PR #31 ready, update `CHANGELOG.md`, and move the release images out of `unreleased/`.
+1. Check the release page has `Calm.nnwtheme.zip`, and that the install link works on a Mac and an iPhone.
+2. In the raisul.xyz repo, bump `RELEASE_VERSION` in `src/app/(site)/projects/calm/page.tsx`.
+3. Follow the launch plan. Every post is Raisul's to send.
+4. Delete the `preview/calmdev` branch.
+
+## Known limits (also in the release notes)
+
+- Black line art on a transparent background still disappears in dark mode.
+- X frames embedded directly stay white in dark mode.
+- Hugo `table.lntable` and Pygments line-number tables get no Copy button.
+- A 1 px black line may appear under a video in dark mode. It was seen in one render only.
+- A broken image keeps its box: hiding it after a failed load would be a swap after load.
+
+## Not Calm's
+
+The next-article glitches on iPhone (a black panel, a stalled slide, pictures popping in) also happen in NetNewsWire's default theme. A bug report for NetNewsWire's GitHub was offered; posting it needs Raisul's OK.

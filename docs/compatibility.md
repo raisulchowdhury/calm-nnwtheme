@@ -9,11 +9,11 @@ How it's checked:
 
 **works**: checked on real items and covered by a fixture. **n.a.**: the platform doesn't send this markup. **limit**: a known gap, described below.
 
-| Platform | Code label + Copy | Footnote popover | Credit line hidden | Stray breaks / blank blocks | Cards, embeds, math fit at 390 |
+| Platform | Code label + Copy | Footnote opens in the text | Credit line hidden | Stray breaks / blank blocks | Cards, embeds, math fit at 390 |
 |---|---|---|---|---|---|
 | WordPress (blocks, Jetpack, SyntaxHighlighter) | works | works (Jetpack, footnotes block) | works (English, German and 7 more languages; "first appeared on") | works | works (embeds, galleries, tables, pull-quotes) |
 | Ghost | works (bare code: Copy, no label) | works | n.a. | works (incl. embed skeletons) | works (gallery, bookmark, toggle, callout, video, embeds) |
-| Substack | works | works | n.a. | works | works (link cards, YouTube) |
+| Substack | works | works (a bare number with no `<sup>`; Calm raises it) | n.a. | works | works (link cards, YouTube) |
 | Medium | Copy, no label (Medium sends none) | n.a. | works (credit and its rule) | works (code lines kept) | works |
 | Jekyll (kramdown + Rouge) | works (incl. line-number tables, copies code only) | works | n.a. | works | works (KaTeX); limit: page paints before Calm when the feed embeds a stylesheet |
 | Hugo (goldmark + Chroma) | works; limit: `table.lntable` line numbers get no Copy | works | n.a. | works | works |
@@ -60,6 +60,8 @@ Sign-up pill (first script pass, `signupCases` in `tests/platform-fixtures.mjs`)
 Must not trigger, each a fixture: a search box, a tutorial's email field posting nowhere, a contact form with a message field, a plain "subscribe here" link, an interactive demo's sliders, buttons and live checkboxes (as in the corpus's Bitbash post), a plain list, Citation Needed's "Listen to me read this post" line, a `.wp-caption-text` outside a caption box, and any other class that merely contains "caption".
 
 Feed readers: the corpus holds only platform feeds read directly, none passed through a reader service yet. Reader cases covered by synthetic tests: footnotes whose ids FreshRSS renamed or Feedly removed (`fixtures/feed-footnotes.json` and the FreshRSS test in `tests/theme.spec.mjs`) and classes FreshRSS moves into `data-sanitized-class` (Substack's image buttons). Other Feedbin, Feedly and Inoreader markup is untested.
+
+Footnotes in links (Calm 1.5): when the line that holds a footnote number ends inside a link, Calm ends the link at the line's end, opens the note, and carries the link on after it; closing joins the link again exactly. Two numbers on such a line are covered too. Tests: "ends inside a link" and "first of two open notes" in `tests/theme.spec.mjs`.
 
 Known limits and why they stay:
 

@@ -129,3 +129,13 @@ An independent agent read the five commits and opened the images.
 - `node scripts/measure-performance.mjs --components --runs 9`: every component is within about 1 ms of the branch before this pass. Tables x200 measured 175 to 176 ms pass and 511 to 516 ms load, against 173 to 175 and 508 to 511 at HEAD.
 - `offerSignupPages` costs 1 ms on the buttons page and under 1 ms elsewhere, thanks to a cheap form/iframe check before the full selector.
 - The theme is copied into NetNewsWire's `CalmDev.nnwtheme`, with its own Info.plist ("Calm Dev") kept.
+
+## Since the pass (release prep for 1.5.0)
+
+- **Images moved.** At release the before/after images were renamed to `assets/releases/1.5.0-<slug>.jpg`, all remade against Calm 1.4.4 with one label. Paths above that say `assets/releases/unreleased/` mean those files.
+- **Checked in the NetNewsWire app on the Mac**, on real feeds with the test install: headings, upright quotes, lists, the reading map, the sign-up pill and Substack footnotes.
+- **Footnotes.** A note now opens under its line when that line ends inside a link (9673453). Substack's bare number is raised and keeps a box to tap, and the note's number stays on the note's first line (c97a624, 7b881b7).
+- **Ghost video** keeps its shape while its thumbnail loads (148b2de), which was the layout shift CI caught.
+- **Second independent review**, of those commits, found three bugs, all fixed with tests: a link left in two pieces when the first of two open notes on one line closed; a Ghost video with `width="100%"` drawn 1128px tall; and a footnote link holding its own `<sup>` raised twice.
+- **Grey, not cream** (Raisul, 2026-11-27: "Should be some version of light/dark grey depending on light/dark theme"). In light mode `--reader-code-bg` is #f3f2f0 and `--reader-rule` is #e6e4e1 (3b129fa). Dark mode was already grey.
+- **Still open:** black line art on a transparent background in dark mode, Hugo and Pygments line-number tables, the broken-image box, and the possible 1 px line under a video in dark mode.
