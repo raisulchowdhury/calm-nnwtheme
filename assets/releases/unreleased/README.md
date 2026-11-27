@@ -173,3 +173,11 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### signup-form-pill-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/signup-form-pill-dark.jpg" width="720" alt="The same sign-up pills in dark mode">
+
+### link-card-quiet
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/link-card-quiet.jpg" width="720" alt="A Ghost bookmark card on iPhone: before, a bold display title and three lines, like a second headline; after, the title in the body's weight and two muted lines">
+
+### link-card-quiet-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/link-card-quiet-dark.jpg" width="720" alt="The same link card in dark mode">

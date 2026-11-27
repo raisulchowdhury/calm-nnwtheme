@@ -56,6 +56,8 @@ export const cases = [
 	{ slug: "button-pill-dark", fixture: "platform-buttons", scheme: "dark", alt: "The same buttons in dark mode", sel: ".button-wrapper", extraBelow: 700, maxH: 1100 },
 	{ slug: "signup-form-pill", fixture: "signup-forms", alt: "A Substack subscribe box and a Mailchimp form on iPhone: before, email fields and buttons that can't work in a reader; after, each form is one quiet pill that opens the publisher's sign-up page", sel: ".subscription-widget-wrap-editor, [data-calm-signup]", extraBelow: 520, maxH: 900 },
 	{ slug: "signup-form-pill-dark", fixture: "signup-forms", scheme: "dark", alt: "The same sign-up pills in dark mode", sel: ".subscription-widget-wrap-editor, [data-calm-signup]", extraBelow: 520, maxH: 900 },
+	{ slug: "link-card-quiet", fixture: "link-cards", alt: "A Ghost bookmark card on iPhone: before, a bold display title and three lines, like a second headline; after, the title in the body's weight and two muted lines", sel: ".kg-bookmark-card", extraBelow: 120 },
+	{ slug: "link-card-quiet-dark", fixture: "link-cards", scheme: "dark", alt: "The same link card in dark mode", sel: ".kg-bookmark-card", extraBelow: 120 },
 	{ slug: "task-list", fixture: "platform-tasks", alt: "GitHub and Hugo task lists on iPhone: before, a bullet beside a small grey box; after, a text-size box in the muted text colour in place of the bullet", sel: "ul", extraBelow: 260 },
 	{ slug: "task-list-dark", fixture: "platform-tasks", scheme: "dark", alt: "The same task lists in dark mode", sel: "ul", extraBelow: 260 },
 	{ slug: "plain-captions", fixture: "platform-captions", alt: "Captions sent as plain blocks (WordPress classic, Jekyll, Blogger) on iPhone: before, they read as body text set apart from the picture; after, small muted centred captions under the picture, like Calm's figcaption", sel: ".wp-caption", extraBelow: 1100, maxH: 1700 },
@@ -77,7 +79,7 @@ const browser = await webkit.launch();
 async function shoot(c, which) {
 	const article = JSON.parse(readFileSync(source(c), "utf8"));
 	const html = join(beforeDir, `${c.slug}-${which}.html`);
-	writeFileSync(html, buildPage({ theme: themes[which], article }));
+	writeFileSync(html, buildPage({ theme: themes[which], article, textSize: c.textSize }));
 	const width = c.width || 390;
 	const page = await browser.newPage({ viewport: { width, height: 1600 }, deviceScaleFactor: 2, colorScheme: c.scheme || scheme });
 	await page.goto("file://" + html, { waitUntil: "load", timeout: 30000 }).catch(() => {});

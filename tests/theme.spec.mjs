@@ -682,6 +682,9 @@ test("@webkit shows Substack and Ghost link cards as one quiet box", async ({ pa
 	await expect(page.locator(".embedded-post-cta")).toBeHidden();
 	await expect(page.locator(".embedded-post")).toHaveCSS("text-decoration-line", "none");
 	await expect(page.locator("#bookmark")).toHaveCSS("border-top-style", "solid");
+	// Quiet: the title in the body's weight, not a second headline, and two lines of text.
+	for (const title of [".embedded-post-title", ".kg-bookmark-title"]) await expect(page.locator(title)).toHaveCSS("font-weight", "500");
+	for (const text of [".embedded-post-body", ".kg-bookmark-description"]) await expect(page.locator(text)).toHaveCSS("-webkit-line-clamp", "2");
 });
 
 test("@webkit offers a Copy button on code blocks with a mouse", async ({ page }) => {
