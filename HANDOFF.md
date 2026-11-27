@@ -6,6 +6,7 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 
 - **Branch:** `calm-roadmap-fixes`. **Draft PR:** https://github.com/raisulchowdhury/calm-nnwtheme/pull/31. Last theme commit: 80d69b1.
 - **Tests at that commit:** 170 passed and 2 skipped. 1 `@visual` failure is expected on Mac, because the reference image is Linux-only.
+- **CI (Linux) has been red since d4514f9:** the speed and layout-shift tests added there never passed on Linux; the Mac numbers above don't cover CI. The layout shift was a real Ghost video bug, fixed in the commit after fe3ed8f. The headings budget is still open (see Open).
 - **Design pass:**
   - Report, with Raisul's picks table and known limits: `docs/design-pass-2026-11-27.md`.
   - Options he chose from: `docs/design-pass-options.html`, published at https://claude.ai/artifact/6UZX4Kqv5EC1ZQhLyEMHNE.
@@ -44,4 +45,5 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
    - Black line art on a transparent background still disappears in dark mode.
    - A 1 px black line may appear under video in dark mode. It was seen in one render only.
 4. The plain-caption style costs +3 ms on 200 captions, against `AGENTS.md`'s "no rise". The cost equals a figcaption's. Raisul hasn't ruled on it.
-5. When testing is done: mark PR #31 ready, update `CHANGELOG.md`, and move the release images out of `unreleased/`.
+5. **Headings speed budget fails on Linux CI only.** The rail's own work on 400 headings takes 5 ms on the Mac and 33 to 61 ms on CI, against a 30 ms budget set from Mac runs. Changing the check needs Raisul's yes.
+6. When testing is done: mark PR #31 ready, update `CHANGELOG.md`, and move the release images out of `unreleased/`.

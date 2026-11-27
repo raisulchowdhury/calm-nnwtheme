@@ -631,6 +631,14 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 			}
 			if (source && !spacer.test(source) && !/^\s*javascript:/i.test(source)) {
 				video.setAttribute("poster", source);
+				// Until the picture decodes, the video takes the shape of the
+				// 1x1 spacer it replaced, a square, and then shrinks. Its own
+				// width and height fix the box from the first frame.
+				var width = parseFloat(video.getAttribute("width"));
+				var height = parseFloat(video.getAttribute("height"));
+				if (width > 0 && height > 0) {
+					video.style.aspectRatio = width + " / " + height;
+				}
 			}
 		});
 	}
