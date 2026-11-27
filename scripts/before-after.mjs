@@ -33,6 +33,7 @@ export const cases = [
 	{ slug: "link-card", id: "bookmark-2", alt: "A Substack link card: before, raw text, buttons and comment counts; after, one quiet card with source, title and a few lines", sel: ".embedded-post, .kg-bookmark-container" },
 	{ slug: "podcast-caption", id: "podcast-1", alt: "A podcast player caption: before, a file name and h:mm:ss; after, just the length, 1 hr 24 min", sel: ".nnw-primary-media", scope: "body", maxH: 760 },
 	{ slug: "x-embed-dark", id: "xembed-1", scheme: "dark", alt: "An embedded X post in dark mode: before, a white card; after, a dark card", sel: ".twitter-tweet", maxH: 900, wait: 6000 },
+	{ slug: "bluesky-embed-dark", id: "bsky-1", scheme: "dark", alt: "An embedded Bluesky post in dark mode: before, white tips outside the card's rounded corners; after, the page shows there", sel: "iframe", maxH: 900, wait: 6000 },
 	{ slug: "video-embed", id: "yt-1", offline: true, alt: "A Latent Space post on iPhone: before, the YouTube video covers the first line below it; after, the line is clear", sel: "iframe", extraBelow: 140 },
 	{ slug: "podcast-caption-file-name", id: "podcast-2", alt: "A Dwarkesh episode: before, the player caption is a hashed .mp3 file name; after, just the length", sel: ".nnw-primary-media", scope: "body", maxH: 760 },
 	{ slug: "code-copy", id: "pre-3", alt: "A code block on the Mac: after, a quiet Copy button appears on hover", sel: "pre", hasText: "paperjam: $(OBJS)", width: 900, act: "hover" },

@@ -696,11 +696,12 @@ article {
 	}
 }
 
-/* An X post draws its own card, white or dark, with rounded corners. Under
-   Calm's "light dark" its frame gets the same opaque white canvas in dark
-   mode, which shows as white tips outside the dark card's corners. A light
-   scheme makes the canvas transparent, so the page shows there instead. */
-.articleBody iframe:is([src*="platform.twitter.com/embed"], [src*="platform.x.com/embed"]) {
+/* An X or Bluesky post draws its own card, white or dark, with rounded
+   corners. Under Calm's "light dark" its frame gets the same opaque white
+   canvas in dark mode, which shows as white tips outside the card's corners.
+   A light scheme makes the canvas transparent, so the page shows there
+   instead. Both cards paint their own background and still follow dark mode. */
+.articleBody iframe:is([src*="platform.twitter.com/embed"], [src*="platform.x.com/embed"], [src*="embed.bsky.app/embed"]) {
 	color-scheme: light;
 }
 

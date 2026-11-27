@@ -307,9 +307,10 @@ export const videoFrameCases = [
 	{ platform: "Other frame asking for full screen or autoplay, e.g. CodePen, Maps, Spotify (must not trigger)", html: `<iframe id="f" srcdoc="<p>Text with no background</p>" allow="autoplay; fullscreen" allowfullscreen></iframe>`, player: false },
 	{ platform: "Unstyled text iframe (must not trigger)", html: `<iframe id="f" srcdoc="<p>Plain text with no background</p>"></iframe>`, player: false },
 	{ platform: "Chart embed (must not trigger)", html: `<iframe id="f" src="https://datawrapper.dwcdn.net/abc/1/" scrolling="no" height="400"></iframe>`, player: false },
-	// An X post draws its own rounded card, so its frame only needs a clear canvas:
+	// An X or Bluesky post draws its own rounded card, so its frame only needs a clear canvas:
 	// card: true means a transparent canvas and no black box.
 	{ platform: "X post frame, as X's script or a feed embeds it", html: `<iframe id="f" title="X Post" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="true" src="https://platform.twitter.com/embed/Tweet.html?dnt=false&id=1&theme=dark"></iframe>`, player: false, card: true },
+	{ platform: "Bluesky post frame", html: `<iframe id="f" data-bluesky-id="1" src="https://embed.bsky.app/embed/did:plc:abc/app.bsky.feed.post/3abc?id=1&colorMode=system" width="100%" frameborder="0" scrolling="no"></iframe>`, player: false, card: true },
 	{ platform: "X follow button frame (must not trigger)", html: `<iframe id="f" src="https://platform.twitter.com/widgets/follow_button.html?screen_name=someone" scrolling="no" frameborder="0"></iframe>`, player: false },
 ];
 

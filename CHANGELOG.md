@@ -62,9 +62,10 @@ Video and embeds
   black from the first frame.
 - A Ghost video card shows its thumbnail, and keeps its shape while the
   thumbnail loads.
-- X posts drawn by X's script follow dark mode, with the page showing
-  outside the card's rounded corners instead of white tips. X frames
-  embedded directly stay white, since making them dark needed a reload.
+- X posts drawn by X's script follow dark mode. X frames embedded directly
+  stay white, since making them dark needed a reload.
+- In dark mode the page shows outside the rounded corners of an X or
+  Bluesky post, instead of white tips.
 - X, Bluesky and Mastodon embeds take their real height.
 
 Mac
