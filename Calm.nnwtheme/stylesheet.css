@@ -956,7 +956,7 @@ sub {
 
 .newsfoot-footnote-popover {
 	padding: 0;
-	border-top: 1px solid var(--reader-rule);
+	border-top: 1px solid var(--reader-faint);
 	border-radius: 0;
 	background: var(--reader-bg);
 	box-shadow: none;
@@ -976,16 +976,29 @@ sub {
 	padding: 0.6em 0 0.5em;
 	border-radius: 0;
 	background: var(--reader-bg);
-	/* The note covers the lines below it. A page-coloured fade under its last
-	   line hides the half-covered line instead of slicing through it. */
-	box-shadow: 0 0.6em 0.6em var(--reader-bg);
+}
+
+/* The note covers the lines below it. A page-coloured fade about one line tall
+   under it hides the half-covered line instead of slicing through it. */
+.newsfoot-footnote-popover::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	right: 0;
+	left: 0;
+	height: 2em;
+	background: linear-gradient(var(--reader-bg) 80%, transparent);
+	pointer-events: none;
 }
 
 .newsfoot-footnote-popover-arrow {
 	display: none;
 }
 
-.newsfoot-footnote-popover a[href*="#fnref"] {
+.newsfoot-footnote-popover a[href*="#fnr"],
+.newsfoot-footnote-popover a[href^="#"][href$="-link"],
+.newsfoot-footnote-popover [role="doc-backlink"],
+.newsfoot-footnote-popover .footnoteBackLink {
 	display: none;
 }
 

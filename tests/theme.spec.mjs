@@ -1581,3 +1581,11 @@ test("@webkit opens a footnote as muted text under one hairline, with no card, s
 	});
 	expect(state).toEqual({ shadow: "none", top: "solid", left: "none", background: page_, color: muted, arrow: "none" });
 });
+
+test("@webkit hides every platform's back arrow inside an open note, and keeps the note's own links", async ({ page }) => {
+	await page.setContent(`<!doctype html><html><head><style>${newsfootCore}</style><style>${stylesheet}</style></head><body>
+		<article><div class="articleBody"><p>${paragraph}<sup><div class="newsfoot-footnote-container"><div class="newsfoot-footnote-popover"><div class="newsfoot-footnote-popover-inner"><p>A note with <a id="own" href="https://example.com/a-link">a link</a>.
+		<a id="jekyll" href="#fnref:1">↩</a><a id="df" href="#fnr1-2026-11-27">↩</a><a id="wp" href="#abc-123-link">↩</a><a id="role" role="doc-backlink" href="#x">↩</a></p></div></div><a class="footnote" href="#fn1">1</a></div></sup></p></div></article></body></html>`);
+	const shown = await page.evaluate(() => ["own", "jekyll", "df", "wp", "role"].map((id) => [id, getComputedStyle(document.getElementById(id)).display]));
+	expect(Object.fromEntries(shown)).toEqual({ own: "inline", jekyll: "none", df: "none", wp: "none", role: "none" });
+});
