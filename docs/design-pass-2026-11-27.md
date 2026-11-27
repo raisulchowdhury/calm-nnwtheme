@@ -76,6 +76,14 @@ All are in `docs/design-pass-options.html`. Each area shows the same real crop a
 | Pictures in dark mode | Paper backing for line art | 8.2 (now 7.0) | backing and dimmed photos 7.9, dimmed photos only 7.2 | Charts drawn for white paper vanish on a dark page; a soft paper tone behind PNG, GIF and SVG fixes that without touching photos. |
 | Buttons | Visible border, full-size target | 8.1 (now 7.2) | tinted pill 7.6 | A button is the one place the publisher asks for a tap; a muted border and 44 px height make it findable and easy to hit. |
 
+## Raisul's picks
+
+Not built yet. Recorded as he makes them on the options page (docs/design-pass-options.html).
+
+| Area | Pick | His words |
+|---|---|---|
+| Buttons | Proposal B, tinted pill (not the recommended A) | "Like this one" (2026-11-27) |
+
 ## Left alone, and why
 
 - **Footnote back-link underline.** It belongs to NetNewsWire's own footnote markup. Changing it needs script after a tap.
