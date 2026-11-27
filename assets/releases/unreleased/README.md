@@ -189,3 +189,11 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### quote-upright-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright-dark.jpg" width="720" alt="The same quote in dark mode">
+
+### heading-steps
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/heading-steps.jpg" width="720" alt="Headings on iPhone: before, an h2 and an h3 that read as the same level; after, a clearly larger h2 over a smaller h3">
+
+### heading-steps-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/heading-steps-dark.jpg" width="720" alt="The same headings in dark mode">

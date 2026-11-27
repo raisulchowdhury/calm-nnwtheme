@@ -1488,3 +1488,10 @@ test("@webkit sets a block quote upright in the text colour, marked by its rule"
 	await expect(page.locator("#q")).toHaveCSS("color", text);
 	await expect(page.locator("#q")).toHaveCSS("border-left-style", "solid");
 });
+
+test("@webkit steps heading sizes clearly: h2 well above h3, h3 above the text", async ({ page }) => {
+	await loadFixture(page, { paragraphCount: 1, html: `<p>${paragraph}</p><h2>Section</h2><p>${paragraph}</p><h3>Subsection</h3><p>${paragraph}</p>` });
+	const size = await page.evaluate(() => Object.fromEntries(["h2", "h3", "p"].map((tag) => [tag, parseFloat(getComputedStyle(document.querySelector(`#bodyContainer ${tag}`)).fontSize)])));
+	expect(size.h2 / size.h3).toBeGreaterThan(1.2);
+	expect(size.h3 / size.p).toBeGreaterThan(1.05);
+});

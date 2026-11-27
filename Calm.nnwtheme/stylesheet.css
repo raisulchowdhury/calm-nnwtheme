@@ -336,9 +336,11 @@ article {
 	letter-spacing: -0.02em;
 }
 
+/* Clear steps between levels: readers tell a new section from a sub-point by
+   size, and at 1.3em over 1.225em the h2 and h3 read as one level. */
 .articleBody h2 {
 	margin: 1.8em 0 0.5em;
-	font-size: 1.3em;
+	font-size: 1.45em;
 	font-weight: 700;
 	line-height: 1.2;
 	letter-spacing: -0.015em;
@@ -348,7 +350,7 @@ article {
    gap before a heading follows its rank. */
 .articleBody h3 {
 	margin: 1.75em 0 0.5em;
-	font-size: 1.225em;
+	font-size: 1.12em;
 	font-weight: 700;
 	line-height: 1.3;
 }
