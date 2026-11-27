@@ -66,6 +66,8 @@ export const cases = [
 	{ slug: "line-art-dark", fixture: "line-art", scheme: "dark", alt: "A transparent line chart and a photo in dark mode on iPhone: before, the chart's black lines vanish into the dark page; after, the chart sits on a soft paper tone and the photo is unchanged", sel: "img", extraBelow: 620, maxH: 1300 },
 	{ slug: "button-tinted", fixture: "platform-buttons", alt: "Publishers' buttons on iPhone: before, a thin outlined pill; after, a pill filled with the code-block tint, larger to tap", sel: ".button-wrapper", extraBelow: 700, maxH: 1100 },
 	{ slug: "button-tinted-dark", fixture: "platform-buttons", scheme: "dark", alt: "The same buttons in dark mode", sel: ".button-wrapper", extraBelow: 700, maxH: 1100 },
+	{ slug: "footnote-minimal", fixture: "platform-footnotes", both: true, alt: "Pandoc and GitHub footnotes on iPhone, one open and one closed: before, a tinted pill marker and a bordered card with a shadow and arrow; after, a plain muted number, and the note as muted text under one hairline", sel: "a[href='#user-content-fn-2']", para: true, extraBelow: 200, act: "click" },
+	{ slug: "footnote-minimal-dark", fixture: "platform-footnotes", scheme: "dark", both: true, alt: "The same footnotes in dark mode", sel: "a[href='#user-content-fn-2']", para: true, extraBelow: 200, act: "click" },
 	{ slug: "task-list", fixture: "platform-tasks", alt: "GitHub and Hugo task lists on iPhone: before, a bullet beside a small grey box; after, a text-size box in the muted text colour in place of the bullet", sel: "ul", extraBelow: 260 },
 	{ slug: "task-list-dark", fixture: "platform-tasks", scheme: "dark", alt: "The same task lists in dark mode", sel: "ul", extraBelow: 260 },
 	{ slug: "plain-captions", fixture: "platform-captions", alt: "Captions sent as plain blocks (WordPress classic, Jekyll, Blogger) on iPhone: before, they read as body text set apart from the picture; after, small muted centred captions under the picture, like Calm's figcaption", sel: ".wp-caption", extraBelow: 1100, maxH: 1700 },
@@ -102,7 +104,7 @@ async function shoot(c, which) {
 		await el.evaluate((node, pad) => window.scrollTo(0, node.getBoundingClientRect().top + scrollY - pad), pad);
 		await page.waitForTimeout(200);
 		if (which === "after" && c.act === "hover") { await el.hover(); await page.waitForTimeout(400); }
-		if (which === "after" && c.act === "click") { await el.click(); await page.waitForTimeout(600); }
+		if ((which === "after" || c.both) && c.act === "click") { await el.click(); await page.waitForTimeout(600); }
 		const box = await el.evaluate((node, para) => { const t = para ? node.closest("p, li") || node : node; const r = t.getBoundingClientRect(); return { y: r.top, h: r.height }; }, !!c.para);
 		clip = { x: 0, y: Math.max(0, box.y - pad), width, height: Math.min(box.h + pad * 2 + (c.extraBelow || 0), c.maxH || 900) };
 	}

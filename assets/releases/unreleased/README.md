@@ -213,3 +213,11 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### button-tinted-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-tinted-dark.jpg" width="720" alt="The same buttons in dark mode">
+
+### footnote-minimal
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/footnote-minimal.jpg" width="720" alt="Pandoc and GitHub footnotes on iPhone, one open and one closed: before, a tinted pill marker and a bordered card with a shadow and arrow; after, a plain muted number, and the note as muted text under one hairline">
+
+### footnote-minimal-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/footnote-minimal-dark.jpg" width="720" alt="The same footnotes in dark mode">

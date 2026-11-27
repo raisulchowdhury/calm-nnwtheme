@@ -88,12 +88,13 @@ Recorded as he makes them on the options page (docs/design-pass-options.html).
 | Heading scale | Proposal A, clearer steps | "Rest go with you reco" (2026-11-27) |
 | Paragraph spacing at large text | Proposal A, scales with text | "Rest go with you reco" (2026-11-27) |
 | Pictures in dark mode | Proposal A, paper backing for line art | "Rest go with you reco" (2026-11-27) |
-| Footnotes | Waiting: his choice among the new minimal open notes (Proposals B, C and D; B recommended) | "Opened should be more minimal" (on Proposal A, open in dark) |
+| Footnotes | Proposal A's plain number closed; open note as option B, muted text under one hairline, no card or shadow | "Opened should be more minimal", then "Ok with your footnote reco" (2026-11-27) |
 
 ### Built
 
 All six picks are in the theme, one commit each: link cards b050171, block quotes e76af33, headings aae7aa4, paragraph spacing 30c3089, dark-mode line art bcf070a, buttons 555d5b6, plus review fixes in the next commit. Images are in `assets/releases/unreleased/`: link-card-quiet(-dark), quote-upright(-dark), heading-steps(-dark), paragraph-gaps-large-text, line-art-dark, button-tinted(-dark).
 
+- **Footnotes** (built after the six): the marker is a plain muted raised number; the open note is muted text on the page colour under one hairline, with no card, shadow or arrow. A page-coloured fade under the note hides the half-covered line below instead of slicing it. Images: footnote-minimal(-dark).
 - **Paragraph spacing** is written against the reader's chosen size, so the default size renders exactly as before and the Linux `@visual` reference did not need regenerating.
 - **Known flaw, for Raisul.** In dark mode a PNG, GIF or SVG that is still loading shows as a paper-coloured box until the picture arrives. Before, the box was the page colour and invisible. The mockup listed this cost and it was picked with it. Removing it would need a load handler, which the no-swap rule forbids. The alternative is to drop the backing.
 

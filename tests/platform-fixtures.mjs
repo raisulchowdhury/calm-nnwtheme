@@ -113,6 +113,12 @@ export const footnoteCases = [
 		unmarked: ["back"],
 	},
 	{
+		platform: "FreshRSS (ids and classes renamed)",
+		html: `<p>${line}<sup data-sanitized-id="fnref1"><a id="fresh" href="#fn1" data-sanitized-class="footnote-ref">1</a></sup>.</p><div data-sanitized-class="footnotes"><ol><li data-sanitized-id="fn1"><p>A note. <a href="#fnref1" id="back">↩</a></p></li></ol></div>`,
+		marked: ["fresh"],
+		unmarked: ["back"],
+	},
+	{
 		platform: "Not footnotes: a sup link to a section, a WordPress-style sup to a heading",
 		html: `<h2 id="fn-section">Section</h2><p>${line}<sup><a href="#section-2" id="to-section">2</a></sup> and <sup data-fn="x"><a href="#fn-section" id="to-heading">3</a></sup> and <a href="#fn-section" id="plain">a link</a>.</p><h2 id="section-2">Two</h2>`,
 		marked: [],

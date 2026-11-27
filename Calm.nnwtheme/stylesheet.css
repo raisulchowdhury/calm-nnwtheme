@@ -928,31 +928,39 @@ sub {
 /*
  * NetNewsWire footnotes. newsfoot.js inserts the popover inside the reference's
  * <sup>, so it would inherit the superscript's size and zero line height.
- * Reset both, then give the popover Calm's surface, rule, and text colors.
+ * Reset both. The marker is a plain raised number in the muted colour: readers
+ * know a small number is a note, so it needs no pill. The opened note is
+ * muted text on the page itself under one hairline, with no card, shadow or
+ * arrow, the way a printed note sits under a rule. It keeps the page colour
+ * as its background so the lines it covers don't show through.
  */
 .articleBody a.footnote,
 .articleBody a.footnote:visited {
 	margin-left: 0.1em;
-	background: var(--reader-code-bg);
+	padding: 0 0.1em;
+	background: none;
 	color: var(--reader-muted);
 	font-family: var(--reader-sans);
+	font-size: 0.85em;
 	font-variant-numeric: lining-nums;
-	font-weight: 600;
+	font-weight: 500;
 	text-decoration: none;
-	transition: background-color 120ms ease, color 120ms ease;
+	transition: color 120ms ease;
 }
 
 .articleBody a.footnote:hover,
 .articleBody .newsfoot-footnote-popover + a.footnote {
-	background: var(--reader-rule);
+	background: none;
 	color: var(--reader-heading);
 }
 
 .newsfoot-footnote-popover {
-	padding: 1px;
-	background: var(--reader-rule);
-	box-shadow: var(--reader-popover-shadow);
-	color: var(--reader-text);
+	padding: 0;
+	border-top: 1px solid var(--reader-rule);
+	border-radius: 0;
+	background: var(--reader-bg);
+	box-shadow: none;
+	color: var(--reader-muted);
 	font-family: var(--reader-serif-body);
 	font-size: calc(var(--reader-font-size, var(--reader-base-size)) * 0.9);
 	font-style: normal;
@@ -965,12 +973,16 @@ sub {
 }
 
 .newsfoot-footnote-popover-inner {
-	background: var(--reader-popover-bg);
+	padding: 0.6em 0 0.5em;
+	border-radius: 0;
+	background: var(--reader-bg);
+	/* The note covers the lines below it. A page-coloured fade under its last
+	   line hides the half-covered line instead of slicing through it. */
+	box-shadow: 0 0.6em 0.6em var(--reader-bg);
 }
 
 .newsfoot-footnote-popover-arrow {
-	border: 1px solid var(--reader-rule);
-	background: var(--reader-popover-bg);
+	display: none;
 }
 
 .newsfoot-footnote-popover a[href*="#fnref"] {

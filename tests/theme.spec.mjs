@@ -1538,3 +1538,46 @@ test("@webkit outlines buttons under Increase Contrast", async ({ page }) => {
 	const rule = await tokenColor(page, "--reader-rule");
 	await expect(page.locator("#b")).toHaveCSS("border-top-color", rule);
 });
+
+test("@webkit draws every platform's footnote marker as a plain muted number, and other links as links", async ({ page }) => {
+	for (const item of footnoteCases) {
+		await loadCase(page, item.html);
+		const muted = await tokenColor(page, "--reader-muted");
+		const state = await page.evaluate(({ marked, unmarked }) => {
+			const look = (id) => { const style = getComputedStyle(document.getElementById(id)); return { background: style.backgroundColor, color: style.color }; };
+			return { marked: marked.map(look), unmarked: unmarked.map(look) };
+		}, item);
+		for (const m of state.marked) expect.soft(m, `${item.platform}: plain number`).toEqual({ background: "rgba(0, 0, 0, 0)", color: muted });
+		for (const u of state.unmarked) expect.soft(u.color, `${item.platform}: other links keep their colour`).not.toBe(muted);
+	}
+});
+
+test("@webkit opens a footnote as muted text under one hairline, with no card, shadow or arrow", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.setContent(`<!doctype html><html><head><style>${newsfootCore}</style><style>${stylesheet}</style></head><body>
+		<article><div id="bodyContainer" class="articleBody mediumText"><p>${paragraph}<sup><a class="footnote" href="#fn1">1</a></sup></p><p>${paragraph}</p></div></article></body></html>`);
+	await page.evaluate(() => {
+		const link = document.querySelector("a.footnote");
+		const container = document.createElement("div");
+		container.className = "newsfoot-footnote-container";
+		link.parentElement.insertBefore(container, link);
+		container.appendChild(link);
+		const popover = document.createElement("div");
+		popover.className = "newsfoot-footnote-popover";
+		const inner = document.createElement("div");
+		inner.className = "newsfoot-footnote-popover-inner";
+		inner.innerHTML = "<p>A note with <a href='https://example.com/'>a link</a>.</p>";
+		const arrow = document.createElement("div");
+		arrow.className = "newsfoot-footnote-popover-arrow";
+		popover.append(inner, arrow);
+		container.insertBefore(popover, link);
+	});
+	const muted = await tokenColor(page, "--reader-muted");
+	const page_ = await tokenColor(page, "--reader-bg");
+	const state = await page.evaluate(() => {
+		const popover = getComputedStyle(document.querySelector(".newsfoot-footnote-popover"));
+		const inner = getComputedStyle(document.querySelector(".newsfoot-footnote-popover-inner"));
+		return { shadow: popover.boxShadow, top: popover.borderTopStyle, left: popover.borderLeftStyle, background: inner.backgroundColor, color: popover.color, arrow: getComputedStyle(document.querySelector(".newsfoot-footnote-popover-arrow")).display };
+	});
+	expect(state).toEqual({ shadow: "none", top: "solid", left: "none", background: page_, color: muted, arrow: "none" });
+});
