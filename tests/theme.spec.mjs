@@ -1312,11 +1312,11 @@ test("@webkit draws every platform's buttons as one pill and hides sign-up forms
 	}
 });
 
-test("@webkit shows every platform's task lists with a text-size accent box on the first line, and leaves other lists alone", async ({ page }) => {
+test("@webkit shows every platform's task lists with a text-size muted box on the first line, and leaves other lists alone", async ({ page }) => {
 	for (const width of [390, 900]) {
 		for (const item of taskCases) {
 			await loadCase(page, item.html, width);
-			const accent = await tokenColor(page, "--reader-accent");
+			const muted = await tokenColor(page, "--reader-muted");
 			const state = await page.evaluate(({ tasks, plain, untouched = [] }) => {
 				const task = (id) => {
 					const li = document.getElementById(id);
@@ -1332,7 +1332,7 @@ test("@webkit shows every platform's task lists with a text-size accent box on t
 					return {
 						id,
 						bullet: getComputedStyle(li).listStyleType,
-						accent: style.borderTopColor,
+						muted: style.borderTopColor,
 						textSize: boxRect.height >= fontSize * 0.7 && boxRect.height <= fontSize * 1.05,
 						onFirstLine: centre > line.top && centre < line.bottom,
 						inGutter: boxRect.right <= line.left,
@@ -1347,7 +1347,7 @@ test("@webkit shows every platform's task lists with a text-size accent box on t
 				};
 			}, item);
 			for (const t of state.tasks) {
-				expect.soft(t, `${item.platform} @${width}: ${t.id}`).toEqual({ id: t.id, bullet: "none", accent, textSize: true, onFirstLine: true, inGutter: true, insideColumn: true });
+				expect.soft(t, `${item.platform} @${width}: ${t.id}`).toEqual({ id: t.id, bullet: "none", muted, textSize: true, onFirstLine: true, inGutter: true, insideColumn: true });
 			}
 			for (const bullet of state.plain) expect.soft(bullet, `${item.platform} @${width}: keeps its bullet`).not.toBe("none");
 			for (const look of state.untouched) expect.soft(look, `${item.platform} @${width}: demo checkbox untouched`).not.toBe("none");

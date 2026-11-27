@@ -130,14 +130,6 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-pill-dark.jpg" width="720" alt="The same buttons in dark mode">
 
-### task-list
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list.jpg" width="720" alt="GitHub and Hugo task lists on iPhone: before, a bullet beside a small grey box; after, a text-size box in Calm's accent colour in place of the bullet">
-
-### task-list-dark
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list-dark.jpg" width="720" alt="The same task lists in dark mode">
-
 ### plain-captions
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/plain-captions.jpg" width="720" alt="Captions sent as plain blocks (WordPress classic, Jekyll, Blogger) on iPhone: before, they read as body text set apart from the picture; after, small muted centred captions under the picture, like Calm's figcaption">
@@ -166,3 +158,10 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/caption-bold.jpg" width="720" alt="A caption with a bold phrase: before, the phrase in near-black inside the grey caption; after, the caption's own colour">
 
+### task-list
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list.jpg" width="720" alt="GitHub and Hugo task lists on iPhone: before, a bullet beside a small grey box; after, a text-size box in the muted text colour in place of the bullet">
+
+### task-list-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list-dark.jpg" width="720" alt="The same task lists in dark mode">

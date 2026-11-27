@@ -30,12 +30,12 @@ The images in `docs/elevation/` show the current look on synthetic markup at 390
 ### 3. Task lists
 
 - **Now:** GitHub-style task lists show a bullet and a tiny grey checkbox side by side. ![](elevation/tasks-light.jpg)
-- **Calm standard:** no bullet; a checkbox at text size in Calm's accent colour, aligned with the first line.
+- **Calm standard:** no bullet; a checkbox at text size in the muted text colour, aligned with the first line.
 - **Before first paint:** yes, CSS (`li:has(> input[type=checkbox])`, `accent-color`).
 - **Platforms:** GitHub, Jekyll, Hugo, Ghost Markdown. Corpus: 1 item.
 - **Cost:** none.
 - **Recommendation:** do; small and safe.
-- **Done in Calm 1.5:** CSS only, with a new `--reader-accent` (a deeper tone of the selection amber, 3.5:1 on white). GitHub, kramdown, markdown-it, Hugo, Pandoc, Obsidian and MkDocs markup; the box is drawn by hand because WebKit greys out disabled checkboxes whatever `accent-color` says. A demo's live checkbox stays. Images: `assets/releases/unreleased/task-list*.jpg`.
+- **Done in Calm 1.5:** CSS only. The box first used an amber accent; Raisul, 2026-11-27: "we shouldn't add color here", so it is drawn in the muted text colour (5.3:1 on white) and the accent token is gone. GitHub, kramdown, markdown-it, Hugo, Pandoc, Obsidian and MkDocs markup; the box is drawn by hand because WebKit greys out disabled checkboxes whatever `accent-color` says. A demo's live checkbox stays. Images: `assets/releases/unreleased/task-list*.jpg`.
 
 ### 4. Captions sent as plain blocks
 

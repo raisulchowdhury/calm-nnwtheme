@@ -20,7 +20,6 @@
 	--reader-code-bg: #f7f0e4;
 	--reader-progress: rgba(36, 32, 29, 0.18);
 	--reader-selection: rgba(201, 154, 68, 0.22);
-	--reader-accent: #b0812f;
 	--reader-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.3 5 8.6 9.6 3.6' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 	--reader-popover-bg: #ffffff;
 	--reader-popover-shadow: 0 10px 30px rgba(36, 32, 29, 0.12), 0 1px 3px rgba(36, 32, 29, 0.1);
@@ -60,7 +59,6 @@
 		--reader-code-bg: #1c1b1a;
 		--reader-progress: rgba(255, 252, 240, 0.18);
 		--reader-selection: rgba(218, 169, 95, 0.24);
-		--reader-accent: #daa95f;
 		--reader-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.3 5 8.6 9.6 3.6' fill='none' stroke='%23100f0f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 		--reader-popover-bg: #1c1b1a;
 		--reader-popover-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -77,7 +75,6 @@
 		--reader-muted: #4d4842;
 		--reader-faint: #6f6a63;
 		--reader-rule: #cbbfa9;
-		--reader-accent: #8f651f;
 	}
 }
 
@@ -87,7 +84,6 @@
 		--reader-muted: #b7b5ac;
 		--reader-faint: #8f8d87;
 		--reader-rule: #5a5855;
-		--reader-accent: #ecc287;
 	}
 }
 
@@ -401,10 +397,10 @@ article {
  * Task lists: GitHub, kramdown and markdown-it (li.task-list-item), Obsidian
  * (data-task), Pandoc (ul.task-list, the box in a label) and Hugo's bare
  * disabled box at the start of an item. The bullet goes; a text-size box in
- * the accent colour takes its place in the gutter, on the first line. Drawn
- * by hand because WebKit greys out the disabled boxes feeds send, whatever
- * accent-color says. A live checkbox in an interactive demo, in a list item
- * or not, is left alone.
+ * the muted text colour, a little lighter than the text, takes its place in
+ * the gutter, on the first line. No colour of its own: a checklist is text.
+ * Drawn by hand because WebKit greys out the disabled boxes feeds send. A
+ * live checkbox in an interactive demo, in a list item or not, is left alone.
  */
 .articleBody :is(li.task-list-item, li[data-task], ul.task-list > li),
 .articleBody li:has(> input[type="checkbox"][disabled]:first-child) {
@@ -422,7 +418,7 @@ article {
 	margin: 0 0.5em 0 -1.35em;
 	font-size: inherit;
 	padding: 0;
-	border: 1.5px solid var(--reader-accent);
+	border: 1.5px solid var(--reader-muted);
 	border-radius: 0.2em;
 	background: transparent center / 80% no-repeat;
 	vertical-align: -0.08em;
@@ -433,7 +429,7 @@ article {
 .articleBody :is(li.task-list-item, li[data-task], ul.task-list > li) > input[type="checkbox"]:first-child:checked,
 .articleBody :is(li.task-list-item, li[data-task], ul.task-list > li) > :is(label, p):first-child > input[type="checkbox"]:first-child:checked,
 .articleBody li > input[type="checkbox"][disabled]:first-child:checked {
-	background-color: var(--reader-accent);
+	background-color: var(--reader-muted);
 	background-image: var(--reader-check);
 }
 
