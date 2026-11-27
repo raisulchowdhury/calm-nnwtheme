@@ -628,8 +628,10 @@ body: The body of the article.
 				// Until the picture decodes, the video takes the shape of the
 				// 1x1 spacer it replaced, a square, and then shrinks. Its own
 				// width and height fix the box from the first frame.
-				var width = parseFloat(video.getAttribute("width"));
-				var height = parseFloat(video.getAttribute("height"));
+				// Plain numbers only: "100%" is not a shape.
+				var plain = /^\s*\d+(?:\.\d+)?\s*$/;
+				var width = plain.test(video.getAttribute("width") || "") ? parseFloat(video.getAttribute("width")) : 0;
+				var height = plain.test(video.getAttribute("height") || "") ? parseFloat(video.getAttribute("height")) : 0;
 				if (width > 0 && height > 0) {
 					video.style.aspectRatio = width + " / " + height;
 				}
@@ -1672,7 +1674,7 @@ body: The body of the article.
 			// div.footnote-content).
 			var lead = note;
 			for (var first = note.firstChild; first; first = first.firstChild) {
-				while (first && first.nodeType === 3 && !first.data.trim()) {
+				while (first && (first.nodeType === 8 || (first.nodeType === 3 && !first.data.trim()))) {
 					first = first.nextSibling;
 				}
 				if (!first || first.nodeType !== 1 || !/^(?:P|DIV|SECTION)$/.test(first.tagName)) {
@@ -1683,7 +1685,7 @@ body: The body of the article.
 					break;
 				}
 			}
-			while (lead.firstChild && lead.firstChild.nodeType === 3 && !lead.firstChild.data.trim()) {
+			while (lead.firstChild && (lead.firstChild.nodeType === 8 || (lead.firstChild.nodeType === 3 && !lead.firstChild.data.trim()))) {
 				lead.firstChild.remove();
 			}
 			lead.insertBefore(document.createTextNode(" "), lead.firstChild);
@@ -1828,7 +1830,18 @@ body: The body of the article.
 			}
 		}
 
+		// Notes opened later may sit inside this one's split (two numbers on
+		// one line), so they come out first, newest first, and go back after.
 		function close(entry) {
+			var later = openNotes.slice(openNotes.indexOf(entry) + 1);
+			later.slice().reverse().forEach(shut);
+			shut(entry);
+			later.forEach(function (item) {
+				open(item.link, item.note, true);
+			});
+		}
+
+		function shut(entry) {
 			entry.note.remove();
 			var split = entry.split;
 			if (split && split.tail) {
@@ -1850,15 +1863,16 @@ body: The body of the article.
 		function onKey(event) {
 			if (event.key === "Escape" && openNotes.length) {
 				event.preventDefault();
-				openNotes.slice().reverse().forEach(close);
+				openNotes.slice().reverse().forEach(shut);
 			}
 		}
 
 		// A new width moves the line ends, so put open notes back at their
 		// marker's new line end.
 		function onResize() {
-			openNotes.slice().forEach(function (entry) {
-				close(entry);
+			var entries = openNotes.slice();
+			entries.slice().reverse().forEach(shut);
+			entries.forEach(function (entry) {
 				open(entry.link, entry.note, true);
 			});
 		}

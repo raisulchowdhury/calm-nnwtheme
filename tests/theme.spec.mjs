@@ -920,8 +920,13 @@ test("@webkit gives Ghost video cards their thumbnail as the poster instead of a
 			card("style", "", gif, "background: transparent url('https://example.com/media/c_thumb.jpg') 50% 50% / cover no-repeat;"),
 			card("real", 'data-kg-thumbnail="https://example.com/media/d_thumb.jpg"', "https://example.com/images/d-poster.jpg"),
 			card("none", "", gif),
+			card("percent", 'data-kg-thumbnail="https://example.com/media/e_thumb.jpg"', gif).replace('width="1280" height="720"', 'width="100%" height="315"'),
 		].join(""),
 	});
+	// The video's own width and height hold its shape while the thumbnail loads;
+	// a percentage is not a shape.
+	const ratios = await page.evaluate(() => Object.fromEntries(["thumb", "none", "percent"].map((id) => [id, document.getElementById(id).style.aspectRatio])));
+	expect(ratios).toEqual({ thumb: "1280 / 720", none: "", percent: "" });
 	const posters = await page.evaluate(() =>
 		Object.fromEntries(["thumb", "custom", "style", "real", "none"].map((id) => [id, document.getElementById(id).getAttribute("poster")])),
 	);
@@ -1657,7 +1662,9 @@ test("@webkit opens every platform's footnote in the text, without its back arro
 // line of its own.
 test("@webkit raises Substack's bare footnote number and keeps the note's number on its first line", async ({ page }) => {
 	await loadCase(page, `<p id="host">${paragraph}<a class="footnote-anchor" data-component-name="FootnoteAnchorToDOM" id="footnote-anchor-1" href="#footnote-1" target="_self">1</a>. ${paragraph}</p>
-		<div class="footnote" data-component-name="FootnoteToDOM"><a id="footnote-1" href="#footnote-anchor-1" class="footnote-number" contenteditable="false" target="_self">1</a><div class="footnote-content"><p>A note.</p><p>Its second paragraph.</p></div></div>`);
+		<div class="footnote" data-component-name="FootnoteToDOM"><a id="footnote-1" href="#footnote-anchor-1" class="footnote-number" contenteditable="false" target="_self">1</a><div class="footnote-content"><!-- a comment --><p>A note.</p><p>Its second paragraph.</p></div></div>
+		<p>A link that holds its own raised number<a id="own" class="footnote" role="doc-noteref" href="#fn9">[<sup>1</sup>]</a> is not raised twice.</p>`);
+	expect(await page.evaluate(() => [getComputedStyle(document.getElementById("footnote-anchor-1")).position, getComputedStyle(document.getElementById("own")).position])).toEqual(["relative", "static"]);
 	const marker = await page.evaluate(() => {
 		const link = document.getElementById("footnote-anchor-1");
 		const range = document.createRange();
@@ -1777,6 +1784,35 @@ test("@webkit opens a note under its line when the line ends inside a link, and 
 		await page.setViewportSize({ width: 390, height: 844 });
 		expect.soft((await noteState(page)).html, `${name}: resize then Escape restores it too`).toEqual(closed.html);
 	}
+});
+
+// Two numbers on one line that ends inside a link: the second note opens inside
+// the first one's split, so closing the first must still join the link.
+test("@webkit joins a split link again when the first of two open notes closes", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<p id="host">Lead<sup id="fnref:1"><a id="one" href="#fn:1" class="footnote">1</a></sup> x<sup id="fnref:2"><a id="two" href="#fn:2" class="footnote">2</a></sup> <a id="long" href="https://example.com/a">${paragraph}</a> and on.</p><p>${paragraph}</p>
+			<div class="footnotes"><ol><li id="fn:1"><p>The first note. <a href="#fnref:1" class="reversefootnote">↩</a></p></li><li id="fn:2"><p>The second note. <a href="#fnref:2" class="reversefootnote">↩</a></p></li></ol></div>`,
+	});
+	const closed = await noteState(page);
+	const links = () => page.locator("#host a[href='https://example.com/a']").count();
+	await page.locator("#one").click();
+	await page.locator("#two").click();
+	expect(await page.locator(".calmNote").count()).toBe(2);
+	await page.locator("#one").click();
+	expect(await page.locator(".calmNote").innerText(), "the second note stays open").toContain("The second note.");
+	expect(await links(), "the link is split once, by the note still open").toBe(2);
+	await page.locator("#two").click();
+	expect(await noteState(page), "closing both restores the text exactly").toEqual(closed);
+	await page.locator("#one").click();
+	await page.locator("#two").click();
+	await page.setViewportSize({ width: 420, height: 844 });
+	await page.waitForTimeout(150);
+	expect(await page.locator(".calmNote").count(), "both stay open across a resize").toBe(2);
+	await page.keyboard.press("Escape");
+	await page.setViewportSize({ width: 390, height: 844 });
+	expect((await noteState(page)).html, "resize then Escape restores it too").toEqual(closed.html);
 });
 
 // A link that starts the next line is left whole: the note goes in front of it.

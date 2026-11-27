@@ -997,8 +997,9 @@ sub {
 /* Substack's number is a bare link with no <sup> around it: raise it and
    size it the way a <sup> would, so it doesn't sit on the line. NetNewsWire
    makes it an inline block, so its line height is its box: 1 keeps a box to
-   tap and to ring on focus, and stays shorter than the line it sits in. */
-.articleBody a:is(.footnote, [id^="footnote-anchor-"]):not(sup a) {
+   tap and to ring on focus, and stays shorter than the line it sits in.
+   A link that holds its own <sup> is already raised. */
+.articleBody a:is(.footnote, [id^="footnote-anchor-"]):not(sup a):not(:has(sup)) {
 	position: relative;
 	top: -0.45em;
 	font-size: 0.58em;
