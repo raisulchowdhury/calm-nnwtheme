@@ -545,8 +545,50 @@
 		});
 	}
 
+	// The language a code block declares ("language-swift" from Markdown and
+	// Prism, "lang-js", GitHub's "highlight-source-js" on the wrapper, or a
+	// data-lang attribute), as a name to show beside Copy. Blocks that declare
+	// none, or only plain text, get no label.
+	var codeLanguageNames = {
+		bash: "Shell", sh: "Shell", shell: "Shell", zsh: "Shell", console: "Shell", shellsession: "Shell",
+		js: "JavaScript", javascript: "JavaScript", jsx: "JSX", ts: "TypeScript", typescript: "TypeScript", tsx: "TSX",
+		py: "Python", python: "Python", rb: "Ruby", ruby: "Ruby", rs: "Rust", rust: "Rust", go: "Go", golang: "Go",
+		swift: "Swift", objc: "Objective-C", objectivec: "Objective-C", "objective-c": "Objective-C",
+		c: "C", cpp: "C++", "c++": "C++", cs: "C#", csharp: "C#", java: "Java", kotlin: "Kotlin", kt: "Kotlin",
+		php: "PHP", sql: "SQL", html: "HTML", xml: "XML", css: "CSS", scss: "SCSS", json: "JSON", yaml: "YAML", yml: "YAML",
+		toml: "TOML", md: "Markdown", markdown: "Markdown", diff: "Diff", dockerfile: "Dockerfile", make: "Makefile", makefile: "Makefile",
+		lua: "Lua", r: "R", elixir: "Elixir", haskell: "Haskell", scala: "Scala", dart: "Dart", graphql: "GraphQL", powershell: "PowerShell", ps1: "PowerShell"
+	};
+	var plainCodeLanguages = /^(?:plain|plaintext|plain-text|text|txt|none|nohighlight|no-highlight|output|raw)$/;
+
+	function codeLanguage(pre) {
+		var code = pre.querySelector("code");
+		var nodes = [pre, code, pre.parentElement].filter(Boolean);
+		for (var index = 0; index < nodes.length; index++) {
+			var node = nodes[index];
+			var value = node === pre.parentElement ? "" : node.getAttribute("data-lang") || node.getAttribute("data-language") || "";
+			if (!value) {
+				var classes = (node.getAttribute("class") || "") + " " + (node.getAttribute("data-sanitized-class") || "");
+				var match = node === pre.parentElement ?
+					classes.match(/(?:^|\s)highlight-source-([\w+#.-]+)/) :
+					classes.match(/(?:^|\s)(?:language|lang|highlight-source)-([\w+#.-]+)/);
+				value = match ? match[1] : "";
+			}
+			value = value.trim();
+			if (value) {
+				var key = value.toLowerCase();
+				if (plainCodeLanguages.test(key) || value.length > 24) {
+					return "";
+				}
+				return codeLanguageNames[key] || value;
+			}
+		}
+		return "";
+	}
+
 	// On the Mac, a code block shows a quiet Copy button while the pointer is
-	// over it. Touch screens select text instead, so they get no button.
+	// over it, beside the block's language when it names one. Touch screens
+	// select text instead, so they get neither.
 	function enableCodeCopy() {
 		var fineHover = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)");
 		if (!body || !fineHover || !fineHover.matches) {
@@ -586,6 +628,8 @@
 			if (pre.closest("table") || text.split("\n").length < 2 && text.length < 40) {
 				return;
 			}
+			// Read the language first: GitHub names it on the block's wrapper.
+			var language = codeLanguage(pre);
 			var wrap = document.createElement("div");
 			// A one-line command gets a full-height Copy cap (see .calmCodeOneLine).
 			wrap.className = text.indexOf("\n") < 0 ? "calmCode calmCodeOneLine" : "calmCode";
@@ -604,7 +648,16 @@
 					}, 1400);
 				});
 			});
-			wrap.appendChild(button);
+			var tools = document.createElement("div");
+			tools.className = "calmCodeTools";
+			if (language) {
+				var label = document.createElement("span");
+				label.className = "calmCodeLanguage";
+				label.textContent = language;
+				tools.appendChild(label);
+			}
+			tools.appendChild(button);
+			wrap.appendChild(tools);
 		});
 	}
 

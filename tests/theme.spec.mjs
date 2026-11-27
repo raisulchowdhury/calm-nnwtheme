@@ -808,3 +808,27 @@ test("@webkit hides the lead picture when the body has the same file without its
 	await page.setContent(page73("thumb-a.png", "thumb.png"));
 	await expect(page.locator(".nnw-primary-media")).not.toHaveAttribute("hidden", "");
 });
+
+test("@webkit names a code block's declared language beside the Copy button", async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<pre id="swift" class="language-swift"><code>let a = 1\nlet b = 2</code></pre>
+			<div class="highlight highlight-source-js"><pre id="js">const a = 1;\nconst b = 2;</pre></div>
+			<pre id="data" data-lang="Python"><code>a = 1\nb = 2</code></pre>
+			<pre id="plain"><code class="language-plaintext">a\nb</code></pre>
+			<pre id="none"><code>a\nb</code></pre>`,
+	});
+	const label = (id) => page.locator(`#${id}`).locator("xpath=..").locator(".calmCodeLanguage");
+	await expect(label("swift")).toHaveText("Swift");
+	await expect(label("js")).toHaveText("JavaScript");
+	await expect(label("data")).toHaveText("Python");
+	await expect(label("plain")).toHaveCount(0);
+	await expect(label("none")).toHaveCount(0);
+	const copy = page.locator("#swift").locator("xpath=..").locator(".calmCopy");
+	await expect(copy).toHaveCount(1);
+	await page.locator("#swift").hover();
+	const sizes = await Promise.all([label("swift"), copy].map((node) => node.evaluate((el) => getComputedStyle(el).fontSize)));
+	expect(sizes[0]).toBe(sizes[1]);
+	await expect(label("swift")).toHaveCSS("color", "rgb(112, 107, 100)");
+});

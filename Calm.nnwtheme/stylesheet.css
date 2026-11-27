@@ -1419,17 +1419,24 @@ sub {
 	display: none;
 }
 
-/* Code copy button, Mac only (see enableCodeCopy). */
+/* Code copy button, Mac only (see enableCodeCopy), with the block's language
+   beside it when the feed names one. */
 .calmCode {
 	position: relative;
+}
+
+.calmCodeTools {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
 }
 
 .calmCopy {
 	appearance: none;
 	-webkit-appearance: none;
-	position: absolute;
-	top: 0.5rem;
-	right: 0.5rem;
 	padding: 0.2rem 0.5rem;
 	border: 1px solid var(--reader-rule);
 	border-radius: 6px;
@@ -1440,16 +1447,41 @@ sub {
 	font-weight: 500;
 	line-height: 1.3;
 	cursor: pointer;
+}
+
+/* The label sits over the end of the first line, so it takes the code's
+   background and hides what runs beneath it. */
+.calmCodeLanguage {
+	padding: 0.2rem 0.1rem 0.2rem 0.4rem;
+	border-radius: 4px;
+	background: var(--reader-code-bg);
+	color: var(--reader-muted);
+	font-family: var(--reader-sans);
+	font-size: 0.72rem;
+	font-weight: 500;
+	line-height: 1.3;
+	pointer-events: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.calmCopy,
+.calmCodeLanguage {
 	opacity: 0;
 	transition: opacity 120ms ease;
 }
 
 /* A one-line command scrolls under the button, so the button becomes a
    full-height cap at the line's end and hides what runs beneath it. */
-.calmCodeOneLine .calmCopy {
+.calmCodeOneLine .calmCodeTools {
 	top: 0;
 	right: 0;
 	bottom: 0;
+	align-items: stretch;
+	gap: 0;
+}
+
+.calmCodeOneLine .calmCopy {
 	padding: 0 0.9rem;
 	border: 0;
 	border-left: 1px solid var(--reader-rule);
@@ -1457,8 +1489,15 @@ sub {
 	background: var(--reader-code-bg);
 }
 
-.calmCode:hover .calmCopy,
-.calmCopy:focus-visible {
+.calmCodeOneLine .calmCodeLanguage {
+	display: flex;
+	align-items: center;
+	padding: 0 0.7rem;
+	border-radius: 0;
+}
+
+.calmCode:hover :is(.calmCopy, .calmCodeLanguage),
+.calmCodeTools:focus-within > * {
 	opacity: 1;
 }
 
@@ -1516,6 +1555,7 @@ sub {
 	}
 
 	.calmCopy,
+	.calmCodeLanguage,
 	.articleBody .embedded-post,
 	.articleBody .kg-bookmark-container {
 		transition: none;
@@ -1523,7 +1563,7 @@ sub {
 }
 
 @media print {
-	.calmCopy,
+	.calmCodeTools,
 	.calmViewer {
 		display: none !important;
 	}
