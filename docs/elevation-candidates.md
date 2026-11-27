@@ -13,7 +13,7 @@ The images in `docs/elevation/` show the current look on synthetic markup at 390
 - **Now:** Substack's call-to-action button is a plain underlined link. Its subscribe widget and Mailchimp sign-up forms (MacRumors) show as a bare text box and a small system button that can't do anything useful inside a reader. ![](elevation/button-light.jpg)
 - **Calm standard:** the button as one quiet bordered pill, like Calm's link cards; in-article sign-up forms hidden, since the reader already subscribes by feed.
 - **Before first paint:** yes, CSS only (`.button-wrapper a.button`, `.subscription-widget-wrap`, `form:has(input[type=email])`).
-- **Platforms:** Substack, Mailchimp embeds on WordPress; likely Beehiiv. Corpus: 2 Substack button items, 2 MacRumors forms.
+- **Platforms:** Substack, Mailchimp embeds on WordPress (other newsletter platforms unchecked). Corpus: 2 Substack button items, 2 MacRumors forms.
 - **Cost:** nothing measurable; one `:has` rule scoped to forms.
 - **Recommendation:** do. Negative case: a form that isn't a sign-up (a search box in a tutorial) stays.
 

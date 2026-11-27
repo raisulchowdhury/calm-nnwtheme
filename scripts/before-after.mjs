@@ -49,6 +49,7 @@ export const cases = [
 	{ slug: "footnote-pandoc", fixture: "platform-footnotes", alt: "Pandoc and GitHub-style footnotes: before, tapping the number does nothing; after, the note opens in place", sel: "a[href='#fn1']", para: true, extraBelow: 260, act: "click" },
 	{ slug: "medium-credit", fixture: "platform-credit", alt: "A Medium story's end: before, a rule and an 'originally published in ... on Medium' line; after, the story ends on its own last paragraph", top: 760 },
 	{ slug: "code-language-rouge", fixture: "platform-code", alt: "A Jekyll (Rouge) code block on the Mac: before, no language; after, Python beside Copy on hover", sel: "pre", width: 900, act: "hover" },
+	{ slug: "instagram-placeholder", fixture: "platform-instagram", alt: "An Instagram embed in a Ghost or WordPress post on iPhone: before, empty placeholder rows leave gaps in the card; after, just the link to the post and its caption", sel: ".instagram-media" },
 	{ slug: "pullquote-aside", fixture: "feed-cards", alt: "A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box", sel: ".wp-block-pullquote", extraBelow: 260 },
 ];
 

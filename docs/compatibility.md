@@ -32,6 +32,8 @@ How it's checked:
 | Mastodon, Micro.blog | n.a. | n.a. | n.a. | works | works |
 | YouTube channel feeds | n.a. | n.a. | n.a. | n.a. | limit: the video is in `media:` tags, not the body; NetNewsWire shows it |
 
+Feed readers: the corpus holds only platform feeds read directly, none passed through a reader service yet. Reader cases covered by synthetic tests: footnotes whose ids FreshRSS renamed or Feedly removed (`fixtures/feed-footnotes.json` and the FreshRSS test in `tests/theme.spec.mjs`) and classes FreshRSS moves into `data-sanitized-class` (Substack's image buttons). Other Feedbin, Feedly and Inoreader markup is untested.
+
 Known limits and why they stay:
 
 - **A feed's own stylesheet or script.** A `<link rel=stylesheet>` or a script inside the article (KaTeX feeds) makes WebKit paint before Calm's script runs. Calm can't run earlier, so such a page may show the feed's layout for a frame. Calm hides KaTeX's duplicate text in CSS, so math is correct from the first frame either way.

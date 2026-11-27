@@ -113,3 +113,7 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### code-language-rouge
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/code-language-rouge.jpg" width="720" alt="A Jekyll (Rouge) code block on the Mac: before, no language; after, Python beside Copy on hover">
+
+### instagram-placeholder
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/instagram-placeholder.jpg" width="720" alt="An Instagram embed in a Ghost or WordPress post on iPhone: before, empty placeholder rows leave gaps in the card; after, just the link to the post and its caption">
