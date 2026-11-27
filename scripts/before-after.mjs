@@ -58,6 +58,11 @@ export const cases = [
 	{ slug: "task-list-dark", fixture: "platform-tasks", scheme: "dark", alt: "The same task lists in dark mode", sel: "ul", extraBelow: 260 },
 	{ slug: "plain-captions", fixture: "platform-captions", alt: "Captions sent as plain blocks (WordPress classic, Jekyll, Blogger) on iPhone: before, they read as body text set apart from the picture; after, small muted centred captions under the picture, like Calm's figcaption", sel: ".wp-caption", extraBelow: 1100, maxH: 1700 },
 	{ slug: "plain-captions-dark", fixture: "platform-captions", scheme: "dark", alt: "The same captions in dark mode", sel: ".wp-caption", extraBelow: 1100, maxH: 1700 },
+	{ slug: "code-line-numbers", fixture: "platform-code-lines", alt: "A Jekyll code block with line numbers on iPhone: before, small code in boxes inside a box with wide gaps; after, one box at the usual code size with muted numbers", sel: "figure.highlight", extraBelow: 20 },
+	{ slug: "code-line-numbers-dark", fixture: "platform-code-lines", scheme: "dark", alt: "The same code block in dark mode", sel: "figure.highlight", extraBelow: 20 },
+	{ slug: "quote-bold", fixture: "design-pass", alt: "Bold words in a quote on iPhone: before, speaker names and emphasis jump to the heading colour; after, they keep the quote's quiet colour and stand out by weight", sel: "blockquote" },
+	{ slug: "quote-bold-dark", fixture: "design-pass", scheme: "dark", alt: "The same quote in dark mode, where the bold words were brightest", sel: "blockquote" },
+	{ slug: "caption-bold", fixture: "platform-captions", alt: "A caption with a bold phrase: before, the phrase in near-black inside the grey caption; after, the caption's own colour", sel: ".thecap", para: false, extraBelow: 0, maxH: 400 },
 ];
 
 const theme = (dir) => join(dir, "Calm.nnwtheme");

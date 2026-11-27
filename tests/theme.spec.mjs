@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { extractInlineScript } from "../scripts/extract-inline-script.mjs";
 import { componentArticle, componentSteps, instrumentScript, stressArticle } from "./stress-fixtures.mjs";
-import { blankCases, breakCases, buttonCases, captionCases, codeCases, creditCases, footnoteCases, layoutCases, taskCases, withImages } from "./platform-fixtures.mjs";
+import { blankCases, breakCases, buttonCases, captionCases, codeCases, codeTableCases, creditCases, footnoteCases, layoutCases, quietBoldCases, taskCases, withImages } from "./platform-fixtures.mjs";
 
 const stylesheet = readFileSync("Calm.nnwtheme/stylesheet.css", "utf8");
 const themeScript = extractInlineScript("Calm.nnwtheme/template.html");
@@ -1393,3 +1393,51 @@ test("@webkit gives every platform's plain-block captions the figcaption look, a
 	}
 });
 
+test("@webkit keeps bold in a quote, aside or caption in that block's colour, and nowhere else", async ({ page }) => {
+	for (const item of quietBoldCases) {
+		await loadCase(page, item.html);
+		const heading = await tokenColor(page, "--reader-heading");
+		const state = await page.evaluate(({ quiet, loud }) => {
+			const color = (id) => getComputedStyle(document.getElementById(id)).color;
+			const block = (id) => getComputedStyle(document.getElementById(id).closest("blockquote, aside, figcaption, .thecap")).color;
+			return { quiet: quiet.map((id) => color(id) === block(id)), loud: loud.map(color) };
+		}, item);
+		expect.soft(state.quiet, `${item.platform}: bold in the block's colour`).toEqual(item.quiet.map(() => true));
+		expect.soft(state.loud, `${item.platform}: bold keeps the heading colour`).toEqual(item.loud.map(() => heading));
+	}
+});
+
+test("@webkit draws line-numbered code as one box, and leaves a table of code samples alone", async ({ page }) => {
+	for (const item of codeTableCases) {
+		await loadCase(page, item.html);
+		const state = await page.evaluate(({ inner, sample }) => {
+			const style = (id) => getComputedStyle(document.getElementById(id));
+			const outer = document.getElementById("outer");
+			const outerSize = outer ? getComputedStyle(outer).fontSize : null;
+			return {
+				inner: inner.map((id) => ({ margin: style(id).marginTop, padding: style(id).paddingTop, background: style(id).backgroundColor, size: style(id).fontSize === outerSize })),
+				sample: sample.map((id) => style(id).backgroundColor !== "rgba(0, 0, 0, 0)" && parseFloat(style(id).paddingTop) > 0),
+			};
+		}, item);
+		for (const s of state.inner) expect.soft(s, `${item.platform}: nested block takes no box`).toEqual({ margin: "0px", padding: "0px", background: "rgba(0, 0, 0, 0)", size: true });
+		expect.soft(state.sample, `${item.platform}: code samples keep their boxes`).toEqual(item.sample.map(() => true));
+	}
+});
+
+test("@webkit sets table numbers in lining, equal-width figures and keeps oldstyle figures in the text", async ({ page }) => {
+	await loadCase(page, `<table><tbody><tr><th>Year</th><th>Value</th></tr><tr><td id="cell">2019</td><td>0.81</td></tr></tbody></table>`);
+	const state = await page.evaluate(() => ({
+		cell: getComputedStyle(document.getElementById("cell")).fontVariantNumeric,
+		text: getComputedStyle(document.querySelector("#bodyContainer > p:last-child")).fontVariantNumeric,
+	}));
+	expect(state.cell).toContain("lining-nums");
+	expect(state.cell).toContain("tabular-nums");
+	expect(state.text).toContain("oldstyle-nums");
+});
+
+test("@webkit leaves less space above an h3 than above an h2", async ({ page }) => {
+	await loadFixture(page, { paragraphCount: 1, html: `<h2>Section</h2><p>${paragraph}</p><h3>Subsection</h3><p>${paragraph}</p><h4>Minor</h4><p>${paragraph}</p>` });
+	const gaps = await page.evaluate(() => ["h2", "h3", "h4"].map((tag) => parseFloat(getComputedStyle(document.querySelector(`#bodyContainer ${tag}`)).marginTop)));
+	expect(gaps[0]).toBeGreaterThan(gaps[1]);
+	expect(gaps[1]).toBeGreaterThan(gaps[2]);
+});

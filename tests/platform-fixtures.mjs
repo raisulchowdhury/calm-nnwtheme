@@ -248,5 +248,24 @@ export const captionCases = [
 	{ platform: "Not a caption: Ghost voiceover line, a lone imgcap, a caption-ish class", html: `<div class="voiceover-caption" id="p">Listen to me read this post, or <a href="https://example.com/podcast">subscribe</a>.</div><div class="imgcap"><img src="IMG" alt=""></div><p class="caption-note" id="p2">${line}.</p><p class="wp-caption-text" id="p3">${line}, outside any caption box.</p>`, captions: [], plain: ["p", "p2", "p3"] },
 ];
 
+// Bold inside a quiet block takes the block's colour: `quiet` ids must match their
+// block's colour, `loud` ids keep the heading colour (bold in body text, a pull-quote).
+export const quietBoldCases = [
+	{ platform: "Ghost / any blockquote", html: `<blockquote><p>${line}, <strong id="q">said plainly</strong>.</p></blockquote><p>${line}, <strong id="body">in the text</strong>.</p>`, quiet: ["q"], loud: ["body"] },
+	{ platform: "Interview transcript in a quote (speaker names)", html: `<blockquote><p><b id="q">Speaker</b>: ${line}.</p></blockquote>`, quiet: ["q"], loud: [] },
+	{ platform: "Aside", html: `<aside><p>${line}, <strong id="q">noted</strong>.</p></aside>`, quiet: ["q"], loud: [] },
+	{ platform: "figcaption", html: `<figure><img src="IMG" alt=""><figcaption>${line}. <strong id="q">Left to right</strong>: one, two.</figcaption></figure>`, quiet: ["q"], loud: [] },
+	{ platform: "Jekyll (Karpathy's imgcap)", html: `<div class="imgcap"><img src="IMG" alt=""><div class="thecap">Examples. <b id="q">From left to right</b>: one, two.</div></div>`, quiet: ["q"], loud: [] },
+	{ platform: "Not quiet: WordPress pull-quote", html: `<figure class="wp-block-pullquote"><blockquote><p>${line}, <strong id="loud">repeated</strong>.</p></blockquote></figure>`, quiet: [], loud: ["loud"] },
+];
+
+// Code drawn as a table of line numbers and lines inside the block (Jekyll's Rouge):
+// `inner` ids are the nested <pre>s, which must take no box of their own. `sample`
+// is a <pre> in an ordinary table cell, which keeps its box.
+export const codeTableCases = [
+	{ platform: "Jekyll highlight tag with line numbers", html: `<figure class="highlight"><pre id="outer"><code class="language-ruby" data-lang="ruby"><table class="rouge-table"><tbody><tr><td class="gutter gl"><pre class="lineno" id="gutter">1\n2</pre></td><td class="code"><pre id="lines">puts 1\nputs 2\n</pre></td></tr></tbody></table></code></pre></figure>`, inner: ["gutter", "lines"], sample: [] },
+	{ platform: "Not line numbers: a table of code samples", html: `<table><tbody><tr><th>Shell</th><th>Python</th></tr><tr><td><pre id="s1">ls\npwd</pre></td><td><pre id="s2">a = 1\nb = 2</pre></td></tr></tbody></table>`, inner: [], sample: ["s1", "s2"] },
+];
+
 // A small inline image for every IMG placeholder.
 export const withImages = (html, svg) => html.replace(/"IMG"/g, `"${svg(1200, 800)}"`);

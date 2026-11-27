@@ -1,0 +1,6 @@
+{
+ "title": "A Quote and a Table",
+ "feedTitle": "Example Blog",
+ "url": "https://example.com/design-pass/",
+ "contentHTML": "<p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.</p><blockquote><p><strong>Host:</strong> What changed when the page got quieter?</p><p><strong>Guest:</strong> People stayed with the words longer. The <strong>one thing</strong> we kept was the rhythm.</p></blockquote><p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.</p><table><thead><tr><th>Year</th><th>Readers</th><th>Share</th></tr></thead><tbody><tr><td>2019</td><td>1,204</td><td>0.18</td></tr><tr><td>2020</td><td>3,871</td><td>0.31</td></tr><tr><td>2021</td><td>11,560</td><td>0.47</td></tr><tr><td>2022</td><td>9,032</td><td>0.42</td></tr></tbody></table><p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.</p>"
+}

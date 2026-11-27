@@ -145,3 +145,24 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### plain-captions-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/plain-captions-dark.jpg" width="720" alt="The same captions in dark mode">
+
+### code-line-numbers
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/code-line-numbers.jpg" width="720" alt="A Jekyll code block with line numbers on iPhone: before, small code in boxes inside a box with wide gaps; after, one box at the usual code size with muted numbers">
+
+### code-line-numbers-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/code-line-numbers-dark.jpg" width="720" alt="The same code block in dark mode">
+
+### quote-bold
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-bold.jpg" width="720" alt="Bold words in a quote on iPhone: before, speaker names and emphasis jump to the heading colour; after, they keep the quote's quiet colour and stand out by weight">
+
+### quote-bold-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-bold-dark.jpg" width="720" alt="The same quote in dark mode, where the bold words were brightest">
+
+### caption-bold
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/caption-bold.jpg" width="720" alt="A caption with a bold phrase: before, the phrase in near-black inside the grey caption; after, the caption's own colour">
+

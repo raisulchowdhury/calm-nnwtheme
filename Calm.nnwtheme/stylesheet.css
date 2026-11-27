@@ -348,8 +348,10 @@ article {
 	letter-spacing: -0.015em;
 }
 
+/* 1.75em of the h3 is a little less space above it than an h2 gets, so the
+   gap before a heading follows its rank. */
 .articleBody h3 {
-	margin: 2em 0 0.5em;
+	margin: 1.75em 0 0.5em;
 	font-size: 1.225em;
 	font-weight: 700;
 	line-height: 1.3;
@@ -458,6 +460,16 @@ article {
 
 .articleBody blockquote > :first-child {
 	margin-top: 0;
+}
+
+/*
+ * Bold inside a quiet block (a quote, an aside, a caption) stays in that
+ * block's colour; the weight alone marks it. In the heading colour it jumped
+ * out of the muted text, brightest of all in dark mode. A pull-quote is drawn
+ * in the heading colour, so its bold inherits that.
+ */
+.articleBody :is(blockquote, aside, figcaption, .wp-caption-text, .wp-caption-dd, .thecap, td.tr-caption, .image-caption) :is(strong, b) {
+	color: inherit;
 }
 
 .articleBody blockquote > :last-child {
@@ -787,6 +799,36 @@ pre code {
 	font-size: inherit;
 }
 
+/*
+ * Line-numbered code: Jekyll's Rouge (and any highlighter that lays its
+ * lines out as a table inside the code block) puts a table, and a <pre> per
+ * column, inside the block. Each took the full block and table styles, so the
+ * code shrank twice and sat in boxes inside a box with wide gaps. One box;
+ * the numbers in the muted colour. A table of code samples (a <pre> in a
+ * cell) keeps its boxes.
+ */
+.articleBody pre :is(pre, table, .nnw-overflow) {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	overflow: visible;
+	border-radius: 0;
+	background: transparent;
+	font-size: inherit;
+}
+
+.articleBody pre :is(td, th) {
+	padding: 0;
+	border: 0;
+	vertical-align: top;
+}
+
+.articleBody pre td:first-child:not(:last-child) {
+	padding-right: 1.25em;
+	color: var(--reader-muted);
+	text-align: right;
+}
+
 kbd {
 	padding: 0.12em 0.4em;
 	border: 1px solid var(--reader-rule);
@@ -806,6 +848,13 @@ kbd {
 	margin: 1.8em 0;
 	border-collapse: collapse;
 	font-size: 0.9em;
+}
+
+/* Numbers in a table line up in columns: equal-width lining figures. (The
+   body text uses oldstyle ones; NetNewsWire's quirks-mode page doesn't pass
+   them into tables, but a standards-mode page would.) */
+.articleBody :is(td, th) {
+	font-variant-numeric: lining-nums tabular-nums;
 }
 
 .nnw-overflow th,

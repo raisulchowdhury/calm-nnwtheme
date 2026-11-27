@@ -50,6 +50,12 @@ Buttons, sign-up forms, task lists and captions sent as plain blocks (Calm 1.5).
 | Kit (ConvertKit), Beehiiv and Substack embeds | n.a. | works (synthetic only) | n.a. | n.a. |
 | Buttondown | n.a. | its embed divs arrive empty and are hidden as blank blocks | n.a. | n.a. |
 
+Design pass of 2026-11-27 (CSS only, `quietBoldCases` and `codeTableCases` in `tests/platform-fixtures.mjs`):
+
+- **Line-numbered code** (Jekyll's Rouge `{% highlight linenos %}`, a table inside the code block): one box at the usual code size, numbers in the muted colour. Checked on the corpus's Minimal Mistakes item. Must not trigger: a table of code samples (a `<pre>` in a cell) keeps its boxes. Hugo's `table.lntable` sits outside any `<pre>`, so it is untouched and keeps the limit below.
+- **Bold in quiet blocks** (blockquote, aside, figcaption and the plain-block captions): the block's colour, not the heading colour. Every platform; checked on Coding Horror, Citation Needed and the captions fixture. Must not trigger: bold in body text, and pull-quotes, which are drawn in the heading colour.
+- **Table figures**: equal-width lining figures in every table cell.
+
 Must not trigger, each a fixture: a search box, a tutorial's email field posting nowhere, a contact form with a message field, a plain "subscribe here" link, an interactive demo's sliders, buttons and live checkboxes (as in the corpus's Bitbash post), a plain list, Citation Needed's "Listen to me read this post" line, a `.wp-caption-text` outside a caption box, and any other class that merely contains "caption".
 
 Feed readers: the corpus holds only platform feeds read directly, none passed through a reader service yet. Reader cases covered by synthetic tests: footnotes whose ids FreshRSS renamed or Feedly removed (`fixtures/feed-footnotes.json` and the FreshRSS test in `tests/theme.spec.mjs`) and classes FreshRSS moves into `data-sanitized-class` (Substack's image buttons). Other Feedbin, Feedly and Inoreader markup is untested.
