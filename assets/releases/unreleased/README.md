@@ -1,6 +1,6 @@
 # Before and after
 
-Made by `node scripts/before-after.mjs` against `origin/main`. At release, rename the folder's files to `<version>-<slug>.jpg` and move them up into `assets/releases/`.
+Made by `node scripts/before-after.mjs` against `origin/main`; the 1.5 parity images (macrumors-deal-gaps, duplicate-cover-sized, code-language, feed-*, pullquote-aside) against `605b5b5`, the commit before that work. At release, rename the folder's files to `<version>-<slug>.jpg` and move them up into `assets/releases/`.
 
 ### footnote-popover
 
@@ -57,3 +57,39 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### Untitled posts, in the NetNewsWire app (Mac)
 
 <img src="untitled-post-in-app.jpg" alt="Manton Reece post with no title: after, the empty title gap above the date is gone">
+
+### duplicate-cover-sized
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/duplicate-cover-sized.jpg" width="720" alt="A Latent Space episode whose lead picture is the 1400x1400 copy of the body's: before, the cover twice; after, once">
+
+### code-language
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/code-language.jpg" width="720" alt="Code blocks on the Mac: after, the block's language shows beside Copy on hover">
+
+### code-language-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/code-language-dark.jpg" width="720" alt="The same code blocks in dark mode">
+
+### macrumors-deal-gaps
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/macrumors-deal-gaps.jpg" width="720" alt="MacRumors deal buttons on iPhone: before, a blank gap between each button; after, the buttons sit together">
+
+### feed-credit
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/feed-credit.jpg" width="720" alt="A WordPress post's end: before, a 'The post ... appeared first on ...' line; after, the post ends on its own last paragraph">
+
+### feed-footnotes
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/feed-footnotes.jpg" width="720" alt="A footnote read through FreshRSS: before, tapping it does nothing; after, the note opens in place">
+
+### feed-cards
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/feed-cards.jpg" width="720" alt="WordPress and Ghost cards on iPhone: before, a blank embed frame, a raw toggle, callout and video player; after, a link card, an open toggle, a tinted callout and a fitted video">
+
+### feed-cards-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/feed-cards-dark.jpg" width="720" alt="The same cards in dark mode">
+
+### pullquote-aside
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/pullquote-aside.jpg" width="720" alt="A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box">

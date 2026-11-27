@@ -4,7 +4,9 @@
 // ("before") and the working tree ("after"), then saves one labelled pair per case.
 //
 // Articles live in .corpus/<id>.json (gitignored: feed content stays local). Use free,
-// public feeds only for anything published.
+// public feeds only for anything published. Synthetic articles for markup the corpus
+// lacks live in fixtures/<name>.json (committed); a case names one with `fixture`.
+// A case's `scheme` overrides --scheme.
 //
 // Usage: node scripts/before-after.mjs [--base origin/main] [--label "Calm 1.5.0"] [--out assets/releases/unreleased] [--scheme light|dark] [case ...]
 import { execFileSync } from "node:child_process";
@@ -34,6 +36,15 @@ export const cases = [
 	{ slug: "x-embed-dark", id: "xembed-1", alt: "An embedded X post in dark mode: before, a white card; after, a dark card", sel: ".twitter-tweet", maxH: 900, wait: 6000 },
 	{ slug: "podcast-caption-file-name", id: "podcast-2", alt: "A Dwarkesh episode: before, the player caption is a hashed .mp3 file name; after, just the length", sel: ".nnw-primary-media", scope: "body", maxH: 760 },
 	{ slug: "code-copy", id: "pre-3", alt: "A code block on the Mac: after, a quiet Copy button appears on hover", sel: "pre", hasText: "paperjam: $(OBJS)", width: 900, act: "hover" },
+	{ slug: "macrumors-deal-gaps", id: "macrumors-3", alt: "MacRumors deal buttons on iPhone: before, a blank gap between each button; after, the buttons sit together", sel: ".center-wrap", extraBelow: 420, maxH: 760 },
+	{ slug: "duplicate-cover-sized", id: "podcast-1", alt: "A Latent Space episode whose lead picture is the 1400x1400 copy of the body's: before, the cover twice; after, once", top: 1300 },
+	{ slug: "code-language", fixture: "code-language", alt: "Code blocks on the Mac: after, the block's language shows beside Copy on hover", sel: "pre", width: 900, act: "hover" },
+	{ slug: "code-language-dark", fixture: "code-language", scheme: "dark", alt: "The same code blocks in dark mode", sel: "pre", width: 900, act: "hover" },
+	{ slug: "feed-credit", fixture: "feed-credit", alt: "A WordPress post's end: before, a 'The post ... appeared first on ...' line; after, the post ends on its own last paragraph", top: 1000 },
+	{ slug: "feed-footnotes", fixture: "feed-footnotes", alt: "A footnote read through FreshRSS: before, tapping it does nothing; after, the note opens in place", sel: "sup a", para: true, extraBelow: 260, act: "click" },
+	{ slug: "feed-cards", fixture: "feed-cards", alt: "WordPress and Ghost cards on iPhone: before, a blank embed frame, a raw toggle, callout and video player; after, a link card, an open toggle, a tinted callout and a fitted video", sel: ".wp-embedded-content", maxH: 1800, extraBelow: 1500 },
+	{ slug: "feed-cards-dark", fixture: "feed-cards", scheme: "dark", alt: "The same cards in dark mode", sel: ".wp-embedded-content", maxH: 1800, extraBelow: 1500 },
+	{ slug: "pullquote-aside", fixture: "feed-cards", alt: "A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box", sel: ".wp-block-pullquote", extraBelow: 260 },
 ];
 
 const theme = (dir) => join(dir, "Calm.nnwtheme");
@@ -44,11 +55,11 @@ mkdirSync(join(root, out), { recursive: true });
 
 const browser = await webkit.launch();
 async function shoot(c, which) {
-	const article = JSON.parse(readFileSync(join(root, ".corpus", `${c.id}.json`), "utf8"));
+	const article = JSON.parse(readFileSync(source(c), "utf8"));
 	const html = join(beforeDir, `${c.slug}-${which}.html`);
 	writeFileSync(html, buildPage({ theme: themes[which], article }));
 	const width = c.width || 390;
-	const page = await browser.newPage({ viewport: { width, height: 1600 }, deviceScaleFactor: 2, colorScheme: scheme });
+	const page = await browser.newPage({ viewport: { width, height: 1600 }, deviceScaleFactor: 2, colorScheme: c.scheme || scheme });
 	await page.goto("file://" + html, { waitUntil: "load", timeout: 30000 }).catch(() => {});
 	await page.waitForTimeout(c.wait || 2000);
 	let clip = { x: 0, y: 0, width, height: c.top || 520 };
@@ -70,9 +81,13 @@ async function shoot(c, which) {
 	return `data:image/png;base64,${png.toString("base64")}`;
 }
 
+function source(c) {
+	return c.fixture ? join(root, "fixtures", `${c.fixture}.json`) : join(root, ".corpus", `${c.id}.json`);
+}
+
 const made = [];
 for (const c of cases.filter((c) => !only.length || only.includes(c.slug))) {
-	if (!existsSync(join(root, ".corpus", `${c.id}.json`))) { console.log(`skip ${c.slug}: no .corpus/${c.id}.json`); continue; }
+	if (!existsSync(source(c))) { console.log(`skip ${c.slug}: no ${source(c)}`); continue; }
 	let before, after;
 	try { before = await shoot(c, "before"); after = await shoot(c, "after"); }
 	catch (error) { console.log(`fail ${c.slug}: ${error.message.split("\n")[0]}`); continue; }

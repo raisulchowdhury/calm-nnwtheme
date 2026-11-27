@@ -1,0 +1,6 @@
+{
+ "title": "Code With a Declared Language",
+ "feedTitle": "Example Dev Blog",
+ "url": "https://example.com/code/",
+ "contentHTML": "<p>A Swift view, then a shell command.</p><pre class=\"language-swift\"><code>struct Reader: View {\n    var body: some View {\n        Text(\"A calm reading surface\")\n    }\n}</code></pre><p>Start the server:</p><pre><code class=\"language-bash\">OLLAMA_HOST=127.0.0.1:11434 OLLAMA_NO_CLOUD=1 ollama serve</code></pre>"
+}
