@@ -87,7 +87,6 @@ const areas = [
 			{ name: "Current", score: 7.6, cost: "none", insight: "A tinted pill behind a small bold number, and a bordered popover with a shadow and an arrow.", css: "" },
 			{
 				name: "Plain number, soft note",
-				recommended: true,
 				score: 8.4,
 				cost: "none (CSS only)",
 				insight: "Readers know a raised number is a note (books taught them); it needs no pill. The opened note keeps its shadow for depth and drops the border and arrow.",
@@ -96,6 +95,41 @@ const areas = [
 .newsfoot-footnote-popover{padding:0;background:var(--reader-popover-bg);box-shadow:0 8px 28px rgba(36,32,29,.14)}
 .newsfoot-footnote-popover-arrow{display:none!important}
 ${dark(".newsfoot-footnote-popover{box-shadow:0 8px 28px rgba(0,0,0,.6);background:#22211f}.newsfoot-footnote-popover-inner{background:#22211f}")}`,
+			},
+			{
+				name: "Plain number, hairline above",
+				recommended: true,
+				score: 8.6,
+				cost: "none (CSS only)",
+				insight: "The note is just text in the muted colour on the page itself, with one hairline above to show where it starts. No card, fill, shadow or arrow, so it reads as part of the page, the way a printed note sits under a rule.",
+				css: `.articleBody a.footnote,.articleBody a.footnote:visited{background:none;padding:0 .1em;font-weight:500;color:var(--reader-muted);font-size:.85em}
+.articleBody a.footnote:hover,.articleBody .newsfoot-footnote-popover + a.footnote{background:none;color:var(--reader-heading)}
+.newsfoot-footnote-popover{padding:0;box-shadow:none;background:var(--reader-bg);border-radius:0;border-top:1px solid var(--reader-rule)}
+.newsfoot-footnote-popover-inner{background:var(--reader-bg);border-radius:0;padding:.6em 0 .5em!important;color:var(--reader-muted)}
+.newsfoot-footnote-popover-arrow{display:none!important}`,
+			},
+			{
+				name: "Plain number, note text only",
+				score: 8.0,
+				cost: "none (CSS only)",
+				insight: "The barest version: muted note text set in from the line, on the page colour, with nothing around it. The indent is the only sign it is a note, so it can be mistaken for the next paragraph.",
+				css: `.articleBody a.footnote,.articleBody a.footnote:visited{background:none;padding:0 .1em;font-weight:500;color:var(--reader-muted);font-size:.85em}
+.articleBody a.footnote:hover,.articleBody .newsfoot-footnote-popover + a.footnote{background:none;color:var(--reader-heading)}
+.newsfoot-footnote-popover{padding:0;box-shadow:none;background:var(--reader-bg);border-radius:0}
+.newsfoot-footnote-popover-inner{background:var(--reader-bg);border-radius:0;padding:.4em 0 .5em 1.25em!important;color:var(--reader-muted)}
+.newsfoot-footnote-popover-arrow{display:none!important}`,
+			},
+			{
+				name: "Plain number, smaller soft note",
+				score: 8.2,
+				cost: "none (CSS only)",
+				insight: "Proposal A made smaller: note text a step down, tighter padding and a lighter shadow, so the card is still clearly on top of the page but takes half the room.",
+				css: `.articleBody a.footnote,.articleBody a.footnote:visited{background:none;padding:0 .1em;font-weight:500;color:var(--reader-muted);font-size:.85em}
+.articleBody a.footnote:hover,.articleBody .newsfoot-footnote-popover + a.footnote{background:none;color:var(--reader-heading)}
+.newsfoot-footnote-popover{padding:0;background:var(--reader-popover-bg);box-shadow:0 4px 14px rgba(36,32,29,.10);font-size:calc(var(--reader-font-size, var(--reader-base-size)) * .8)}
+.newsfoot-footnote-popover-inner{padding:.5em .75em!important}
+.newsfoot-footnote-popover-arrow{display:none!important}
+${dark(".newsfoot-footnote-popover{box-shadow:0 4px 14px rgba(0,0,0,.5);background:#22211f}.newsfoot-footnote-popover-inner{background:#22211f}")}`,
 			},
 			{
 				name: "Plain number, flat tint",
@@ -241,14 +275,15 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 const sections = [];
 for (const area of areas.filter((a) => !only.length || only.includes(a.id))) {
 	const [current, ...rest] = area.options;
-	const ordered = [current, ...rest.filter((o) => o.recommended), ...rest.filter((o) => !o.recommended)];
+	const ordered = [current, ...rest];
 	const schemes = area.darkOnly ? ["dark"] : ["light", "dark"];
 	const states = area.states || [null];
 	const cards = [];
 	for (const [i, option] of ordered.entries()) {
 		const shots = [];
 		for (const state of states) for (const scheme of schemes) shots.push({ label: [state, scheme].filter(Boolean).join(", "), src: await shoot(area, option, scheme, state) });
-		cards.push(`<article class="option${option.recommended ? " rec" : ""}"><header><span class="num">${i === 0 ? "0 · Current Calm" : `${i} · ${esc(option.name)}`}</span>${option.recommended ? '<span class="tag">Recommended</span>' : ""}<span class="score">${option.score.toFixed(1)}</span></header><p class="insight">${esc(option.insight)}</p><p class="cost">Performance: ${esc(option.cost)}</p><div class="shots">${shots.map((s) => `<figure><img src="${s.src}" alt="${esc(area.title)}, ${esc(option.name)}, ${s.label}"><figcaption>${s.label}</figcaption></figure>`).join("")}</div></article>`);
+		const head = i === 0 ? '<span class="label">In Calm now</span>' : `<span class="label">Proposal ${String.fromCharCode(64 + i)}</span><span class="num">${esc(option.name)}</span>${option.recommended ? '<span class="tag">Recommended</span>' : ""}`;
+		cards.push(`<article class="option${i === 0 ? " now" : option.recommended ? " rec" : ""}"><header>${head}<span class="score">${option.score.toFixed(1)}</span></header><p class="insight">${esc(option.insight)}</p><p class="cost">Performance: ${esc(option.cost)}</p><div class="shots">${shots.map((s) => `<figure><img src="${s.src}" alt="${esc(area.title)}, ${esc(option.name)}, ${s.label}"><figcaption>${s.label}</figcaption></figure>`).join("")}</div></article>`);
 		console.log(area.id, option.name);
 	}
 	sections.push(`<section id="${area.id}"><h2>${esc(area.title)}</h2><p class="q">${esc(area.question)}</p><div class="row">${cards.join("")}</div></section>`);
@@ -268,11 +303,15 @@ section{margin:0 0 56px}h2{font:700 22px/1.2 "Iowan Old Style",Charter,Georgia,s
 .row{display:flex;gap:16px;overflow-x:auto;padding-bottom:8px;align-items:flex-start}
 .option{flex:0 0 auto;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:14px}
 .insight{max-width:34rem}
-.option.rec{border-color:var(--rec)}
+.option.rec{border:2px solid var(--rec)}.option.now{background:transparent;border:1.5px dashed var(--muted)}
+.label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.option.now .label{color:var(--text)}
+header{flex-wrap:wrap;row-gap:2px}header .num{flex-basis:100%;order:3;font-size:16px}.option.now header .num{display:none}
 header{display:flex;align-items:baseline;gap:10px}.num{font-weight:600}.tag{font-size:12px;font-weight:600;border:1px solid var(--rec);border-radius:999px;padding:1px 8px}.score{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
 .insight{margin:6px 0 2px;max-width:34rem}.cost{margin:0 0 10px;color:var(--muted);font-size:13px}
 .shots{display:flex;gap:10px;align-items:flex-start}figure{margin:0}img{display:block;width:260px;height:auto;border-radius:6px;border:1px solid var(--rule)}figcaption{color:var(--muted);font-size:12px;margin-top:4px}
 @media (max-width:600px){img{width:min(72vw,240px)}}
-</style></head><body><main><h1>Calm design options</h1><p class="lede">Mockups from the design pass of 2026-11-27. Option 0 in each row is Calm as it ships; the recommended option comes next. Each option is extra CSS rendered at 390 wide on the same crop, so none of them is in the theme until chosen. Scores are out of 10 against Readwise Reader, Reeder, Matter, Instapaper, Safari Reader and the strongest NetNewsWire themes.</p><nav>${areas.filter((a) => !only.length || only.includes(a.id)).map((a) => `<a href="#${a.id}">${esc(a.title)}</a>`).join("")}</nav>${sections.join("")}</main></body></html>`;
+.row{scroll-snap-type:x mandatory;scroll-padding-left:0}.option{scroll-snap-align:start}
+@media (max-width:600px){.option{max-width:calc(100vw - 56px)}.shots{flex-direction:column}.shots img{width:100%}.q::after{content:" Swipe sideways to compare options.";}}
+</style></head><body><main><h1>Calm design options</h1><p class="lede">The first card in each row, with the grey dashed border, is <strong>how Calm looks now</strong>. The cards after it are <strong>proposals</strong>, none of them in the theme yet; the recommended one comes first, with a solid border. Every card shows the same article crop at 390 wide, light above dark. Scores are out of 10 against Readwise Reader, Reeder, Matter, Instapaper, Safari Reader and the strongest NetNewsWire themes.</p><nav>${areas.filter((a) => !only.length || only.includes(a.id)).map((a) => `<a href="#${a.id}">${esc(a.title)}</a>`).join("")}</nav>${sections.join("")}</main></body></html>`;
 writeFileSync(join(root, "docs/design-pass-options.html"), page);
 console.log("docs/design-pass-options.html", Math.round(page.length / 1024), "KB");
