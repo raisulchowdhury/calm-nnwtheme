@@ -11,7 +11,7 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
   - Options he chose from: `docs/design-pass-options.html`, published at https://claude.ai/artifact/6UZX4Kqv5EC1ZQhLyEMHNE.
 - **Before/after:**
   - Images for the release notes are in `assets/releases/unreleased/`.
-  - Gallery of all 32 fixes: https://claude.ai/artifact/Qy8d9ts9shZ4kTierahtM1. Its source is in the old session's scratchpad (`calm-gallery/`). To update it from a new session, read the artifact first, then republish from that read.
+  - Gallery of all 27 fixes, ordered by value to readers, every image regenerated against the branch on 2026-11-27: https://claude.ai/artifact/Qy8d9ts9shZ4kTierahtM1. Its source is in the old session's scratchpad (`calm-gallery/`). To update it from a new session, read the artifact first, then republish from that read.
 - **iPhone test build:**
   - Branch `preview/calmdev`, rebuilt at 80d69b1.
   - Install by pasting this link into Safari and choosing Overwrite: `netnewswire://theme/add?url=https%3A%2F%2Fraw.githubusercontent.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Fpreview%2Fcalmdev%2FCalmDev.nnwtheme.zip`.
