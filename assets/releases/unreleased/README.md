@@ -201,3 +201,7 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### paragraph-gaps-large-text
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/paragraph-gaps-large-text.jpg" width="720" alt="Short paragraphs at NetNewsWire's largest text size on iPhone: before, the default-size gap between them; after, the gap grows with the text (the default size is unchanged)">
+
+### line-art-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/line-art-dark.jpg" width="720" alt="A transparent line chart and a photo in dark mode on iPhone: before, the chart's black lines vanish into the dark page; after, the chart sits on a soft paper tone and the photo is unchanged">

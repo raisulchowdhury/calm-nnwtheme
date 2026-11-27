@@ -536,6 +536,21 @@ article {
 }
 
 /*
+ * Charts, diagrams and screenshots of text are drawn for white paper; on
+ * the dark page their black lines vanish into a transparent background. In
+ * dark mode a soft paper tone sits behind pictures whose file type can be
+ * transparent (PNG, GIF, SVG). Photos (JPEG, WebP, AVIF) keep the page
+ * colour. Icons and emoji in the line (the same signs as the inline rule
+ * below) and link cards' site icons stay as they are. An opaque
+ * PNG covers the backing, so it only shows while one loads.
+ */
+@media (prefers-color-scheme: dark) {
+	.articleBody img:is([src*=".png" i], [src*=".gif" i], [src*=".svg" i], [src^="data:image/svg" i], [src^="data:image/png" i], [src^="data:image/gif" i]):not([data-calm-inline], .wp-smiley, .emoji, [src*="/images/core/emoji/"], [style*="height: 1em"], [style*="height:1em"], .kg-bookmark-icon, .embedded-post-header img) {
+		background: #d8d3c6;
+	}
+}
+
+/*
  * Icons and emoji drawn as images stay in the line at text size. The script
  * marks them (data-calm-inline); the class and style selectors cover them
  * when Article JavaScript is off. Without this, the forced image height

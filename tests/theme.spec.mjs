@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { extractInlineScript } from "../scripts/extract-inline-script.mjs";
 import { componentArticle, componentSteps, instrumentScript, stressArticle } from "./stress-fixtures.mjs";
-import { blankCases, breakCases, buttonCases, captionCases, codeCases, codeTableCases, creditCases, footnoteCases, layoutCases, quietBoldCases, signupCases, taskCases, videoFrameCases, withImages } from "./platform-fixtures.mjs";
+import { blankCases, breakCases, buttonCases, captionCases, codeCases, codeTableCases, creditCases, footnoteCases, layoutCases, quietBoldCases, lineArtCases, signupCases, taskCases, videoFrameCases, withImages } from "./platform-fixtures.mjs";
 
 const stylesheet = readFileSync("Calm.nnwtheme/stylesheet.css", "utf8");
 const themeScript = extractInlineScript("Calm.nnwtheme/template.html");
@@ -1508,5 +1508,18 @@ test("@webkit grows the gap between paragraphs with the reader's text size, and 
 		expect(gaps.medium, `@${width}: default size keeps the 1rem gap`).toBeCloseTo(16, 1);
 		expect(gaps.xxlarge, `@${width}: largest size`).toBeGreaterThan(20);
 		expect(gaps.small, `@${width}: smallest size`).toBeLessThan(16);
+	}
+});
+
+test("@webkit puts a paper backing behind line art in dark mode only, not behind photos or icons", async ({ page }) => {
+	await page.route(/^https?:/, (route) => route.abort());
+	for (const colorScheme of ["dark", "light"]) {
+		await page.emulateMedia({ colorScheme });
+		for (const item of lineArtCases) {
+			await loadCase(page, item.html);
+			const background = await page.evaluate(() => getComputedStyle(document.getElementById("i")).backgroundColor);
+			const backed = background === "rgb(216, 211, 198)";
+			expect.soft(backed, `${item.platform} (${colorScheme})`).toBe(item.backed && colorScheme === "dark");
+		}
 	}
 });
