@@ -1,6 +1,6 @@
 # Before and after
 
-Made by `node scripts/before-after.mjs` against `origin/main`; the 1.5 parity images (macrumors-deal-gaps, duplicate-cover-sized, code-language, feed-*, pullquote-aside) against `605b5b5`, the commit before that work. At release, rename the folder's files to `<version>-<slug>.jpg` and move them up into `assets/releases/`.
+Made by `node scripts/before-after.mjs` against `605b5b5`. At release, rename the folder's files to `<version>-<slug>.jpg` and move them up into `assets/releases/`.
 
 ### footnote-popover
 
