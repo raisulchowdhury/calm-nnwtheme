@@ -88,14 +88,13 @@ Recorded as he makes them on the options page (docs/design-pass-options.html).
 | Heading scale | Proposal A, clearer steps | "Rest go with you reco" (2026-11-27) |
 | Paragraph spacing at large text | Proposal A, scales with text | "Rest go with you reco" (2026-11-27) |
 | Dark-mode pictures | Dropped (flash while loading; Raisul, 2026-11-27) | Proposal A was built in bcf070a, then removed |
-| Footnotes | Proposal A's plain number closed; open note as option B, muted text under one hairline, no card or shadow | "Opened should be more minimal", then "Ok with your footnote reco" (2026-11-27) |
+| Footnotes | Plain number, note opens in the text in mono (Raisul, 2026-11-27) | Replaces the overlay note (6a88e02, b514696), whose cover always cut a line of text |
 
 ### Built
 
 Five of the six picks are in the theme, one commit each: link cards b050171, block quotes e76af33, headings aae7aa4, paragraph spacing 30c3089, buttons 555d5b6, plus review fixes in the next commit. Dark-mode line art (bcf070a) was built and then dropped. Images are in `assets/releases/unreleased/`: link-card-quiet(-dark), quote-upright(-dark), heading-steps(-dark), paragraph-gaps-large-text, button-tinted(-dark).
 
-- **Footnotes** (built after the six): the marker is a plain muted raised number; the open note is muted text on the page colour under one hairline, with no card, shadow or arrow. A page-coloured fade about one line tall under the note hides the half-covered line below instead of slicing it, and the hairline uses the faint colour so it reads on white. Back arrows from Daring Fireball and the WordPress footnotes block are now hidden in the note too. Images: footnote-minimal(-dark).
-- **Known limit: a note opened near the bottom of the screen runs below it.** The page grows and the reader can scroll; bringing it into view would need script after a tap.
+- **Footnotes** (built after the six): the marker is a plain muted raised number. A tap opens the note in the text, under the line that holds the number, set small in mono and muted with its number in the text colour; what follows moves down, and a second tap or Escape puts the text back exactly. The theme script does this on tap (one listener, nothing built at load), so NetNewsWire's popover no longer opens; its styles stay only as a fallback. The first version, an overlay note under a hairline (6a88e02, b514696), was replaced because any cover ends partway through a line of text. Images: footnote-minimal(-dark).
 - **Paragraph spacing** is written against the reader's chosen size, so the default size renders exactly as before and the Linux `@visual` reference did not need regenerating.
 - **Dark-mode pictures: dropped.** The paper backing showed as a light box while a PNG loaded and could hide white logos, so Raisul dropped it (2026-11-27). **Known limit:** black line art on a transparent background can still vanish on the dark page.
 

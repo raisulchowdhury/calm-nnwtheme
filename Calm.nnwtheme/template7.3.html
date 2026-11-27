@@ -1599,6 +1599,234 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 		}
 	}
 
+	// Footnotes open in the text. A tap on the number puts the note on its own
+	// lines right under the line that holds the number, pushing what follows
+	// down; another tap on the number, or Escape, closes it and the text goes
+	// back exactly as it was. NetNewsWire's own popover (newsfoot.js) floats
+	// over the lines below and covers them, so this takes the tap first. At
+	// load this adds one listener and touches no footnote; a note is built only
+	// when it is opened.
+	function enableFootnoteNotes() {
+		if (!body) {
+			return;
+		}
+
+		var openNotes = [];
+		var count = 0;
+		var blocks = "p, li, dd, dt, blockquote, td, th, figcaption, h1, h2, h3, h4, h5, h6";
+		var backLinks = "a[href*='#fnr'], a[href^='#'][href$='-link'], [role='doc-backlink'], [data-footnote-backref], .footnote-back, .footnote-backref, .footnote-return, .reversefootnote, .footnoteBackLink";
+
+		// A back link (to #fnref..., or one of the platforms' back-link
+		// classes) is never a marker, even where a platform calls it "footnote".
+		function isMarker(link) {
+			if (link.matches(backLinks) || /^#(?:user-content-)?fnref/i.test(link.hash)) {
+				return false;
+			}
+			return link.classList.contains("footnote") || link.matches("a[id^='footnote-anchor-']");
+		}
+
+		// The note's text, without the back arrow and without ids that would
+		// repeat ones already on the page.
+		function noteFor(link) {
+			var id = "";
+			try {
+				id = link.hash ? decodeURIComponent(link.hash.slice(1)) : "";
+			} catch (error) {
+				return null;
+			}
+			var target = id && document.getElementById(id);
+			if (!target || !body.contains(target) || target.contains(link)) {
+				return null;
+			}
+			var note = document.createElement("span");
+			if (link.matches("a[id^='footnote-anchor-']")) {
+				// Substack: the target is the note's own number, and its text
+				// follows in the elements after it.
+				for (var node = target.nextElementSibling; node && !node.matches("a[id^='footnote-']"); node = node.nextElementSibling) {
+					note.appendChild(node.cloneNode(true));
+				}
+			} else {
+				Array.prototype.forEach.call(target.childNodes, function (child) {
+					note.appendChild(child.cloneNode(true));
+				});
+			}
+			Array.prototype.forEach.call(note.querySelectorAll("a"), function (anchor) {
+				var href = anchor.getAttribute("href") || "";
+				if (anchor.matches(backLinks) || href.charAt(0) === "#" && /^[\s↩↑⏎⤴^︎️]*$/.test(anchor.textContent)) {
+					anchor.remove();
+				}
+			});
+			Array.prototype.forEach.call(note.querySelectorAll("[id]"), function (element) {
+				element.removeAttribute("id");
+			});
+			if (!note.textContent.trim()) {
+				return null;
+			}
+			var number = document.createElement("span");
+			number.className = "calmNoteNumber";
+			number.textContent = link.textContent.trim().replace(/^\[(.*)\]$/, "$1");
+			var first = note.firstChild;
+			while (first && first.nodeType === 3 && !first.data.trim()) {
+				first = first.nextSibling;
+			}
+			var lead = first && first.tagName === "P" ? first : note;
+			while (lead.firstChild && lead.firstChild.nodeType === 3 && !lead.firstChild.data.trim()) {
+				lead.firstChild.remove();
+			}
+			lead.insertBefore(document.createTextNode(" "), lead.firstChild);
+			lead.insertBefore(number, lead.firstChild);
+			note.className = "calmNote";
+			note.setAttribute("role", "note");
+			note.id = "calm-note-" + (++count);
+			return note;
+		}
+
+		// Where the line holding the marker ends: the first character after it
+		// that sits on a lower line. The note goes there, so the lines above it
+		// keep their words. If that point is inside a link that began on the
+		// marker's line, the note goes after the paragraph instead.
+		function place(link, note) {
+			var marker = link.closest("sup") || link;
+			var block = marker.closest(blocks);
+			if (!block || !body.contains(block)) {
+				marker.parentNode.insertBefore(note, marker.nextSibling);
+				return null;
+			}
+			var bottom = marker.getBoundingClientRect().bottom;
+			var range = document.createRange();
+			var walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, null, false);
+			walker.currentNode = marker;
+			var text;
+			while ((text = walker.nextNode())) {
+				if (marker.contains(text) || !text.data.trim()) {
+					continue;
+				}
+				range.setStart(text, text.data.length - 1);
+				range.setEnd(text, text.data.length);
+				var last = range.getBoundingClientRect();
+				if (!last.height || last.top < bottom) {
+					continue;
+				}
+				var low = 0;
+				var high = text.data.length - 1;
+				while (low < high) {
+					var middle = (low + high) >> 1;
+					range.setStart(text, middle);
+					range.setEnd(text, middle + 1);
+					var rect = range.getBoundingClientRect();
+					if (rect.height && rect.top >= bottom) {
+						high = middle;
+					} else {
+						low = middle + 1;
+					}
+				}
+				var inline = text.parentNode;
+				while (inline !== block && inline.parentNode !== block) {
+					inline = inline.parentNode;
+				}
+				// Inside emphasis or a span the note can go in place too; only a
+				// link would carry its tap and underline into the note.
+				var inLink = false;
+				for (var up = text.parentNode; up !== block; up = up.parentNode) {
+					inLink = inLink || up.tagName === "A";
+				}
+				if (!inLink) {
+					if (low === 0) {
+						text.parentNode.insertBefore(note, text);
+						return null;
+					}
+					var rest = text.splitText(low);
+					text.parentNode.insertBefore(note, rest);
+					return { before: text, rest: rest };
+				}
+				if (inline !== block && inline.getClientRects().length && inline.getClientRects()[0].top >= bottom) {
+					block.insertBefore(note, inline);
+					return null;
+				}
+				break;
+			}
+			block.appendChild(note);
+			return null;
+		}
+
+		function reveal(link, note) {
+			var noteBox = note.getBoundingClientRect();
+			var overflow = noteBox.bottom + 16 - window.innerHeight;
+			if (overflow > 0) {
+				window.scrollBy(0, Math.min(overflow, Math.max(0, link.getBoundingClientRect().top - 16)));
+			}
+		}
+
+		function open(link, note, quietly) {
+			var entry = { link: link, note: note, split: place(link, note) };
+			openNotes.push(entry);
+			link.setAttribute("aria-expanded", "true");
+			link.setAttribute("aria-controls", note.id);
+			if (openNotes.length === 1) {
+				document.addEventListener("keydown", onKey, true);
+				window.addEventListener("resize", onResize);
+			}
+			if (!quietly) {
+				reveal(link, note);
+			}
+		}
+
+		function close(entry) {
+			entry.note.remove();
+			var split = entry.split;
+			if (split && split.rest.parentNode && split.rest.previousSibling === split.before) {
+				split.before.appendData(split.rest.data);
+				split.rest.remove();
+			}
+			entry.link.setAttribute("aria-expanded", "false");
+			openNotes.splice(openNotes.indexOf(entry), 1);
+			if (!openNotes.length) {
+				document.removeEventListener("keydown", onKey, true);
+				window.removeEventListener("resize", onResize);
+			}
+		}
+
+		function onKey(event) {
+			if (event.key === "Escape" && openNotes.length) {
+				event.preventDefault();
+				openNotes.slice().reverse().forEach(close);
+			}
+		}
+
+		// A new width moves the line ends, so put open notes back at their
+		// marker's new line end.
+		function onResize() {
+			openNotes.slice().forEach(function (entry) {
+				close(entry);
+				open(entry.link, entry.note, true);
+			});
+		}
+
+		document.addEventListener("click", function (event) {
+			var link = event.target && event.target.closest ? event.target.closest("a[href*='#']") : null;
+			if (!link || !body.contains(link) || link.closest(".calmNote") || !isMarker(link)) {
+				return;
+			}
+			var entry = null;
+			openNotes.forEach(function (item) {
+				if (item.link === link) {
+					entry = item;
+				}
+			});
+			var note = entry ? null : noteFor(link);
+			if (!entry && !note) {
+				return;
+			}
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			if (entry) {
+				close(entry);
+			} else {
+				open(link, note);
+			}
+		}, true);
+	}
+
 	function syncTocMode() {
 		if (!body || !toc || !tocList || shouldDisableRail()) {
 			if (tocCleanup) {
@@ -1648,6 +1876,7 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 	updateMetadataVisibility();
 	safely(enableCodeCopy);
 	safely(enableImageViewer);
+	safely(enableFootnoteNotes);
 	observeCompactRail();
 	syncTocMode();
 })();

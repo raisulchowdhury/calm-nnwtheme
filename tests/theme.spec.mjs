@@ -1114,11 +1114,13 @@ test("@webkit the first-frame check catches a late change", async ({ page }) => 
 	expect(await blocksMoveAfterFirstFrame(page, componentArticle("paragraphs", 20), late, 390)).toBeGreaterThan(0);
 });
 
-// Hovering a code block, pressing Copy and opening a footnote change only the tools
-// and the popover, which float above the text: nothing around them moves. Measured
+// Hovering a code block and pressing Copy change only the tools, which float
+// above the text: nothing around them moves. (Footnotes used to be checked here
+// too, as a popover over the text; they now open in the text and push what
+// follows down, which the footnote tests below check instead.) Measured
 // (WebKit): hover to visible tools and click to "Copied" well under one frame plus
 // the 120 ms fade; the budget is the fade plus 200 ms.
-test("@webkit hover tools, Copy and footnote popovers leave the text where it is", async ({ page }) => {
+test("@webkit hover tools and Copy leave the text where it is", async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 800 });
 	await page.context().grantPermissions(["clipboard-read", "clipboard-write"]).catch(() => {});
 	await loadFixture(page, {
@@ -1139,25 +1141,6 @@ test("@webkit hover tools, Copy and footnote popovers leave the text where it is
 	await expect(page.locator(".calmCopy")).toHaveText(/Copy|Copied/);
 	expect(Date.now() - started).toBeLessThan(120 + 200 + 400); // fade + budget + Playwright's own steps
 	expect(await positions()).toEqual(before);
-
-	// The popover the way newsfoot.js builds it, inside the reference's <sup>.
-	await page.evaluate(() => {
-		const link = document.querySelector("a.footnote");
-		const container = document.createElement("div");
-		container.className = "newsfoot-footnote-container";
-		link.parentElement.insertBefore(container, link);
-		container.appendChild(link);
-		const popover = document.createElement("div");
-		popover.className = "newsfoot-footnote-popover";
-		popover.innerHTML = '<div class="newsfoot-footnote-popover-inner"><p>The note.</p></div><div class="newsfoot-footnote-popover-arrow"></div>';
-		container.insertBefore(popover, link);
-	});
-	await expect(page.locator(".newsfoot-footnote-popover-inner")).toBeVisible();
-	const withPopover = await positions();
-	// Only the popover's own paragraph is new; every other block stays put.
-	expect(withPopover.filter((rect) => !before.includes(rect))).toHaveLength(1);
-	await page.evaluate(() => document.querySelector(".newsfoot-footnote-popover").remove());
-	expect((await positions()).filter((rect) => !before.includes(rect))).toHaveLength(0);
 });
 
 // Across platforms: each feature runs over markup shaped the way the main publishing
@@ -1587,4 +1570,142 @@ test("@webkit hides every platform's back arrow inside an open note, and keeps t
 		<a id="jekyll" href="#fnref:1">↩</a><a id="df" href="#fnr1-2026-11-27">↩</a><a id="wp" href="#abc-123-link">↩</a><a id="role" role="doc-backlink" href="#x">↩</a></p></div></div><a class="footnote" href="#fn1">1</a></div></sup></p></div></article></body></html>`);
 	const shown = await page.evaluate(() => ["own", "jekyll", "df", "wp", "role"].map((id) => [id, getComputedStyle(document.getElementById(id)).display]));
 	expect(Object.fromEntries(shown)).toEqual({ own: "inline", jekyll: "none", df: "none", wp: "none", role: "none" });
+});
+
+// Footnotes open in the text: a tap on the number puts the note under the line
+// that holds it and pushes only what follows down; a second tap or Escape puts
+// everything back exactly. Nothing is built or moved at load.
+const noteState = (page) =>
+	page.evaluate(() => ({
+		html: document.getElementById("bodyContainer").innerHTML.replace(/ aria-(?:expanded|controls)="[^"]*"/g, ""),
+		tops: Array.from(document.querySelectorAll("#bodyContainer > p"), (node) => node.getBoundingClientRect().top),
+	}));
+
+test("@webkit opens a footnote under its line, pushes only what follows, and closes back exactly", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<p id="host">${paragraph}<sup id="fnref:1"><a id="ref" href="#fn:1" class="footnote" rel="footnote">1</a></sup> ${paragraph}</p><p id="next">${paragraph}</p>
+			<div class="footnotes"><ol><li id="fn:1"><p>The note. <a href="#fnref:1" class="reversefootnote">↩</a></p></li></ol></div>`,
+	});
+	const closed = await noteState(page);
+	expect(await page.locator(".calmNote, [aria-expanded]").count(), "nothing built at load").toBe(0);
+	const geometry = () =>
+		page.evaluate(() => {
+			const ref = document.getElementById("ref").getBoundingClientRect();
+			const host = document.getElementById("host");
+			const range = document.createRange();
+			range.selectNodeContents(host);
+			const lines = [...new Set(Array.from(range.getClientRects(), (rect) => Math.round(rect.top)))];
+			const note = document.querySelector(".calmNote");
+			return { ref: { top: ref.top, bottom: ref.bottom }, hostTop: host.getBoundingClientRect().top, next: document.getElementById("next").getBoundingClientRect().top, lines, note: note && note.getBoundingClientRect().toJSON() };
+		});
+	const before = await geometry();
+
+	await page.locator("#ref").click();
+	await expect(page.locator(".calmNote")).toHaveCount(1);
+	await expect(page.locator("#ref")).toHaveAttribute("aria-expanded", "true");
+	const opened = await geometry();
+	expect(opened.ref, "the marker stays put").toEqual(before.ref);
+	expect(opened.hostTop).toBe(before.hostTop);
+	expect(opened.note.top, "the note starts below the marker's line").toBeGreaterThanOrEqual(before.ref.bottom);
+	// The lines down to the marker's line keep their place, and the next line
+	// below it now starts after the note.
+	const markerLine = before.lines.filter((top) => top <= before.ref.bottom).length;
+	expect(opened.lines.slice(0, markerLine)).toEqual(before.lines.slice(0, markerLine));
+	expect(opened.lines.filter((top) => top > before.ref.bottom && top < opened.note.top)).toHaveLength(0);
+	expect(opened.next - before.next, "what follows moves down by about the note").toBeGreaterThan(opened.note.height);
+	await expect(page.locator(".calmNote")).toHaveText(/^1 The note\.\s*$/);
+	await expect(page.locator(".calmNote")).toHaveCSS("font-family", /mono/i);
+
+	await page.locator("#ref").click();
+	expect(await noteState(page), "a second tap restores the text exactly").toEqual(closed);
+
+	await page.locator("#ref").click();
+	await expect(page.locator(".calmNote")).toHaveCount(1);
+	await page.keyboard.press("Escape");
+	expect(await noteState(page), "Escape restores it too").toEqual(closed);
+});
+
+test("@webkit opens every platform's footnote in the text, without its back arrow", async ({ page }) => {
+	for (const item of footnoteCases) {
+		await loadCase(page, item.html);
+		const closed = await noteState(page);
+		for (const id of item.marked) {
+			await page.locator(`[id="${id}"]`).click();
+			const notes = await page.locator(".calmNote").allInnerTexts();
+			expect.soft(notes, `${item.platform}: one note`).toHaveLength(1);
+			expect.soft(notes[0] || "", `${item.platform}: the note's text, no arrow`).toMatch(/^[^\s[\]]+ A note\.\s*$/);
+			await page.locator(`[id="${id}"]`).click();
+			expect.soft(await noteState(page), `${item.platform}: closes back`).toEqual(closed);
+		}
+		for (const id of item.unmarked) {
+			const link = page.locator(`[id="${id}"]`);
+			if ((await link.getAttribute("href"))?.startsWith("#")) {
+				await link.click();
+				expect.soft(await page.locator(".calmNote").count(), `${item.platform}: ${id} opens no note`).toBe(0);
+			}
+		}
+	}
+});
+
+test("@webkit opens a long note with a link whole, and keeps the link a link", async ({ page }) => {
+	await loadCase(page, `<p>${paragraph}<sup id="fnref:1"><a id="ref" href="#fn:1" class="footnote">1</a></sup> ${paragraph}</p>
+		<div class="footnotes"><ol><li id="fn:1"><p>${paragraph}</p><p>See <a id="out" href="https://example.com/source">the source</a> for more. <a href="#fnref:1" class="reversefootnote">↩</a></p></li></ol></div>`);
+	await page.locator("#ref").click();
+	const note = await page.locator(".calmNote").evaluate((node) => ({
+		paragraphs: node.querySelectorAll("p").length,
+		number: node.querySelector("p .calmNoteNumber")?.textContent,
+		link: node.querySelector("a[href='https://example.com/source']")?.textContent,
+		ids: node.querySelectorAll("[id]").length - (node.id ? 0 : 0),
+		arrows: /↩/.test(node.textContent),
+		lines: Math.round(node.getBoundingClientRect().height / parseFloat(getComputedStyle(node).lineHeight)),
+	}));
+	expect(note).toMatchObject({ paragraphs: 2, number: "1", link: "the source", arrows: false });
+	expect(note.lines).toBeGreaterThanOrEqual(4);
+	expect(await page.locator("#bodyContainer #out").count(), "no repeated id").toBe(1);
+});
+
+test("@webkit scrolls a note opened near the bottom of the screen into view", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 500 });
+	await loadFixture(page, {
+		paragraphCount: 6,
+		html: `<p>${paragraph}<sup id="fnref:1"><a id="ref" href="#fn:1" class="footnote">1</a></sup> end.</p><p>${paragraph}</p><p>${paragraph}</p>
+			<div class="footnotes"><ol><li id="fn:1"><p>${paragraph}</p></li></ol></div>`,
+	});
+	await page.evaluate(() => {
+		const ref = document.getElementById("ref");
+		window.scrollBy({ top: ref.getBoundingClientRect().bottom - window.innerHeight + 4, behavior: "instant" });
+	});
+	expect(await page.evaluate(() => document.getElementById("ref").getBoundingClientRect().bottom)).toBeGreaterThan(450);
+	await page.evaluate(() => document.getElementById("ref").click());
+	// The page scrolls smoothly, so wait for it to settle.
+	await page.waitForFunction(() => document.querySelector(".calmNote").getBoundingClientRect().bottom <= window.innerHeight, null, { timeout: 3000 }).catch(() => {});
+	const state = await page.evaluate(() => ({ note: document.querySelector(".calmNote").getBoundingClientRect().bottom, ref: document.getElementById("ref").getBoundingClientRect().top, height: window.innerHeight }));
+	expect(state.note, "the note's end is on screen").toBeLessThanOrEqual(state.height);
+	expect(state.ref, "and its number still is").toBeGreaterThanOrEqual(0);
+});
+
+test("@webkit opens a note in place inside emphasis, sets its lists in the note's type, and stays put on resize", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<p id="host"><em>${paragraph}<sup id="fnref:1"><a id="ref" href="#fn:1" class="footnote">1</a></sup> ${paragraph}</em></p><p>${paragraph}</p><p>${paragraph}</p><p>${paragraph}</p>
+			<div class="footnotes"><ol><li id="fn:1"><p>Points:</p><ul><li id="item">one</li><li>two</li></ul><blockquote><p id="quote">A quote.</p></blockquote></li></ol></div>`,
+	});
+	const lineBottom = await page.evaluate(() => document.getElementById("ref").getBoundingClientRect().bottom);
+	await page.locator("#ref").click();
+	const state = await page.evaluate(() => {
+		const note = document.querySelector(".calmNote");
+		const item = getComputedStyle(note.querySelector("li"));
+		return { top: note.getBoundingClientRect().top, inEm: !!note.closest("em"), item: item.fontFamily, note: getComputedStyle(note).fontFamily, size: item.fontSize, noteSize: getComputedStyle(note).fontSize, style: getComputedStyle(note).fontStyle };
+	});
+	expect(state.inEm, "in place, inside the emphasis").toBe(true);
+	expect(state.top - lineBottom, "right under the marker's line").toBeLessThan(30);
+	expect(state).toMatchObject({ item: state.note, size: state.noteSize, style: "normal" });
+	await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+	await page.setViewportSize({ width: 400, height: 844 });
+	await page.waitForTimeout(200);
+	expect(await page.evaluate(() => window.scrollY), "a resize doesn't scroll to the note").toBe(0);
+	await expect(page.locator(".calmNote")).toHaveCount(1);
 });

@@ -212,7 +212,7 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 
 ### footnote-minimal
 
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/footnote-minimal.jpg" width="720" alt="Pandoc and GitHub footnotes on iPhone, one open and one closed: before, a tinted pill marker and a bordered card with a shadow and arrow; after, a plain muted number, and the note as muted text under one hairline">
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/footnote-minimal.jpg" width="720" alt="Pandoc and GitHub footnotes on iPhone, one open and one closed: before, a tinted pill marker and a card with a shadow and arrow floating over the text; after, a plain muted number, and the note opens in the text under its line, small, muted and in mono, pushing the text below down">
 
 ### footnote-minimal-dark
 

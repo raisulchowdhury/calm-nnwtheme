@@ -909,6 +909,59 @@ sub {
 }
 
 /*
+ * An opened footnote sits in the text, under the line that holds its number
+ * (the theme script puts it there on a tap). It is set small in mono and
+ * muted, indented, with its number in the text colour: no box, rule or
+ * shadow, so it reads as an aside without hiding any of the article.
+ */
+.articleBody .calmNote {
+	display: block;
+	margin-block: 0.35em 0.9em;
+	margin-inline: 1.4em 0;
+	color: var(--reader-muted);
+	font-family: ui-monospace, var(--reader-mono);
+	/* 0.7 of the reader's text size, also when the number sits in a heading
+	   or a small table cell. */
+	font-size: calc(var(--reader-font-size, var(--reader-base-size)) * 0.7);
+	font-style: normal;
+	font-weight: 400;
+	letter-spacing: -0.01em;
+	line-height: 1.55;
+	text-align: start;
+	text-indent: 0;
+	text-transform: none;
+	overflow-wrap: anywhere;
+}
+
+.articleBody .calmNote * {
+	color: inherit;
+	font: inherit;
+	letter-spacing: inherit;
+}
+
+.articleBody .calmNote :is(p, ul, ol, blockquote, pre) {
+	margin: 0 0 0.6em;
+}
+
+.articleBody .calmNote :is(ul, ol) {
+	padding-inline-start: 1.4em;
+}
+
+.articleBody .calmNote blockquote {
+	padding-inline-start: 1em;
+	border-inline-start: 1px solid var(--reader-rule);
+}
+
+.articleBody .calmNote > :last-child {
+	margin-bottom: 0;
+}
+
+.articleBody .calmNoteNumber {
+	color: var(--reader-text);
+	font-weight: 500;
+}
+
+/*
  * NetNewsWire footnotes. newsfoot.js inserts the popover inside the reference's
  * <sup>, so it would inherit the superscript's size and zero line height.
  * Reset both. The marker is a plain raised number in the muted colour: readers
@@ -932,6 +985,7 @@ sub {
 }
 
 .articleBody a.footnote:hover,
+.articleBody a.footnote[aria-expanded="true"],
 .articleBody .newsfoot-footnote-popover + a.footnote {
 	background: none;
 	color: var(--reader-heading);
