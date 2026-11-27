@@ -74,6 +74,10 @@ for (const file of files) {
 				tweets: Array.from(body.querySelectorAll("blockquote.twitter-tweet"), (q) => q.getAttribute("data-theme") || "").length,
 				rail: document.querySelectorAll(".readerToc button").length,
 				readingTime: document.getElementById("readingTime")?.textContent || "",
+				pills: Array.from(body.querySelectorAll("a"), (a) => (parseFloat(getComputedStyle(a).borderTopLeftRadius) >= 100 ? text(a).slice(0, 40) : null)).filter(Boolean),
+				forms: Array.from(body.querySelectorAll("form, iframe, .subscription-widget-wrap, .subscription-widget-wrap-editor, #mc_embed_signup, .formkit-form, .kg-signup-card"), (node) => `${node.getClientRects().length ? "shown" : "HIDDEN"} ${node.tagName.toLowerCase()}${node.id ? "#" + node.id : ""} ${(node.getAttribute("action") || node.getAttribute("src") || "").slice(0, 50)}`).filter((line) => !/^shown iframe/.test(line)),
+				tasks: Array.from(body.querySelectorAll("li"), (li) => (getComputedStyle(li).listStyleType === "none" && li.querySelector("input[type=checkbox]") ? text(li).slice(0, 40) : null)).filter(Boolean),
+				captions: Array.from(body.querySelectorAll(".wp-caption > .wp-caption-text, .wp-caption .wp-caption-dd, .imgcap .thecap, table.tr-caption-container td.tr-caption, .media-wrapper > .image-caption, figcaption p"), (node) => text(node).slice(0, 50)),
 			};
 		});
 		report.sourceBrs = (source.match(/<br\b/gi) || []).length;
@@ -91,6 +95,10 @@ for (const r of results) {
 	if (r.footnoteMisses.length) flags.push(`FOOTNOTE-MISS ${r.footnoteMisses.join(" ")}`);
 	if (r.credit.length) flags.push(`CREDIT "${r.credit.join(" / ")}"`);
 	if (r.blankWithText.length) flags.push(`BLANK-WITH-TEXT ${r.blankWithText.join(" / ")}`);
+	if (r.pills.length) flags.push(`PILLS ${r.pills.join(" | ")}`);
+	if (r.forms.length) flags.push(`FORMS ${r.forms.join(" | ")}`);
+	if (r.tasks.length) flags.push(`TASKS ${r.tasks.join(" | ")}`);
+	if (r.captions.length) flags.push(`CAPTIONS ${r.captions.length}: ${r.captions.slice(0, 3).join(" | ")}`);
 	const codes = r.code.length ? `code ${r.code.filter((c) => c.copy).length}/${r.code.length} [${[...new Set(r.code.map((c) => c.lang))].join(",")}]` : "";
 	console.log(`${r.file} @${r.width}: ${[codes, r.footnoteRefs ? `fn ${r.footnoteRefs}` : "", r.blanks ? `blank ${r.blanks}` : "", r.sourceBrs ? `br ${r.sourceBrs}->${r.brs}` : "", r.posters.length ? `posters ${r.posters.length}` : "", r.galleries ? `gallery ${r.galleries}` : "", r.untitled ? "untitled" : "", r.lang ? `lang ${r.lang}` : "", r.rail ? `rail ${r.rail}` : ""].filter(Boolean).join("; ")}${flags.length ? "\n    " + flags.join("\n    ") : ""}`);
 }

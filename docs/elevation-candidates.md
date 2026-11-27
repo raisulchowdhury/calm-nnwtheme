@@ -1,6 +1,6 @@
 # Elevation candidates
 
-Markup Calm still shows at the browser's default, or below the care it gives the rest of the page, ranked by how much reading it improves for its cost. Sources: 145 real feed items in the gitignored corpus (126 of them from 23 platforms in `.corpus/platforms/`, see `docs/compatibility.md`) and the theme comparison of 2026-11-26 (`.parity/REPORT.md`, local). None of these is built yet.
+Markup Calm still shows at the browser's default, or below the care it gives the rest of the page, ranked by how much reading it improves for its cost. Sources: 145 real feed items in the gitignored corpus (126 of them from 23 platforms in `.corpus/platforms/`, see `docs/compatibility.md`) and the theme comparison of 2026-11-26 (`.parity/REPORT.md`, local). Items 1, 3 and 4 are built in Calm 1.5 (see each); the rest are not built yet.
 
 Every candidate has to pass the rules in `AGENTS.md`: done in CSS or the first script pass, no change after first paint, no false positives, no rise in the performance budgets. "Corpus" counts items that contain the markup.
 
@@ -16,6 +16,7 @@ The images in `docs/elevation/` show the current look on synthetic markup at 390
 - **Platforms:** Substack, Mailchimp embeds on WordPress (other newsletter platforms unchecked). Corpus: 2 Substack button items, 2 MacRumors forms.
 - **Cost:** nothing measurable; one `:has` rule scoped to forms.
 - **Recommendation:** do. Negative case: a form that isn't a sign-up (a search box in a tutorial) stays.
+- **Done in Calm 1.5:** CSS only. Pills for Substack, Ghost (button and call-to-action cards), Jekyll `a.btn`, WordPress buttons and Squarespace; hidden: Substack's subscribe widget, Mailchimp, Kit, Ghost's sign-up card, Jetpack, MailPoet, Substack and Beehiiv sign-up frames, and any form with an email field posting to a mailing address. Search, contact and tutorial forms and demo controls stay. Images: `assets/releases/unreleased/button-pill*.jpg`, `signup-form-macrumors.jpg`.
 
 ### 2. Transparent line art in dark mode
 
@@ -34,6 +35,7 @@ The images in `docs/elevation/` show the current look on synthetic markup at 390
 - **Platforms:** GitHub, Jekyll, Hugo, Ghost Markdown. Corpus: 1 item.
 - **Cost:** none.
 - **Recommendation:** do; small and safe.
+- **Done in Calm 1.5:** CSS only, with a new `--reader-accent` (a deeper tone of the selection amber, 3.5:1 on white). GitHub, kramdown, markdown-it, Hugo, Pandoc, Obsidian and MkDocs markup; the box is drawn by hand because WebKit greys out disabled checkboxes whatever `accent-color` says. A demo's live checkbox stays. Images: `assets/releases/unreleased/task-list*.jpg`.
 
 ### 4. Captions sent as plain blocks
 
@@ -43,6 +45,7 @@ The images in `docs/elevation/` show the current look on synthetic markup at 390
 - **Platforms:** Jekyll, WordPress (classic editor), Blogger. Corpus: 7 items across 3 platforms.
 - **Cost:** none.
 - **Recommendation:** do, checking each class only matches captions on the corpus first.
+- **Done in Calm 1.5:** CSS only, by exact class inside the box that holds the picture: WordPress `.wp-caption-text` and `.wp-caption-dd`, Jekyll `.imgcap .thecap`, Blogger `td.tr-caption`, MacStories `.media-wrapper .image-caption`, plus a paragraph inside a `<figcaption>` (Squarespace, Hugo). The box acts like a figure, so the caption sits just under the picture. Images: `assets/releases/unreleased/plain-captions*.jpg`.
 
 ### 5. Disclosure marker on details/summary
 

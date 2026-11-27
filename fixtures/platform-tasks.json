@@ -1,0 +1,6 @@
+{
+ "title": "A Short Checklist",
+ "feedTitle": "Example Notes",
+ "url": "https://example.com/platform-tasks/",
+ "contentHTML": "<p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.</p><p>Before the release:</p><ul class=\"contains-task-list\"><li class=\"task-list-item\"><input type=\"checkbox\" class=\"task-list-item-checkbox\" disabled checked> Write the release notes</li><li class=\"task-list-item\"><input type=\"checkbox\" class=\"task-list-item-checkbox\" disabled checked> Check every platform's markup, including the ones that send long items that wrap onto a second line</li><li class=\"task-list-item\"><input type=\"checkbox\" class=\"task-list-item-checkbox\" disabled> Tag the release</li></ul><p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.</p><ul><li><input checked=\"\" disabled=\"\" type=\"checkbox\"> Rebuild the zip</li><li><input disabled=\"\" type=\"checkbox\"> Install it on the phone</li></ul>"
+}

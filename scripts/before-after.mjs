@@ -51,6 +51,13 @@ export const cases = [
 	{ slug: "code-language-rouge", fixture: "platform-code", alt: "A Jekyll (Rouge) code block on the Mac: before, no language; after, Python beside Copy on hover", sel: "pre", width: 900, act: "hover" },
 	{ slug: "instagram-placeholder", fixture: "platform-instagram", alt: "An Instagram embed in a Ghost or WordPress post on iPhone: before, empty placeholder rows leave gaps in the card; after, just the link to the post and its caption", sel: ".instagram-media" },
 	{ slug: "pullquote-aside", fixture: "feed-cards", alt: "A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box", sel: ".wp-block-pullquote", extraBelow: 260 },
+	{ slug: "button-pill", fixture: "platform-buttons", alt: "A Substack button, a Substack subscribe box and a Ghost call-to-action on iPhone: before, plain underlined links and an email field; after, each button one quiet pill and the subscribe box gone", sel: ".button-wrapper", extraBelow: 700, maxH: 1100 },
+	{ slug: "signup-form-macrumors", id: "macrumors-3", alt: "A MacRumors deals post on iPhone: before, a Mailchimp email field and Subscribe button that can't work in a reader; after, the sign-up link stays and the form is gone", sel: "h3", hasText: "Deals Newsletter", extraBelow: 360, maxH: 900 },
+	{ slug: "button-pill-dark", fixture: "platform-buttons", scheme: "dark", alt: "The same buttons in dark mode", sel: ".button-wrapper", extraBelow: 700, maxH: 1100 },
+	{ slug: "task-list", fixture: "platform-tasks", alt: "GitHub and Hugo task lists on iPhone: before, a bullet beside a small grey box; after, a text-size box in Calm's accent colour in place of the bullet", sel: "ul", extraBelow: 260 },
+	{ slug: "task-list-dark", fixture: "platform-tasks", scheme: "dark", alt: "The same task lists in dark mode", sel: "ul", extraBelow: 260 },
+	{ slug: "plain-captions", fixture: "platform-captions", alt: "Captions sent as plain blocks (WordPress classic, Jekyll, Blogger) on iPhone: before, they read as body text set apart from the picture; after, small muted centred captions under the picture, like Calm's figcaption", sel: ".wp-caption", extraBelow: 1100, maxH: 1700 },
+	{ slug: "plain-captions-dark", fixture: "platform-captions", scheme: "dark", alt: "The same captions in dark mode", sel: ".wp-caption", extraBelow: 1100, maxH: 1700 },
 ];
 
 const theme = (dir) => join(dir, "Calm.nnwtheme");

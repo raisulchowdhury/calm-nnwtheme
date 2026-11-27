@@ -61,6 +61,27 @@ export const components = {
 	headings: (i) => `<h2>Section ${i}: ${sentence(3)}</h2>`,
 	emoji: (i) => `<p>${sentence(8)} <img class="emoji" src="${svg(16, 16, "%23f1b35c")}" alt="🙂" width="16" height="16"> ${sentence(6)}</p>`,
 	blanks: (i) => `<p>&nbsp;</p><div></div><p><br></p>`,
+	// Substack and Ghost buttons, and a Mailchimp sign-up form Calm hides.
+	buttons: (i) =>
+		[
+			`<p class="button-wrapper" data-attrs="{}" data-component-name="ButtonCreateButton"><a class="button primary" href="https://example.com/${i}"><span>${sentence(3)}</span></a></p>`,
+			`<div class="kg-card kg-button-card kg-align-left"><a href="https://example.com/${i}" class="kg-btn kg-btn-accent">${sentence(4)}</a></div>`,
+			`<div id="mc_embed_signup"><form action="https://example.us5.list-manage.com/subscribe/post?u=${i}" method="post" class="validate" novalidate><input type="email" name="EMAIL" placeholder="Email"><input type="submit" value="Subscribe" class="button"></form></div>`,
+		][i % 3],
+	// GitHub, Hugo and Pandoc task lists.
+	tasks: (i) =>
+		[
+			`<ul class="contains-task-list"><li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled checked> ${sentence(6)}</li><li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled> ${sentence(9)}</li></ul>`,
+			`<ul><li><input checked="" disabled="" type="checkbox"> ${sentence(5)}</li><li><input disabled="" type="checkbox"> ${sentence(7)}</li></ul>`,
+			`<ul class="task-list"><li><label><input type="checkbox" checked="">${sentence(6)}</label></li><li><label><input type="checkbox">${sentence(4)}</label></li></ul>`,
+		][i % 3],
+	// Captions sent as plain blocks: WordPress classic, Jekyll, Blogger.
+	captions: (i) =>
+		[
+			`<div class="wp-caption aligncenter" style="width: 810px"><img src="${svg(800, 450)}" width="800" height="450" alt=""><p class="wp-caption-text">${sentence(7)}</p></div>`,
+			`<div class="imgcap"><img src="${svg(800, 400)}" width="800" height="400" alt=""><div class="thecap">${sentence(9)}</div></div>`,
+			`<table class="tr-caption-container"><tbody><tr><td><img src="${svg(640, 360)}" width="640" height="360" alt=""></td></tr><tr><td class="tr-caption">${sentence(8)}</td></tr></tbody></table>`,
+		][i % 3],
 };
 
 // Components whose cost is a separate step in Calm's script, mapped to that step's
@@ -108,6 +129,7 @@ export function stressArticle() {
 		if (block % 2 === 0) {
 			parts.push(components.galleries(block), components.linkCards(block), components.xEmbeds(block), components.iframes(block), components.wpEmbeds(block));
 			parts.push(components.ghostCards(block), components.pullquotes(block), components.emoji(block), components.blanks(block));
+			parts.push(components.buttons(block), components.tasks(block), components.captions(block));
 		}
 	}
 	add("footnotes", 10);

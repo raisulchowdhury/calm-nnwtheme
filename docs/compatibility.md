@@ -32,6 +32,26 @@ How it's checked:
 | Mastodon, Micro.blog | n.a. | n.a. | n.a. | works | works |
 | YouTube channel feeds | n.a. | n.a. | n.a. | n.a. | limit: the video is in `media:` tags, not the body; NetNewsWire shows it |
 
+Buttons, sign-up forms, task lists and captions sent as plain blocks (Calm 1.5). `check-platforms.mjs` lists, per item, the links drawn as pills, every form and the ones hidden, task items and restyled captions. The corpus holds no task list, so that column rests on synthetic fixtures only.
+
+| Platform | Button as pill | Sign-up form hidden | Task list | Plain-block caption |
+|---|---|---|---|---|
+| WordPress | works (buttons block) | works (Mailchimp, Jetpack, MailPoet; any email form posting to a mailing address) | n.a. | works (classic `.wp-caption-text`, old `dd.wp-caption-dd`) |
+| Ghost | works (button card, call-to-action card, even with inline white text) | works (sign-up card) | works (markdown-it) | n.a. (sends `<figcaption>`) |
+| Substack | works (`.button-wrapper a.button`) | works (subscribe widget) | n.a. | n.a. (sends `<figcaption>`) |
+| Jekyll | works (Minimal Mistakes `a.btn`) | works (any form posting to a mailing address) | works (kramdown) | works (`.imgcap .thecap`) |
+| Hugo | n.a. | n.a. | works (bare disabled box) | works (paragraph inside `<figcaption>`) |
+| Pandoc | n.a. | n.a. | works (box in a label) | n.a. |
+| GitHub-flavoured Markdown | n.a. | n.a. | works (tight and loose lists) | n.a. |
+| Obsidian Publish, MkDocs | n.a. | n.a. | works | n.a. |
+| Blogger | n.a. | n.a. | n.a. | works (`td.tr-caption`) |
+| Squarespace | works | n.a. | n.a. | works (paragraph inside `<figcaption>`) |
+| MacRumors, MacStories | n.a. | works (Mailchimp form; the sign-up link stays) | n.a. | works (MacStories `.media-wrapper .image-caption`) |
+| Kit (ConvertKit), Beehiiv and Substack embeds | n.a. | works (synthetic only) | n.a. | n.a. |
+| Buttondown | n.a. | its embed divs arrive empty and are hidden as blank blocks | n.a. | n.a. |
+
+Must not trigger, each a fixture: a search box, a tutorial's email field posting nowhere, a contact form with a message field, a plain "subscribe here" link, an interactive demo's sliders, buttons and live checkboxes (as in the corpus's Bitbash post), a plain list, Citation Needed's "Listen to me read this post" line, a `.wp-caption-text` outside a caption box, and any other class that merely contains "caption".
+
 Feed readers: the corpus holds only platform feeds read directly, none passed through a reader service yet. Reader cases covered by synthetic tests: footnotes whose ids FreshRSS renamed or Feedly removed (`fixtures/feed-footnotes.json` and the FreshRSS test in `tests/theme.spec.mjs`) and classes FreshRSS moves into `data-sanitized-class` (Substack's image buttons). Other Feedbin, Feedly and Inoreader markup is untested.
 
 Known limits and why they stay:
@@ -41,4 +61,7 @@ Known limits and why they stay:
 - **Quarto bare footnote numbers.** With no link to follow, there is nothing to open.
 - **Credit lines followed by more content.** Calm hides a credit only when it is the article's last block, so a sentence in the middle of a post that happens to match is never hidden.
 - **Duplicate lead image.** The corpus saves no lead-image URL, so this check is covered by the synthetic tests only.
+- **Classes FreshRSS renames.** FreshRSS moves classes into `data-sanitized-class`. The button, caption and task-list rules go by class, so through FreshRSS those stay at the feed's default look (a sign-up form is still hidden when it has an email field and posts to a mailing address). Calm covers `data-sanitized-class` only for Substack's image buttons so far.
+- **Space a hidden form's wrapper leaves.** MacRumors wraps its form in a `div` with its own `margin-bottom: 2em` and break runs, so a little more space than a paragraph gap stays where the form was.
+- **Captions cost a little layout.** Captions in Calm's sans face take about 3 ms more of the first pass on 200 captions (WebKit, `measure-performance.mjs`), the same cost a `<figcaption>` has. A real article holds a handful.
 - **Content that changes after load.** Calm never swaps content after first paint. Two older features still change things later by design: X, Bluesky and Mastodon frames resize when the embed reports its height, and the update line appears after a fetch.

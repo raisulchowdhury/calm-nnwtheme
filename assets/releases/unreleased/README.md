@@ -117,3 +117,31 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### instagram-placeholder
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/instagram-placeholder.jpg" width="720" alt="An Instagram embed in a Ghost or WordPress post on iPhone: before, empty placeholder rows leave gaps in the card; after, just the link to the post and its caption">
+
+### button-pill
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-pill.jpg" width="720" alt="A Substack button, a Substack subscribe box and a Ghost call-to-action on iPhone: before, plain underlined links and an email field; after, each button one quiet pill and the subscribe box gone">
+
+### signup-form-macrumors
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/signup-form-macrumors.jpg" width="720" alt="A MacRumors deals post on iPhone: before, a Mailchimp email field and Subscribe button that can't work in a reader; after, the sign-up link stays and the form is gone">
+
+### button-pill-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-pill-dark.jpg" width="720" alt="The same buttons in dark mode">
+
+### task-list
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list.jpg" width="720" alt="GitHub and Hugo task lists on iPhone: before, a bullet beside a small grey box; after, a text-size box in Calm's accent colour in place of the bullet">
+
+### task-list-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list-dark.jpg" width="720" alt="The same task lists in dark mode">
+
+### plain-captions
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/plain-captions.jpg" width="720" alt="Captions sent as plain blocks (WordPress classic, Jekyll, Blogger) on iPhone: before, they read as body text set apart from the picture; after, small muted centred captions under the picture, like Calm's figcaption">
+
+### plain-captions-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/plain-captions-dark.jpg" width="720" alt="The same captions in dark mode">

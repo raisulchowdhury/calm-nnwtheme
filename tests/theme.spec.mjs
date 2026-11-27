@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { extractInlineScript } from "../scripts/extract-inline-script.mjs";
 import { componentArticle, componentSteps, instrumentScript, stressArticle } from "./stress-fixtures.mjs";
-import { blankCases, breakCases, codeCases, creditCases, footnoteCases, layoutCases, withImages } from "./platform-fixtures.mjs";
+import { blankCases, breakCases, buttonCases, captionCases, codeCases, creditCases, footnoteCases, layoutCases, taskCases, withImages } from "./platform-fixtures.mjs";
 
 const stylesheet = readFileSync("Calm.nnwtheme/stylesheet.css", "utf8");
 const themeScript = extractInlineScript("Calm.nnwtheme/template.html");
@@ -1098,7 +1098,7 @@ async function blocksMoveAfterFirstFrame(page, bodyHtml, script, width) {
 	return page.evaluate(() => window.__first.filter((rect, index) => JSON.stringify(rect) !== JSON.stringify(window.__settled[index])).length);
 }
 
-const shiftComponents = ["paragraphs", "images", "code", "footnotes", "tables", "breaks", "lists", "galleries", "linkCards", "xEmbeds", "iframes", "videos", "wpEmbeds", "ghostCards", "pullquotes", "headings", "emoji", "blanks"];
+const shiftComponents = ["paragraphs", "images", "code", "footnotes", "tables", "breaks", "lists", "galleries", "linkCards", "xEmbeds", "iframes", "videos", "wpEmbeds", "ghostCards", "pullquotes", "headings", "emoji", "blanks", "buttons", "tasks", "captions"];
 for (const width of [390, 1280]) {
 	test(`@webkit moves nothing after the first frame at ${width} wide, for every component`, async ({ page }) => {
 		const body = shiftComponents.map((name) => componentArticle(name, 6)).join("");
@@ -1272,3 +1272,124 @@ test("@webkit fits every platform's cards, embeds, math and tables in the iPhone
 		expect.soft(state.styled, `${item.platform}: Calm's style`).toBe(true);
 	}
 });
+
+// Resolves one of Calm's colour tokens to the rgb() string getComputedStyle reports.
+const tokenColor = (page, token) =>
+	page.evaluate((token) => {
+		const probe = document.createElement("span");
+		probe.style.color = `var(${token})`;
+		document.body.append(probe);
+		const color = getComputedStyle(probe).color;
+		probe.remove();
+		return color;
+	}, token);
+
+test("@webkit draws every platform's buttons as one pill and hides sign-up forms, and nothing else", async ({ page }) => {
+	for (const width of [390, 900]) {
+		for (const item of buttonCases) {
+			await loadCase(page, item.html, width);
+			const heading = await tokenColor(page, "--reader-heading");
+			const state = await page.evaluate(({ pill, hidden, kept }) => {
+				const shown = (id) => document.getElementById(id).getClientRects().length > 0;
+				const isPill = (id) => {
+					const style = getComputedStyle(document.getElementById(id));
+					return style.borderTopStyle === "solid" && parseFloat(style.borderTopLeftRadius) >= 100 && style.textDecorationLine === "none";
+				};
+				return {
+					pill: pill.map((id) => ({ id, shown: shown(id), pill: isPill(id), color: getComputedStyle(document.getElementById(id)).color })),
+					hidden: hidden.map((id) => ({ id, shown: shown(id) })),
+					kept: kept.map((id) => ({ id, shown: shown(id), pill: isPill(id) })),
+					overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+				};
+			}, item);
+			for (const b of state.pill) {
+				expect.soft(b, `${item.platform} @${width}: pill`).toEqual({ id: b.id, shown: true, pill: true, color: heading });
+			}
+			for (const h of state.hidden) expect.soft(h.shown, `${item.platform} @${width}: ${h.id} hidden`).toBe(false);
+			for (const k of state.kept) expect.soft(k, `${item.platform} @${width}: ${k.id} kept as it was`).toEqual({ id: k.id, shown: true, pill: false });
+			expect.soft(state.overflow, `${item.platform} @${width}: page scrolls sideways`).toBeLessThanOrEqual(0);
+		}
+	}
+});
+
+test("@webkit shows every platform's task lists with a text-size accent box on the first line, and leaves other lists alone", async ({ page }) => {
+	for (const width of [390, 900]) {
+		for (const item of taskCases) {
+			await loadCase(page, item.html, width);
+			const accent = await tokenColor(page, "--reader-accent");
+			const state = await page.evaluate(({ tasks, plain, untouched = [] }) => {
+				const task = (id) => {
+					const li = document.getElementById(id);
+					const box = li.querySelector("input[type=checkbox]");
+					const boxRect = box.getBoundingClientRect();
+					const style = getComputedStyle(box);
+					const walker = document.createTreeWalker(li, NodeFilter.SHOW_TEXT, { acceptNode: (node) => (node.textContent.trim() && box.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP) });
+					const range = document.createRange();
+					range.selectNodeContents(walker.nextNode());
+					const line = range.getClientRects()[0];
+					const fontSize = parseFloat(getComputedStyle(li).fontSize);
+					const centre = boxRect.top + boxRect.height / 2;
+					return {
+						id,
+						bullet: getComputedStyle(li).listStyleType,
+						accent: style.borderTopColor,
+						textSize: boxRect.height >= fontSize * 0.7 && boxRect.height <= fontSize * 1.05,
+						onFirstLine: centre > line.top && centre < line.bottom,
+						inGutter: boxRect.right <= line.left,
+						insideColumn: boxRect.left >= document.getElementById("bodyContainer").getBoundingClientRect().left - 1,
+					};
+				};
+				const appearance = (id) => { const style = getComputedStyle(document.getElementById(id)); return style.appearance || style.webkitAppearance; };
+				return {
+					tasks: tasks.map(task),
+					plain: plain.map((id) => getComputedStyle(document.getElementById(id)).listStyleType),
+					untouched: untouched.map(appearance),
+				};
+			}, item);
+			for (const t of state.tasks) {
+				expect.soft(t, `${item.platform} @${width}: ${t.id}`).toEqual({ id: t.id, bullet: "none", accent, textSize: true, onFirstLine: true, inGutter: true, insideColumn: true });
+			}
+			for (const bullet of state.plain) expect.soft(bullet, `${item.platform} @${width}: keeps its bullet`).not.toBe("none");
+			for (const look of state.untouched) expect.soft(look, `${item.platform} @${width}: demo checkbox untouched`).not.toBe("none");
+		}
+	}
+});
+
+test("@webkit gives every platform's plain-block captions the figcaption look, and no other paragraph", async ({ page }) => {
+	for (const width of [390, 900]) {
+		for (const item of captionCases) {
+			await loadCase(page, item.html, width);
+			const muted = await tokenColor(page, "--reader-muted");
+			const state = await page.evaluate(({ captions, plain }) => {
+				const body = document.querySelector("#bodyContainer > p:last-child");
+				const bodyStyle = getComputedStyle(body);
+				const bodySize = parseFloat(bodyStyle.fontSize);
+				const caption = (id) => {
+					const node = document.getElementById(id);
+					const style = getComputedStyle(node);
+					let box = node.parentElement;
+					while (!box.querySelector("img")) box = box.parentElement;
+					const img = box.querySelector("img").getBoundingClientRect();
+					return {
+						id,
+						color: style.color,
+						sans: style.fontFamily === getComputedStyle(document.body).fontFamily,
+						small: Math.abs(parseFloat(style.fontSize) - bodySize * 0.78) < 1,
+						centred: style.textAlign === "center",
+						underPicture: node.getBoundingClientRect().top - img.bottom >= 0 && node.getBoundingClientRect().top - img.bottom < bodySize * 1.2,
+					};
+				};
+				const paragraph = (id) => {
+					const style = getComputedStyle(document.getElementById(id));
+					return { id, font: style.fontFamily === bodyStyle.fontFamily, size: style.fontSize === bodyStyle.fontSize };
+				};
+				return { captions: captions.map(caption), plain: plain.map(paragraph) };
+			}, item);
+			for (const c of state.captions) {
+				expect.soft(c, `${item.platform} @${width}: caption`).toEqual({ id: c.id, color: muted, sans: true, small: true, centred: true, underPicture: true });
+			}
+			for (const p of state.plain) expect.soft(p, `${item.platform} @${width}: stays body text`).toEqual({ id: p.id, font: true, size: true });
+		}
+	}
+});
+
