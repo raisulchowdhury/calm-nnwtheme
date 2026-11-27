@@ -457,6 +457,33 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 		});
 	}
 
+	// Ghost's web pages give a video card a blank poster (a 1x1 GIF, or one
+	// from spacergif.org) and paint the real thumbnail as the video's inline
+	// background, which NetNewsWire strips. A full-text copy of such a page
+	// shows an empty box until the video plays. Give the video the thumbnail
+	// Ghost names on its card, or in that background, as its poster.
+	function showVideoThumbnails() {
+		if (!body) {
+			return;
+		}
+		var spacer = /^data:image\/gif|spacergif\.org/i;
+		Array.prototype.forEach.call(body.querySelectorAll(".kg-video-card video"), function (video) {
+			var poster = (video.getAttribute("poster") || "").trim();
+			if (poster && !spacer.test(poster)) {
+				return;
+			}
+			var card = video.closest(".kg-video-card");
+			var source = card ? (card.getAttribute("data-kg-custom-thumbnail") || card.getAttribute("data-kg-thumbnail") || "").trim() : "";
+			if (!source) {
+				var match = /url\(\s*(['"]?)([^'")]+)\1\s*\)/.exec(video.getAttribute("style") || "");
+				source = match ? match[2].trim() : "";
+			}
+			if (source && !spacer.test(source) && !/^\s*javascript:/i.test(source)) {
+				video.setAttribute("poster", source);
+			}
+		});
+	}
+
 	// NetNewsWire captions a podcast player with "title · duration · size",
 	// and with the audio file's name when the feed gives no title. Keep the
 	// title and say the duration in words; drop the file name and size.
@@ -1403,6 +1430,7 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 	safely(askMastodonForHeights);
 	safely(markArticleLanguage);
 	safely(layoutGalleries);
+	safely(showVideoThumbnails);
 	safely(quietAudioCaptions);
 	safely(dropDuplicateLeadImage);
 	safely(matchTweetTheme);

@@ -1,6 +1,6 @@
 # Before and after
 
-Made by `node scripts/before-after.mjs` against `605b5b5`. At release, rename the folder's files to `<version>-<slug>.jpg` and move them up into `assets/releases/`.
+Made by `node scripts/before-after.mjs` against `origin/main`. At release, rename the folder's files to `<version>-<slug>.jpg` and move them up into `assets/releases/`.
 
 ### footnote-popover
 
@@ -82,6 +82,10 @@ Made by `node scripts/before-after.mjs` against `605b5b5`. At release, rename th
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/feed-footnotes.jpg" width="720" alt="A footnote read through FreshRSS: before, tapping it does nothing; after, the note opens in place">
 
+### pullquote-aside
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/pullquote-aside.jpg" width="720" alt="A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box">
+
 ### feed-cards
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/feed-cards.jpg" width="720" alt="WordPress and Ghost cards on iPhone: before, a blank embed frame, a raw toggle, callout and video player; after, a link card, an open toggle, a tinted callout and a fitted video">
@@ -90,6 +94,6 @@ Made by `node scripts/before-after.mjs` against `605b5b5`. At release, rename th
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/feed-cards-dark.jpg" width="720" alt="The same cards in dark mode">
 
-### pullquote-aside
+### ghost-video-poster
 
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/pullquote-aside.jpg" width="720" alt="A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box">
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/ghost-video-poster.jpg" width="720" alt="A Ghost video card from the site's web page: before, an empty box until the video plays; after, the video's thumbnail">

@@ -44,6 +44,7 @@ export const cases = [
 	{ slug: "feed-footnotes", fixture: "feed-footnotes", alt: "A footnote read through FreshRSS: before, tapping it does nothing; after, the note opens in place", sel: "sup a", para: true, extraBelow: 260, act: "click" },
 	{ slug: "feed-cards", fixture: "feed-cards", alt: "WordPress and Ghost cards on iPhone: before, a blank embed frame, a raw toggle, callout and video player; after, a link card, an open toggle, a tinted callout and a fitted video", sel: ".wp-embedded-content", maxH: 1800, extraBelow: 1500 },
 	{ slug: "feed-cards-dark", fixture: "feed-cards", scheme: "dark", alt: "The same cards in dark mode", sel: ".wp-embedded-content", maxH: 1800, extraBelow: 1500 },
+	{ slug: "ghost-video-poster", fixture: "feed-cards", alt: "A Ghost video card from the site's web page: before, an empty box until the video plays; after, the video's thumbnail", sel: ".kg-video-card", extraBelow: 40 },
 	{ slug: "pullquote-aside", fixture: "feed-cards", alt: "A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box", sel: ".wp-block-pullquote", extraBelow: 260 },
 ];
 

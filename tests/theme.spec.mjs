@@ -899,3 +899,32 @@ test("@webkit fits WordPress post embeds and Ghost cards at iPhone width", async
 	await expect(page.locator("#wp-pull blockquote")).toHaveCSS("border-left-style", "none");
 	await expect(page.locator("#aside")).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
 });
+
+test("@webkit gives Ghost video cards their thumbnail as the poster instead of a blank spacer", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	// Ghost's web markup: a 1x1 GIF (or spacergif.org) poster, the thumbnail on
+	// the card and in the video's inline background.
+	const gif = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+	const card = (id, attrs, poster, style = "") =>
+		`<figure class="kg-card kg-video-card kg-width-regular" ${attrs}><div class="kg-video-container"><video id="${id}" poster="${poster}" ${style ? `style="${style}"` : ""} width="1280" height="720" playsinline preload="metadata"></video></div></figure>`;
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: [
+			card("thumb", 'data-kg-thumbnail="https://example.com/media/a_thumb.jpg" data-kg-custom-thumbnail=""', gif, "background: transparent url('https://example.com/media/a_thumb.jpg') 50% 50% / cover no-repeat;"),
+			card("custom", 'data-kg-thumbnail="https://example.com/media/b_thumb.jpg" data-kg-custom-thumbnail="https://example.com/images/b-custom.jpg"', "https://img.spacergif.org/v1/1280x720/0a/spacer.png"),
+			card("style", "", gif, "background: transparent url('https://example.com/media/c_thumb.jpg') 50% 50% / cover no-repeat;"),
+			card("real", 'data-kg-thumbnail="https://example.com/media/d_thumb.jpg"', "https://example.com/images/d-poster.jpg"),
+			card("none", "", gif),
+		].join(""),
+	});
+	const posters = await page.evaluate(() =>
+		Object.fromEntries(["thumb", "custom", "style", "real", "none"].map((id) => [id, document.getElementById(id).getAttribute("poster")])),
+	);
+	expect(posters).toEqual({
+		thumb: "https://example.com/media/a_thumb.jpg",
+		custom: "https://example.com/images/b-custom.jpg",
+		style: "https://example.com/media/c_thumb.jpg",
+		real: "https://example.com/images/d-poster.jpg",
+		none: gif,
+	});
+});
