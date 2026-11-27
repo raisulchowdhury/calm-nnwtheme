@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { extractInlineScript } from "../scripts/extract-inline-script.mjs";
 import { componentArticle, componentSteps, instrumentScript, stressArticle } from "./stress-fixtures.mjs";
-import { blankCases, breakCases, buttonCases, captionCases, codeCases, codeTableCases, creditCases, footnoteCases, layoutCases, quietBoldCases, signupCases, taskCases, withImages } from "./platform-fixtures.mjs";
+import { blankCases, breakCases, buttonCases, captionCases, codeCases, codeTableCases, creditCases, footnoteCases, layoutCases, quietBoldCases, signupCases, taskCases, videoFrameCases, withImages } from "./platform-fixtures.mjs";
 
 const stylesheet = readFileSync("Calm.nnwtheme/stylesheet.css", "utf8");
 const themeScript = extractInlineScript("Calm.nnwtheme/template.html");
@@ -1459,4 +1459,30 @@ test("@webkit puts one sign-up pill where a hidden form says where to sign up, a
 		expect.soft(state.hidden, `${item.platform}: form hidden`).toBe(false);
 		expect.soft(state.kept, `${item.platform}: kept`).toEqual((item.kept || []).map(() => true));
 	}
+});
+
+test("@webkit gives video players a black box in dark mode from the first frame, and leaves other frames and light mode alone", async ({ page }) => {
+	await page.route(/^https?:/, (route) => route.abort());
+	for (const colorScheme of ["dark", "light"]) {
+		await page.emulateMedia({ colorScheme });
+		for (const item of videoFrameCases) {
+			await loadCase(page, item.html);
+			const state = await page.evaluate(() => {
+				const style = getComputedStyle(document.getElementById("f"));
+				return { scheme: style.colorScheme, background: style.backgroundColor };
+			});
+			const black = item.player && colorScheme === "dark";
+			expect.soft(state.background, `${item.platform} (${colorScheme}): background`).toBe(black ? "rgb(0, 0, 0)" : "rgba(0, 0, 0, 0)");
+			expect.soft(state.scheme === "light", `${item.platform} (${colorScheme}): transparent canvas`).toBe(item.player);
+		}
+	}
+	// The flash itself: an empty player frame's centre in dark mode is black, not white.
+	await page.emulateMedia({ colorScheme: "dark" });
+	await loadCase(page, `<iframe id="f" srcdoc="" allowfullscreen></iframe>`);
+	const box = await page.locator("#f").boundingBox();
+	const shot = await page.screenshot({ clip: { x: box.x + box.width / 2, y: box.y + box.height / 2, width: 1, height: 1 } });
+	// Compare against a plain black page drawn the same way.
+	await page.setContent(`<html style="background:#000"></html>`);
+	const black = await page.screenshot({ clip: { x: 0, y: 0, width: 1, height: 1 } });
+	expect(shot.equals(black)).toBe(true);
 });

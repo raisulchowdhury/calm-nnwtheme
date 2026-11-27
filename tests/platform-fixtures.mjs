@@ -286,3 +286,16 @@ export const signupCases = [
 
 // A small inline image for every IMG placeholder.
 export const withImages = (html, svg) => html.replace(/"IMG"/g, `"${svg(1200, 800)}"`);
+
+// Video players paint black; an embedded page with no colour scheme of its own
+// otherwise gets an opaque white canvas in dark mode, a white flash before the
+// player draws. player: true means a black box in dark mode and no change in light.
+export const videoFrameCases = [
+	{ platform: "YouTube embed", html: `<iframe id="f" width="560" height="315" src="https://www.youtube.com/embed/abc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`, player: true },
+	{ platform: "YouTube privacy-enhanced, no allow attributes", html: `<iframe id="f" src="https://www.youtube-nocookie.com/embed/abc"></iframe>`, player: true },
+	{ platform: "Vimeo player", html: `<iframe id="f" src="https://player.vimeo.com/video/1" width="640" height="360"></iframe>`, player: true },
+	{ platform: "Loom embed", html: `<iframe id="f" src="https://www.loom.com/embed/abc" webkitallowfullscreen mozallowfullscreen></iframe>`, player: true },
+	{ platform: "Any player that asks for full screen", html: `<iframe id="f" srcdoc="" allowfullscreen></iframe>`, player: true },
+	{ platform: "Unstyled text iframe (must not trigger)", html: `<iframe id="f" srcdoc="<p>Plain text with no background</p>"></iframe>`, player: false },
+	{ platform: "Chart embed (must not trigger)", html: `<iframe id="f" src="https://datawrapper.dwcdn.net/abc/1/" scrolling="no" height="400"></iframe>`, player: false },
+];
