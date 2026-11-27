@@ -16,8 +16,8 @@
 	--reader-heading: #171514;
 	--reader-muted: #706b64;
 	--reader-faint: #ada59b;
-	--reader-rule: #eee5d4;
-	--reader-code-bg: #f7f0e4;
+	--reader-rule: #e6e4e1;
+	--reader-code-bg: #f3f2f0;
 	--reader-progress: rgba(36, 32, 29, 0.18);
 	--reader-selection: rgba(201, 154, 68, 0.22);
 	--reader-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.3 5 8.6 9.6 3.6' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -74,7 +74,7 @@
 		--reader-text: #1a1714;
 		--reader-muted: #4d4842;
 		--reader-faint: #6f6a63;
-		--reader-rule: #cbbfa9;
+		--reader-rule: #c4c1bc;
 	}
 }
 
