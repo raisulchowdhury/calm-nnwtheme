@@ -382,11 +382,13 @@ body: The body of the article.
 	// full selector, with its :has() tests, only when a candidate is there.
 	var signupWidgets = ".subscription-widget-wrap, .subscription-widget-wrap-editor, [data-component-name='SubscribeWidgetToDOM'], #mc_embed_signup, #mc_embed_shell, .formkit-form, .kg-signup-card, .wp-block-jetpack-subscriptions, .mailpoet_form";
 	var signupBlocks = signupWidgets + ", form[action*='list-manage.com']:has(input[type='email']), form[action*='subscribe' i]:has(input[type='email']), form[action*='signup' i]:has(input[type='email']), form[action*='newsletter' i]:has(input[type='email']), form[action*='convertkit']:has(input[type='email']), form[action*='buttondown']:has(input[type='email']), form[action*='beehiiv']:has(input[type='email']), form[action*='substack.com']:has(input[type='email']), iframe[src*='substack.com/embed']";
-	var signupWords = /\b(?:sign[\s-]?up|subscribe|newsletter|join)\b/i;
+	var signupWords = /\b(?:sign[\s-]?up|subscribe|newsletter|join (?:the|our|my) (?:list|newsletter|mailing list))\b/i;
+	// "subscribe" or "sign-up" as a whole path word, so /unsubscribe doesn't count.
+	var signupPath = /(?:^|[\/#._-])(?:subscribe|sign-?up)(?:$|[\/?#._-])/i;
 
 	function signupPage(block) {
 		function isSignupLink(link) {
-			return /^https?:/i.test(link.href) && (signupWords.test(link.textContent || "") || /subscribe|sign-?up/i.test(link.pathname + link.hash));
+			return /^https?:/i.test(link.href) && (signupWords.test(link.textContent || "") || signupPath.test(link.pathname + link.hash));
 		}
 		var inside = Array.prototype.find.call(block.querySelectorAll("a[href]"), isSignupLink);
 		if (inside) {
@@ -430,7 +432,7 @@ body: The body of the article.
 		// wrappers, after a "Sign up" sentence) still counts as "beside".
 		function isSignupLink(node) {
 			return node.nodeType === 1 && node.matches("a[href]") && !block.contains(node) && !node.closest("[data-calm-signup]") &&
-				(signupWords.test(node.textContent || "") || /subscribe|sign-?up|eepurl\.com/i.test(node.href));
+				(signupWords.test(node.textContent || "") || (signupPath.test(node.pathname + node.hash) || /(?:^|\.)eepurl\.com$/i.test(node.hostname)));
 		}
 		function scan(walker, step, limit) {
 			var seen = 0;

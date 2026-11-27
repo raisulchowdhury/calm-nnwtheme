@@ -671,16 +671,18 @@ article {
    its own gets an opaque white canvas under Calm's "light dark", so in dark
    mode it flashes white before the player draws. A light scheme makes that
    canvas transparent and the box is black from the first frame. Only players:
-   a frame that paints no background of its own would put dark text on black.
+   a frame that paints no background of its own would put dark text on black,
+   so players are known by host. Full-screen and autoplay permissions don't
+   say "video": CodePen, Maps, Mastodon and audio embeds ask for them too.
    (In light mode the scheme already matches, so nothing changes there.) */
-.articleBody iframe:is([allowfullscreen], [webkitallowfullscreen], [allow*="fullscreen"], [allow*="autoplay"], [src*="youtube.com/embed"], [src*="youtube-nocookie.com/embed"], [src*="player.vimeo.com/"], [src*="loom.com/embed"], [src*="fast.wistia."]),
+.articleBody iframe:is([src*="youtube.com/embed"], [src*="youtube-nocookie.com/embed"], [src*="player.vimeo.com/"], [src*="loom.com/embed"], [src*="fast.wistia."], [src*="dailymotion.com/embed"], [src*="player.twitch.tv"], [src*="embed.ted.com"]),
 .nnw-primary-media iframe,
 .nnw-enclosure iframe {
 	color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
-	.articleBody iframe:is([allowfullscreen], [webkitallowfullscreen], [allow*="fullscreen"], [allow*="autoplay"], [src*="youtube.com/embed"], [src*="youtube-nocookie.com/embed"], [src*="player.vimeo.com/"], [src*="loom.com/embed"], [src*="fast.wistia."]),
+	.articleBody iframe:is([src*="youtube.com/embed"], [src*="youtube-nocookie.com/embed"], [src*="player.vimeo.com/"], [src*="loom.com/embed"], [src*="fast.wistia."], [src*="dailymotion.com/embed"], [src*="player.twitch.tv"], [src*="embed.ted.com"]),
 	.nnw-primary-media iframe,
 	.nnw-enclosure iframe {
 		background: #000;

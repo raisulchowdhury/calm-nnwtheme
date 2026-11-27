@@ -1451,7 +1451,8 @@ test("@webkit puts one sign-up pill where a hidden form says where to sign up, a
 });
 
 test("@webkit gives video players a black box in dark mode from the first frame, and leaves other frames and light mode alone", async ({ page }) => {
-	await page.route(/^https?:/, (route) => route.abort());
+	// A player host answers with an empty page; every other request fails.
+	await page.route(/^https?:/, (route) => /youtube\.com\/embed/.test(route.request().url()) ? route.fulfill({ contentType: "text/html", body: "" }) : route.abort());
 	for (const colorScheme of ["dark", "light"]) {
 		await page.emulateMedia({ colorScheme });
 		for (const item of videoFrameCases) {
@@ -1467,7 +1468,8 @@ test("@webkit gives video players a black box in dark mode from the first frame,
 	}
 	// The flash itself: an empty player frame's centre in dark mode is black, not white.
 	await page.emulateMedia({ colorScheme: "dark" });
-	await loadCase(page, `<iframe id="f" srcdoc="" allowfullscreen></iframe>`);
+	await loadCase(page, `<iframe id="f" src="https://www.youtube.com/embed/abc" allowfullscreen></iframe>`);
+	await page.frameLocator("#f").locator("html").waitFor({ state: "attached" });
 	const box = await page.locator("#f").boundingBox();
 	const shot = await page.screenshot({ clip: { x: box.x + box.width / 2, y: box.y + box.height / 2, width: 1, height: 1 } });
 	// Compare against a plain black page drawn the same way.
