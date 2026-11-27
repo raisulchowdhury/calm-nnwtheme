@@ -1445,7 +1445,7 @@ test("@webkit puts one sign-up pill where a hidden form says where to sign up, a
 
 test("@webkit gives video players a black box in dark mode from the first frame, and leaves other frames and light mode alone", async ({ page }) => {
 	// A player host answers with an empty page; every other request fails.
-	await page.route(/^https?:/, (route) => /youtube\.com\/embed/.test(route.request().url()) ? route.fulfill({ contentType: "text/html", body: "" }) : route.abort());
+	await page.route(/^https?:/, (route) => /youtube\.com\/embed|platform\.twitter\.com\/embed/.test(route.request().url()) ? route.fulfill({ contentType: "text/html", body: "" }) : route.abort());
 	for (const colorScheme of ["dark", "light"]) {
 		await page.emulateMedia({ colorScheme });
 		for (const item of videoFrameCases) {
@@ -1456,7 +1456,7 @@ test("@webkit gives video players a black box in dark mode from the first frame,
 			});
 			const black = item.player && colorScheme === "dark";
 			expect.soft(state.background, `${item.platform} (${colorScheme}): background`).toBe(black ? "rgb(0, 0, 0)" : "rgba(0, 0, 0, 0)");
-			expect.soft(state.scheme === "light", `${item.platform} (${colorScheme}): transparent canvas`).toBe(item.player);
+			expect.soft(state.scheme === "light", `${item.platform} (${colorScheme}): transparent canvas`).toBe(item.player || !!item.card);
 		}
 	}
 	// The flash itself: an empty player frame's centre in dark mode is black, not white.
@@ -1469,6 +1469,14 @@ test("@webkit gives video players a black box in dark mode from the first frame,
 	await page.setContent(`<html style="background:#000"></html>`);
 	const black = await page.screenshot({ clip: { x: 0, y: 0, width: 1, height: 1 } });
 	expect(shot.equals(black)).toBe(true);
+	// An X post's frame shows the page in dark mode where its card doesn't paint,
+	// instead of white tips outside the card's rounded corners.
+	await loadCase(page, `<iframe id="f" src="https://platform.twitter.com/embed/Tweet.html?id=1&theme=dark" style="height: 200px"></iframe>`);
+	await page.frameLocator("#f").locator("html").waitFor({ state: "attached" });
+	const frame = await page.locator("#f").boundingBox();
+	const corner = await page.screenshot({ clip: { x: frame.x + 1, y: frame.y + frame.height / 2, width: 1, height: 1 } });
+	const beside = await page.screenshot({ clip: { x: frame.x + 1, y: frame.y - 8, width: 1, height: 1 } });
+	expect(corner.equals(beside)).toBe(true);
 });
 
 test("@webkit sets a block quote upright in the text colour, marked by its rule", async ({ page }) => {
