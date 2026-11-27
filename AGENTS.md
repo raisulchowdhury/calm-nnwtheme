@@ -24,6 +24,7 @@ Raisul, 2026-11-26: "It's become glitchy. Takes a second before it shows up. We 
 - Every change happens before first paint: in CSS, or in the theme's existing first script pass.
 - No handlers that wait for an image to load or fail, a third-party script, a timer or a MutationObserver and then change what's shown.
 - If a fix needs a swap after load, leave the flaw and note it.
+- Raisul, 2026-11-27: "I prefer to avoid loading delays because of calm". Calm never makes an article or any part of it wait to show: no hiding content until a script, image or embed is ready, and no placeholders held for third-party content. Content shows as soon as the feed's own markup can.
 
 ## House conventions
 
