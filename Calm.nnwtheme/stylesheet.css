@@ -866,13 +866,6 @@ kbd {
 	font-size: 0.9em;
 }
 
-/* Numbers in a table line up in columns: equal-width lining figures. (The
-   body text uses oldstyle ones; NetNewsWire's quirks-mode page doesn't pass
-   them into tables, but a standards-mode page would.) */
-.articleBody :is(td, th) {
-	font-variant-numeric: lining-nums tabular-nums;
-}
-
 .nnw-overflow th,
 .nnw-overflow td {
 	padding: 0.55em 0.7em;

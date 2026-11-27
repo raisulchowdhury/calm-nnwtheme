@@ -1424,17 +1424,6 @@ test("@webkit draws line-numbered code as one box, and leaves a table of code sa
 	}
 });
 
-test("@webkit sets table numbers in lining, equal-width figures and keeps oldstyle figures in the text", async ({ page }) => {
-	await loadCase(page, `<table><tbody><tr><th>Year</th><th>Value</th></tr><tr><td id="cell">2019</td><td>0.81</td></tr></tbody></table>`);
-	const state = await page.evaluate(() => ({
-		cell: getComputedStyle(document.getElementById("cell")).fontVariantNumeric,
-		text: getComputedStyle(document.querySelector("#bodyContainer > p:last-child")).fontVariantNumeric,
-	}));
-	expect(state.cell).toContain("lining-nums");
-	expect(state.cell).toContain("tabular-nums");
-	expect(state.text).toContain("oldstyle-nums");
-});
-
 test("@webkit leaves less space above an h3 than above an h2", async ({ page }) => {
 	await loadFixture(page, { paragraphCount: 1, html: `<h2>Section</h2><p>${paragraph}</p><h3>Subsection</h3><p>${paragraph}</p><h4>Minor</h4><p>${paragraph}</p>` });
 	const gaps = await page.evaluate(() => ["h2", "h3", "h4"].map((tag) => parseFloat(getComputedStyle(document.querySelector(`#bodyContainer ${tag}`)).marginTop)));
