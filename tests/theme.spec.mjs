@@ -998,7 +998,9 @@ test("@webkit runs Calm's first pass on a huge article within its budget", async
 // 1-2 / 0.7-0.9; X theme 0 / 0-0.1; Ghost video posters 1-2 / 2.4-4.7; inline images
 // and emoji 1-2 / 0.5-1.2; blank blocks 0-1 / 0.6-0.8; rail markers 4-7 / 3.2-5.4;
 // Mastodon frames 0 / 0.2-0.3. Each budget is about 4-5x the slowest run, with a
-// 10 ms floor for WebKit's 1 ms timer.
+// 10 ms floor for WebKit's 1 ms timer. The rail's own work on 400 headings runs
+// about 7x slower on CI's Linux WebKit (33-61 ms against 5 ms on the Mac, Nov 27,
+// 2026), so CI gets 100 ms: about 2x its worst run (Raisul, 2026-11-27).
 const componentBudgets = {
 	code: 40,
 	footnotes: 15,
@@ -1009,7 +1011,7 @@ const componentBudgets = {
 	emoji: 10,
 	images: 10,
 	blanks: 10,
-	headings: 30,
+	headings: process.platform === "linux" ? 100 : 30,
 	iframes: 10,
 };
 
