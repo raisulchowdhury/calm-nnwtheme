@@ -4,6 +4,12 @@ Calm is intentionally small. Contributions should improve reading quality,
 accessibility, compatibility, or maintainability without turning the theme into
 a second layer of NetNewsWire interface.
 
+## Rules for every change
+
+Every change must work across websites and feed readers, must not slow the page
+or move its text after first paint, and must follow the house conventions. The
+rules are in [AGENTS.md](AGENTS.md); read them before a pull request.
+
 ## Before opening an issue
 
 1. Check whether the problem also appears with a built-in NetNewsWire theme.
