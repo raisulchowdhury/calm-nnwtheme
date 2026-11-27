@@ -450,8 +450,10 @@ article {
 	margin: 1.6em 0;
 	padding: 0 0 0 1em;
 	border-left: 2px solid var(--reader-rule);
-	color: var(--reader-muted);
-	font-style: italic;
+	/* Upright, in the text colour: the rule and indent already say "quoted",
+	   and a quote can run for paragraphs (Daring Fireball), where muted
+	   italic tires the eye. */
+	color: var(--reader-text);
 }
 
 .articleBody blockquote > :first-child {

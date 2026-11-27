@@ -181,3 +181,11 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### link-card-quiet-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/link-card-quiet-dark.jpg" width="720" alt="The same link card in dark mode">
+
+### quote-upright
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright.jpg" width="720" alt="A long quoted passage on Daring Fireball, on iPhone: before, muted italic; after, upright in the text colour, still set off by its rule">
+
+### quote-upright-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright-dark.jpg" width="720" alt="The same quote in dark mode">

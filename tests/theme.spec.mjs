@@ -1480,3 +1480,11 @@ test("@webkit gives video players a black box in dark mode from the first frame,
 	const black = await page.screenshot({ clip: { x: 0, y: 0, width: 1, height: 1 } });
 	expect(shot.equals(black)).toBe(true);
 });
+
+test("@webkit sets a block quote upright in the text colour, marked by its rule", async ({ page }) => {
+	await loadCase(page, `<blockquote id="q"><p>${paragraph}</p></blockquote>`);
+	const text = await tokenColor(page, "--reader-text");
+	await expect(page.locator("#q")).toHaveCSS("font-style", "normal");
+	await expect(page.locator("#q")).toHaveCSS("color", text);
+	await expect(page.locator("#q")).toHaveCSS("border-left-style", "solid");
+});
