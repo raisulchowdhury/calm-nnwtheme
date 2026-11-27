@@ -78,11 +78,17 @@ All are in `docs/design-pass-options.html`. Each area shows the same real crop a
 
 ## Raisul's picks
 
-Not built yet. Recorded as he makes them on the options page (docs/design-pass-options.html).
+Recorded as he makes them on the options page (docs/design-pass-options.html).
 
 | Area | Pick | His words |
 |---|---|---|
 | Buttons | Proposal B, tinted pill (not the recommended A) | "Like this one" (2026-11-27) |
+| Link cards | Proposal A, quiet card | "Rest go with you reco" (2026-11-27) |
+| Block quotes | Proposal A, upright, text colour | "Rest go with you reco" (2026-11-27) |
+| Heading scale | Proposal A, clearer steps | "Rest go with you reco" (2026-11-27) |
+| Paragraph spacing at large text | Proposal A, scales with text | "Rest go with you reco" (2026-11-27) |
+| Pictures in dark mode | Proposal A, paper backing for line art | "Rest go with you reco" (2026-11-27) |
+| Footnotes | Waiting: his choice among the new minimal open notes (Proposals B, C and D; B recommended) | "Opened should be more minimal" (on Proposal A, open in dark) |
 
 ## Left alone, and why
 
