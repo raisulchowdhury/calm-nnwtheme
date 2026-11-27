@@ -213,6 +213,55 @@ body: The body of the article.
 		});
 	}
 
+	// FreshRSS renames every id in an article to data-sanitized-id, and Feedly
+	// drops ids altogether, so a footnote link points at nothing and opens no
+	// popover. Put back the ids that a link in the article points at. With
+	// Feedly, the note is the list item holding the back link: the item that
+	// links to #fnref-1 is the note #fn-1. An id already on the page stays
+	// where it is.
+	function restoreFootnoteIds() {
+		if (!body) {
+			return;
+		}
+
+		var targets = {};
+		Array.prototype.forEach.call(body.querySelectorAll("a[href*='#']"), function (link) {
+			var id = "";
+			try {
+				id = link.hash ? decodeURIComponent(link.hash.slice(1)) : "";
+			} catch (error) {
+				return;
+			}
+			if (id && !targets[id] && !document.getElementById(id)) {
+				targets[id] = link;
+			}
+		});
+
+		Array.prototype.forEach.call(body.querySelectorAll("[data-sanitized-id]"), function (element) {
+			var id = element.getAttribute("data-sanitized-id");
+			if (id && targets[id] && !element.id && !document.getElementById(id)) {
+				element.id = id;
+			}
+		});
+
+		Object.keys(targets).forEach(function (referenceId) {
+			if (!/fnref/i.test(referenceId) || document.getElementById(referenceId)) {
+				return;
+			}
+			var noteId = referenceId.replace(/fnref/i, "fn");
+			var reference = targets[noteId];
+			var note = targets[referenceId].closest("li");
+			if (!reference || !note || note.id || note.contains(reference) || document.getElementById(noteId)) {
+				return;
+			}
+			note.id = noteId;
+			var marker = reference.closest("sup");
+			if (marker && !marker.id) {
+				marker.id = referenceId;
+			}
+		});
+	}
+
 	// Six Colors and other WordPress sites link footnotes to the site's home
 	// page plus the note's id ("https://sixcolors.com#fn-1"), so NetNewsWire
 	// doesn't see them as footnotes and a tap leaves the app. When the note is
@@ -240,6 +289,53 @@ body: The body of the article.
 				link.classList.add("footnote");
 			}
 		});
+	}
+
+	// Many WordPress feeds end each post with "The post <title> appeared first
+	// on <site>.", a line the site itself never shows. Hide it when it is the
+	// article's last block and holds the two links, to the post and the site.
+	var feedCreditPattern = /^(?:The post|Der Beitrag|L['\u2019]article|La entrada|Il post|O post|Het bericht|Inl\u00e4gget|Indl\u00e6gget) [\s\S]{1,300} (?:appeared first on|erschien zuerst auf|est apparu en premier sur|apareci\u00f3 primero en|\u00e8 apparso per primo su|apareceu primeiro em|verscheen eerst op|d\u00f6k upp f\u00f6rst p\u00e5|dukkede op f\u00f8rst p\u00e5) [\s\S]{1,200}$/i;
+
+	function hideFeedCredit() {
+		if (!body) {
+			return;
+		}
+
+		function hasContent(element) {
+			if (element.hasAttribute("data-calm-blank")) {
+				return false;
+			}
+			if ((element.textContent || "").trim()) {
+				return true;
+			}
+			var media = "img, video, audio, iframe, svg, hr";
+			return element.matches(media) || Array.prototype.some.call(element.querySelectorAll(media), function (node) {
+				return !node.hasAttribute("data-calm-blank");
+			});
+		}
+
+		var container = body;
+		var last = null;
+		while (container) {
+			last = null;
+			for (var child = container.lastElementChild; child; child = child.previousElementSibling) {
+				if (hasContent(child)) {
+					last = child;
+					break;
+				}
+			}
+			if (last && /^(?:DIV|SECTION|ARTICLE)$/.test(last.tagName) && !last.className) {
+				container = last;
+			} else {
+				container = null;
+			}
+		}
+		if (!last || last.tagName !== "P" || last.querySelectorAll("a").length < 2) {
+			return;
+		}
+		if (feedCreditPattern.test((last.textContent || "").replace(/\s+/g, " ").trim())) {
+			last.setAttribute("data-calm-feed-credit", "");
+		}
 	}
 
 	// Bluesky, Mastodon, and micro.blog posts have no title. Drop the empty
@@ -810,7 +906,8 @@ body: The body of the article.
 
 		var rawHeadings = Array.prototype.slice.call(body.querySelectorAll("h1, h2, h3, h4, h5, h6"))
 			.filter(function (heading) {
-				return heading.textContent.trim().length > 0;
+				// A Ghost toggle card's heading is a question in an FAQ, not a section.
+				return heading.textContent.trim().length > 0 && !(heading.closest && heading.closest(".kg-toggle-card"));
 			});
 		var titleKey = normalizeHeadingText(titleText);
 		var seenHeadingKeys = {};
@@ -1292,6 +1389,8 @@ body: The body of the article.
 
 	safely(markInlineImages);
 	safely(removeStrayBreaks);
+	safely(hideFeedCredit);
+	safely(restoreFootnoteIds);
 	safely(markFootnotes);
 	safely(markUntitled);
 	safely(sizeEmbeddedPosts);

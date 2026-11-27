@@ -832,3 +832,70 @@ test("@webkit names a code block's declared language beside the Copy button", as
 	expect(sizes[0]).toBe(sizes[1]);
 	await expect(label("swift")).toHaveCSS("color", "rgb(112, 107, 100)");
 });
+
+test("@webkit hides WordPress's 'appeared first on' line and keeps the article's own last paragraph", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 0,
+		html: `<p id="early">The post <a href="https://example.com/a">A</a> appeared first on <a href="https://example.com">Example</a> is a quoted phrase here.</p><p>${paragraph}</p>
+			<p id="credit">The post <a href="https://example.com/p">A Field Guide to Quiet Reading</a> appeared first on <a href="https://example.com">Example Site</a>.</p>
+			<img width="1" height="1" src="${svg(1, 1)}" alt="">`,
+	});
+	await expect(page.locator("#credit")).toBeHidden();
+	await expect(page.locator("#early")).toBeVisible();
+});
+
+test("@webkit opens footnotes whose ids FreshRSS renamed or Feedly removed", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 0,
+		html: `<p>FreshRSS<sup data-sanitized-id="fnref1"><a id="fresh" href="#fn1" data-sanitized-class="footnote-ref">1</a></sup> and Feedly<sup><a id="feedly" href="#fn:2">2</a></sup>.</p>
+			<div data-sanitized-class="footnotes"><ol><li data-sanitized-id="fn1"><p>First note. <a href="#fnref1">↩</a></p></li></ol></div>
+			<div class="footnotes"><ol><li><p>Second note. <a href="#fnref:2">↩</a></p></li></ol></div>
+			<p data-sanitized-id="readerTop">A feed id that must not take the page's own.</p>`,
+	});
+	await expect(page.locator("#fresh")).toHaveClass(/(^|\s)footnote(\s|$)/);
+	await expect(page.locator("#feedly")).toHaveClass(/(^|\s)footnote(\s|$)/);
+	const targets = await page.evaluate(() => ({
+		fresh: document.getElementById("fn1")?.textContent.trim(),
+		feedly: document.getElementById("fn:2")?.textContent.trim(),
+		readerTop: document.getElementById("readerTop").tagName,
+	}));
+	expect(targets).toEqual({ fresh: "First note. ↩", feedly: "Second note. ↩", readerTop: "HEADER" });
+});
+
+test("@webkit fits WordPress post embeds and Ghost cards at iPhone width", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<blockquote class="wp-embedded-content" data-secret="abc"><a id="wp-link" href="https://example.com/post/">A post on another WordPress site</a></blockquote><iframe id="wp-frame" class="wp-embedded-content" sandbox="allow-scripts" security="restricted" style="position: absolute; clip: rect(1px, 1px, 1px, 1px);" title="A post" src="about:blank" data-secret="abc" width="600" height="338" frameborder="0" scrolling="no"></iframe>
+			<div class="kg-card kg-toggle-card" data-kg-toggle-state="close"><div class="kg-toggle-heading"><h4 class="kg-toggle-heading-text">Is it calm?</h4><button class="kg-toggle-card-icon" id="toggle-icon"><svg viewBox="0 0 24 24"><path d="M23.25,7.311,12.53,18.03a.749.749,0,0,1-1.06,0L.75,7.311"></path></svg></button></div><div class="kg-toggle-content" id="toggle-content"><p>Yes.</p></div></div>
+			<div class="kg-card kg-callout-card kg-callout-card-grey" id="callout"><div class="kg-callout-emoji">💡</div><div class="kg-callout-text">A tip.</div></div>
+			<figure class="kg-card kg-video-card kg-width-regular" id="video-card"><div class="kg-video-container"><video id="video" src="about:blank" width="1280" height="720" playsinline preload="metadata"></video><div class="kg-video-overlay"><button class="kg-video-large-play-icon" aria-label="Play video"><svg viewBox="0 0 24 24"><path d="M0 0h24v24H0z"></path></svg></button></div><div class="kg-video-player-container" id="video-player"><div class="kg-video-player"><button class="kg-video-play-icon">Play</button><span class="kg-video-current-time">0:00</span><input type="range" class="kg-video-seek-slider" max="100" value="0"></div></div></div></figure>
+			<figure class="wp-block-pullquote" id="wp-pull"><blockquote><p>Calm is a reading surface.</p><cite>Someone</cite></blockquote></figure>
+			<aside id="aside"><p>A side note.</p></aside>
+			<p>${paragraph}</p>`,
+	});
+	const fits = await page.evaluate(() => ({
+		scroll: document.documentElement.scrollWidth,
+		width: document.documentElement.clientWidth,
+	}));
+	expect(fits.scroll).toBeLessThanOrEqual(fits.width);
+	await expect(page.locator("#wp-frame")).toBeHidden();
+	await expect(page.locator("#wp-link")).toBeVisible();
+	await expect(page.locator(".wp-embedded-content").first()).toHaveCSS("border-top-style", "solid");
+	await expect(page.locator("#toggle-icon")).toBeHidden();
+	await expect(page.locator("#toggle-content")).toBeVisible();
+	await expect(page.locator(".kg-toggle-card")).toHaveCSS("border-top-style", "solid");
+	await expect(page.locator("#callout")).toHaveCSS("display", "flex");
+	await expect(page.locator("#callout")).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+	await expect(page.locator("#video-player")).toBeHidden();
+	await expect(page.locator(".kg-video-overlay")).toBeHidden();
+	const video = await page.locator("#video").boundingBox();
+	const card = await page.locator("#video-card").boundingBox();
+	expect(video.width).toBeLessThanOrEqual(card.width + 0.5);
+	expect(video.width / video.height).toBeCloseTo(16 / 9, 1);
+	await expect(page.locator("#wp-pull blockquote")).toHaveCSS("font-style", "normal");
+	await expect(page.locator("#wp-pull blockquote")).toHaveCSS("border-left-style", "none");
+	await expect(page.locator("#aside")).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+});
