@@ -1,6 +1,26 @@
 # Before and after
 
-Made by `node scripts/before-after.mjs` against `origin/main`. At release, rename the folder's files to `<version>-<slug>.jpg` and move them up into `assets/releases/`.
+Made by `node scripts/before-after.mjs` against `origin/main`. The images named `*-in-app.jpg` are screenshots from the NetNewsWire app on the Mac, taken on 2026-11-26 before the design pass, so the text around each fix shows the older look. At release, rename the folder's files to `<version>-<slug>.jpg` and move them up into `assets/releases/`.
+
+### Gallery row, in the NetNewsWire app (Mac)
+
+<img src="gallery-row-in-app.jpg" alt="Gallery row in NetNewsWire: before, each photo is a cropped full-height block; after, three photos share one row">
+
+### Cover shown once, in the NetNewsWire app (Mac)
+
+<img src="duplicate-cover-in-app.jpg" alt="Latent Space episode: before, the cover appears twice; after, once">
+
+### X posts follow dark mode, in the NetNewsWire app (Mac)
+
+<img src="x-embed-dark-in-app.jpg" alt="Embedded X post: before, a white card on the dark page; after, a dark card">
+
+### Podcast caption, in the NetNewsWire app (Mac)
+
+<img src="podcast-caption-in-app.jpg" alt="Dwarkesh episode: before, the player caption shows a hashed .mp3 file name; after, the caption is quiet">
+
+### Untitled posts, in the NetNewsWire app (Mac)
+
+<img src="untitled-post-in-app.jpg" alt="Manton Reece post with no title: after, the empty title gap above the date is gone">
 
 ### footnote-popover
 
@@ -26,37 +46,9 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/code-copy.jpg" width="720" alt="A code block on the Mac: after, a quiet Copy button appears on hover">
 
-### Gallery row, in the NetNewsWire app (Mac)
+### macrumors-deal-gaps
 
-<img src="gallery-row-in-app.jpg" alt="Gallery row in NetNewsWire: before, each photo is a cropped full-height block; after, three photos share one row">
-
-### Copy button on one-line commands, in the NetNewsWire app (Mac)
-
-<img src="code-copy-one-line-in-app.jpg" alt="Before, the Copy button sits over the end of a one-line command; after, it is a full-height cap at the line's end">
-
-### Link card, in the NetNewsWire app (Mac)
-
-<img src="link-card-in-app.jpg" alt="Link card in NetNewsWire: before, a run of underlined text; after, a bordered card with title and summary">
-
-### Cover shown once, in the NetNewsWire app (Mac)
-
-<img src="duplicate-cover-in-app.jpg" alt="Latent Space episode: before, the cover appears twice; after, once">
-
-### X posts follow dark mode, in the NetNewsWire app (Mac)
-
-<img src="x-embed-dark-in-app.jpg" alt="Embedded X post: before, a white card on the dark page; after, a dark card">
-
-### Podcast caption, in the NetNewsWire app (Mac)
-
-<img src="podcast-caption-in-app.jpg" alt="Dwarkesh episode: before, the player caption shows a hashed .mp3 file name; after, the caption is quiet">
-
-### Footnotes, in the NetNewsWire app (Mac)
-
-<img src="footnote-in-app.jpg" alt="Six Colors footnote popover: same popover, without the stray back-link arrow">
-
-### Untitled posts, in the NetNewsWire app (Mac)
-
-<img src="untitled-post-in-app.jpg" alt="Manton Reece post with no title: after, the empty title gap above the date is gone">
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/macrumors-deal-gaps.jpg" width="720" alt="MacRumors deal buttons on iPhone: before, a blank gap between each button; after, the buttons sit together">
 
 ### duplicate-cover-sized
 
@@ -70,10 +62,6 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/code-language-dark.jpg" width="720" alt="The same code blocks in dark mode">
 
-### macrumors-deal-gaps
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/macrumors-deal-gaps.jpg" width="720" alt="MacRumors deal buttons on iPhone: before, a blank gap between each button; after, the buttons sit together">
-
 ### feed-credit
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/feed-credit.jpg" width="720" alt="A WordPress post's end: before, a 'The post ... appeared first on ...' line; after, the post ends on its own last paragraph">
@@ -81,10 +69,6 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### feed-footnotes
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/feed-footnotes.jpg" width="720" alt="A footnote read through FreshRSS: before, tapping it does nothing; after, the note opens in place">
-
-### pullquote-aside
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/pullquote-aside.jpg" width="720" alt="A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box">
 
 ### feed-cards
 
@@ -118,17 +102,65 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/instagram-placeholder.jpg" width="720" alt="An Instagram embed in a Ghost or WordPress post on iPhone: before, empty placeholder rows leave gaps in the card; after, just the link to the post and its caption">
 
-### button-pill
+### pullquote-aside
 
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-pill.jpg" width="720" alt="A Substack button, a Substack subscribe box and a Ghost call-to-action on iPhone: before, plain underlined links and an email field; after, each button one quiet pill and the subscribe box gone">
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/pullquote-aside.jpg" width="720" alt="A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box">
 
 ### signup-form-macrumors
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/signup-form-macrumors.jpg" width="720" alt="A MacRumors deals post on iPhone: before, a Mailchimp email field and Subscribe button that can't work in a reader; after, the sign-up link stays and the form is gone">
 
-### button-pill-dark
+### signup-form-pill
 
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-pill-dark.jpg" width="720" alt="The same buttons in dark mode">
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/signup-form-pill.jpg" width="720" alt="A Substack subscribe box and a Mailchimp form on iPhone: before, email fields and buttons that can't work in a reader; after, each form is one quiet pill that opens the publisher's sign-up page">
+
+### signup-form-pill-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/signup-form-pill-dark.jpg" width="720" alt="The same sign-up pills in dark mode">
+
+### link-card-quiet
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/link-card-quiet.jpg" width="720" alt="A Ghost bookmark card on iPhone: before, a bold display title and three lines, like a second headline; after, the title in the body's weight and two muted lines">
+
+### link-card-quiet-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/link-card-quiet-dark.jpg" width="720" alt="The same link card in dark mode">
+
+### quote-upright
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright.jpg" width="720" alt="A long quoted passage on Daring Fireball, on iPhone: before, muted italic; after, upright in the text colour, still set off by its rule">
+
+### quote-upright-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright-dark.jpg" width="720" alt="The same quote in dark mode">
+
+### heading-steps
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/heading-steps.jpg" width="720" alt="Headings on iPhone: before, an h2 and an h3 that read as the same level; after, a clearly larger h2 over a smaller h3">
+
+### heading-steps-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/heading-steps-dark.jpg" width="720" alt="The same headings in dark mode">
+
+### paragraph-gaps-large-text
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/paragraph-gaps-large-text.jpg" width="720" alt="Short paragraphs at NetNewsWire's largest text size on iPhone: before, the default-size gap between them; after, the gap grows with the text (the default size is unchanged)">
+
+### button-tinted
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-tinted.jpg" width="720" alt="Publishers' buttons on iPhone: before, a thin outlined pill; after, a pill filled with the code-block tint, larger to tap">
+
+### button-tinted-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-tinted-dark.jpg" width="720" alt="The same buttons in dark mode">
+
+### task-list
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list.jpg" width="720" alt="GitHub and Hugo task lists on iPhone: before, a bullet beside a small grey box; after, a text-size box in the muted text colour in place of the bullet">
+
+### task-list-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list-dark.jpg" width="720" alt="The same task lists in dark mode">
 
 ### plain-captions
 
@@ -158,61 +190,13 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/caption-bold.jpg" width="720" alt="A caption with a bold phrase: before, the phrase in near-black inside the grey caption; after, the caption's own colour">
 
-### task-list
+### code-copy-one-line
 
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list.jpg" width="720" alt="GitHub and Hugo task lists on iPhone: before, a bullet beside a small grey box; after, a text-size box in the muted text colour in place of the bullet">
-
-### task-list-dark
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list-dark.jpg" width="720" alt="The same task lists in dark mode">
-
-### signup-form-pill
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/signup-form-pill.jpg" width="720" alt="A Substack subscribe box and a Mailchimp form on iPhone: before, email fields and buttons that can't work in a reader; after, each form is one quiet pill that opens the publisher's sign-up page">
-
-### signup-form-pill-dark
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/signup-form-pill-dark.jpg" width="720" alt="The same sign-up pills in dark mode">
-
-### link-card-quiet
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/link-card-quiet.jpg" width="720" alt="A Ghost bookmark card on iPhone: before, a bold display title and three lines, like a second headline; after, the title in the body's weight and two muted lines">
-
-### link-card-quiet-dark
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/link-card-quiet-dark.jpg" width="720" alt="The same link card in dark mode">
-
-### heading-steps
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/heading-steps.jpg" width="720" alt="Headings on iPhone: before, an h2 and an h3 that read as the same level; after, a clearly larger h2 over a smaller h3">
-
-### heading-steps-dark
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/heading-steps-dark.jpg" width="720" alt="The same headings in dark mode">
-
-### paragraph-gaps-large-text
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/paragraph-gaps-large-text.jpg" width="720" alt="Short paragraphs at NetNewsWire's largest text size on iPhone: before, the default-size gap between them; after, the gap grows with the text (the default size is unchanged)">
-
-### quote-upright
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright.jpg" width="720" alt="A long quoted passage on Daring Fireball, on iPhone: before, muted italic; after, upright in the text colour, still set off by its rule">
-
-### quote-upright-dark
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/quote-upright-dark.jpg" width="720" alt="The same quote in dark mode">
-
-### button-tinted
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-tinted.jpg" width="720" alt="Publishers' buttons on iPhone: before, a thin outlined pill; after, a pill filled with the code-block tint, larger to tap">
-
-### button-tinted-dark
-
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-tinted-dark.jpg" width="720" alt="The same buttons in dark mode">
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/code-copy-one-line.jpg" width="720" alt="A one-line shell command on the Mac: after, Copy and the language sit in a cap at the line's end instead of over the command">
 
 ### footnote-minimal
 
-<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/footnote-minimal.jpg" width="720" alt="Pandoc and GitHub footnotes on iPhone, one open and one closed: before, a tinted pill marker and a card with a shadow and arrow floating over the text; after, a plain muted number, and the note opens in the text under its line, small, muted and in mono, pushing the text below down">
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/footnote-minimal.jpg" width="720" alt="Pandoc and GitHub footnotes on iPhone: before, plain superscripts that jump to the end of the article; after, a plain muted number, and a tapped note opens in the text under its line, small, muted and in mono, pushing the text below down">
 
 ### footnote-minimal-dark
 

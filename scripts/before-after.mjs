@@ -34,11 +34,13 @@ export const cases = [
 	{ slug: "podcast-caption", id: "podcast-1", alt: "A podcast player caption: before, a file name and h:mm:ss; after, just the length, 1 hr 24 min", sel: ".nnw-primary-media", scope: "body", maxH: 760 },
 	{ slug: "duplicate-cover", id: "cover-1", alt: "A Latent Space episode: before, the cover picture twice in a row; after, once", top: 1100 },
 	{ slug: "x-embed-dark", id: "xembed-1", alt: "An embedded X post in dark mode: before, a white card; after, a dark card", sel: ".twitter-tweet", maxH: 900, wait: 6000 },
+	{ slug: "video-embed", id: "yt-1", offline: true, alt: "A Latent Space post on iPhone: before, the YouTube video covers the first line below it; after, the line is clear", sel: "iframe", extraBelow: 140 },
 	{ slug: "podcast-caption-file-name", id: "podcast-2", alt: "A Dwarkesh episode: before, the player caption is a hashed .mp3 file name; after, just the length", sel: ".nnw-primary-media", scope: "body", maxH: 760 },
 	{ slug: "code-copy", id: "pre-3", alt: "A code block on the Mac: after, a quiet Copy button appears on hover", sel: "pre", hasText: "paperjam: $(OBJS)", width: 900, act: "hover" },
 	{ slug: "macrumors-deal-gaps", id: "macrumors-3", alt: "MacRumors deal buttons on iPhone: before, a blank gap between each button; after, the buttons sit together", sel: ".center-wrap", extraBelow: 420, maxH: 760 },
 	{ slug: "duplicate-cover-sized", id: "podcast-1", alt: "A Latent Space episode whose lead picture is the 1400x1400 copy of the body's: before, the cover twice; after, once", top: 1300 },
 	{ slug: "code-language", fixture: "code-language", alt: "Code blocks on the Mac: after, the block's language shows beside Copy on hover", sel: "pre", width: 900, act: "hover" },
+	{ slug: "code-copy-one-line", fixture: "code-language", alt: "A one-line shell command on the Mac: after, Copy and the language sit in a cap at the line's end instead of over the command", sel: "pre", hasText: "ollama serve", width: 900, act: "hover" },
 	{ slug: "code-language-dark", fixture: "code-language", scheme: "dark", alt: "The same code blocks in dark mode", sel: "pre", width: 900, act: "hover" },
 	{ slug: "feed-credit", fixture: "feed-credit", alt: "A WordPress post's end: before, a 'The post ... appeared first on ...' line; after, the post ends on its own last paragraph", top: 1000 },
 	{ slug: "feed-footnotes", fixture: "feed-footnotes", alt: "A footnote read through FreshRSS: before, tapping it does nothing; after, the note opens in place", sel: "sup a", para: true, extraBelow: 260, act: "click" },
@@ -51,9 +53,7 @@ export const cases = [
 	{ slug: "code-language-rouge", fixture: "platform-code", alt: "A Jekyll (Rouge) code block on the Mac: before, no language; after, Python beside Copy on hover", sel: "pre", width: 900, act: "hover" },
 	{ slug: "instagram-placeholder", fixture: "platform-instagram", alt: "An Instagram embed in a Ghost or WordPress post on iPhone: before, empty placeholder rows leave gaps in the card; after, just the link to the post and its caption", sel: ".instagram-media" },
 	{ slug: "pullquote-aside", fixture: "feed-cards", alt: "A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box", sel: ".wp-block-pullquote", extraBelow: 260 },
-	{ slug: "button-pill", fixture: "platform-buttons", alt: "A Substack button, a Substack subscribe box and a Ghost call-to-action on iPhone: before, plain underlined links and an email field; after, each button one quiet pill and the subscribe box gone", sel: ".button-wrapper", extraBelow: 700, maxH: 1100 },
 	{ slug: "signup-form-macrumors", id: "macrumors-3", alt: "A MacRumors deals post on iPhone: before, a Mailchimp email field and Subscribe button that can't work in a reader; after, the sign-up link stays and the form is gone", sel: "h3", hasText: "Deals Newsletter", extraBelow: 360, maxH: 900 },
-	{ slug: "button-pill-dark", fixture: "platform-buttons", scheme: "dark", alt: "The same buttons in dark mode", sel: ".button-wrapper", extraBelow: 700, maxH: 1100 },
 	{ slug: "signup-form-pill", fixture: "signup-forms", alt: "A Substack subscribe box and a Mailchimp form on iPhone: before, email fields and buttons that can't work in a reader; after, each form is one quiet pill that opens the publisher's sign-up page", sel: ".subscription-widget-wrap-editor, [data-calm-signup]", extraBelow: 520, maxH: 900 },
 	{ slug: "signup-form-pill-dark", fixture: "signup-forms", scheme: "dark", alt: "The same sign-up pills in dark mode", sel: ".subscription-widget-wrap-editor, [data-calm-signup]", extraBelow: 520, maxH: 900 },
 	{ slug: "link-card-quiet", fixture: "link-cards", alt: "A Ghost bookmark card on iPhone: before, a bold display title and three lines, like a second headline; after, the title in the body's weight and two muted lines", sel: ".kg-bookmark-card", extraBelow: 120 },
@@ -65,8 +65,8 @@ export const cases = [
 	{ slug: "paragraph-gaps-large-text", fixture: "paragraphs", textSize: "xxlargeText", alt: "Short paragraphs at NetNewsWire's largest text size on iPhone: before, the default-size gap between them; after, the gap grows with the text (the default size is unchanged)", sel: "p", extraBelow: 560, maxH: 1300 },
 	{ slug: "button-tinted", fixture: "platform-buttons", alt: "Publishers' buttons on iPhone: before, a thin outlined pill; after, a pill filled with the code-block tint, larger to tap", sel: ".button-wrapper", extraBelow: 700, maxH: 1100 },
 	{ slug: "button-tinted-dark", fixture: "platform-buttons", scheme: "dark", alt: "The same buttons in dark mode", sel: ".button-wrapper", extraBelow: 700, maxH: 1100 },
-	{ slug: "footnote-minimal", fixture: "platform-footnotes", both: true, alt: "Pandoc and GitHub footnotes on iPhone, one open and one closed: before, a tinted pill marker and a card with a shadow and arrow floating over the text; after, a plain muted number, and the note opens in the text under its line, small, muted and in mono, pushing the text below down", sel: "a[href='#user-content-fn-2']", para: true, extraBelow: 200, act: "click" },
-	{ slug: "footnote-minimal-dark", fixture: "platform-footnotes", scheme: "dark", both: true, alt: "The same footnotes in dark mode", sel: "a[href='#user-content-fn-2']", para: true, extraBelow: 200, act: "click" },
+	{ slug: "footnote-minimal", fixture: "platform-footnotes", alt: "Pandoc and GitHub footnotes on iPhone: before, plain superscripts that jump to the end of the article; after, a plain muted number, and a tapped note opens in the text under its line, small, muted and in mono, pushing the text below down", sel: "a[href='#user-content-fn-2']", para: true, extraBelow: 200, act: "click" },
+	{ slug: "footnote-minimal-dark", fixture: "platform-footnotes", scheme: "dark", alt: "The same footnotes in dark mode", sel: "a[href='#user-content-fn-2']", para: true, extraBelow: 200, act: "click" },
 	{ slug: "task-list", fixture: "platform-tasks", alt: "GitHub and Hugo task lists on iPhone: before, a bullet beside a small grey box; after, a text-size box in the muted text colour in place of the bullet", sel: "ul", extraBelow: 260 },
 	{ slug: "task-list-dark", fixture: "platform-tasks", scheme: "dark", alt: "The same task lists in dark mode", sel: "ul", extraBelow: 260 },
 	{ slug: "plain-captions", fixture: "platform-captions", alt: "Captions sent as plain blocks (WordPress classic, Jekyll, Blogger) on iPhone: before, they read as body text set apart from the picture; after, small muted centred captions under the picture, like Calm's figcaption", sel: ".wp-caption", extraBelow: 1100, maxH: 1700 },
@@ -91,6 +91,9 @@ async function shoot(c, which) {
 	writeFileSync(html, buildPage({ theme: themes[which], article, textSize: c.textSize }));
 	const width = c.width || 390;
 	const page = await browser.newPage({ viewport: { width, height: 1600 }, deviceScaleFactor: 2, colorScheme: c.scheme || scheme });
+	// offline: block the network, so a third-party player draws its empty box
+	// instead of an error it shows when loaded from a local file.
+	if (c.offline) await page.route(/^https?:/, (route) => route.abort());
 	await page.goto("file://" + html, { waitUntil: "load", timeout: 30000 }).catch(() => {});
 	await page.waitForTimeout(c.wait || 2000);
 	let clip = { x: 0, y: 0, width, height: c.top || 520 };

@@ -32,4 +32,4 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 
 ### video-embed
 
-<img src="video-embed.jpg" alt="A Latent Space post on iPhone: before, the YouTube video covers the first line below it; after, the line is clear">
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/iphone/video-embed.jpg" width="720" alt="A Latent Space post on iPhone: before, the YouTube video covers the first line below it; after, the line is clear">
