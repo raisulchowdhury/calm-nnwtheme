@@ -97,3 +97,19 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### ghost-video-poster
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/ghost-video-poster.jpg" width="720" alt="A Ghost video card from the site's web page: before, an empty box until the video plays; after, the video's thumbnail">
+
+### math-katex
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/math-katex.jpg" width="720" alt="KaTeX math from a Jekyll blog on iPhone: before, each formula twice, once as raw text; after, once">
+
+### footnote-pandoc
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/footnote-pandoc.jpg" width="720" alt="Pandoc and GitHub-style footnotes: before, tapping the number does nothing; after, the note opens in place">
+
+### medium-credit
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/medium-credit.jpg" width="720" alt="A Medium story's end: before, a rule and an 'originally published in ... on Medium' line; after, the story ends on its own last paragraph">
+
+### code-language-rouge
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/code-language-rouge.jpg" width="720" alt="A Jekyll (Rouge) code block on the Mac: before, no language; after, Python beside Copy on hover">

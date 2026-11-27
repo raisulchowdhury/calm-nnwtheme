@@ -45,6 +45,10 @@ export const cases = [
 	{ slug: "feed-cards", fixture: "feed-cards", alt: "WordPress and Ghost cards on iPhone: before, a blank embed frame, a raw toggle, callout and video player; after, a link card, an open toggle, a tinted callout and a fitted video", sel: ".wp-embedded-content", maxH: 1800, extraBelow: 1500 },
 	{ slug: "feed-cards-dark", fixture: "feed-cards", scheme: "dark", alt: "The same cards in dark mode", sel: ".wp-embedded-content", maxH: 1800, extraBelow: 1500 },
 	{ slug: "ghost-video-poster", fixture: "feed-cards", alt: "A Ghost video card from the site's web page: before, an empty box until the video plays; after, the video's thumbnail", sel: ".kg-video-card", extraBelow: 40 },
+	{ slug: "math-katex", fixture: "platform-math", alt: "KaTeX math from a Jekyll blog on iPhone: before, each formula twice, once as raw text; after, once", sel: ".katex-display", para: false, extraBelow: 120 },
+	{ slug: "footnote-pandoc", fixture: "platform-footnotes", alt: "Pandoc and GitHub-style footnotes: before, tapping the number does nothing; after, the note opens in place", sel: "a[href='#fn1']", para: true, extraBelow: 260, act: "click" },
+	{ slug: "medium-credit", fixture: "platform-credit", alt: "A Medium story's end: before, a rule and an 'originally published in ... on Medium' line; after, the story ends on its own last paragraph", top: 760 },
+	{ slug: "code-language-rouge", fixture: "platform-code", alt: "A Jekyll (Rouge) code block on the Mac: before, no language; after, Python beside Copy on hover", sel: "pre", width: 900, act: "hover" },
 	{ slug: "pullquote-aside", fixture: "feed-cards", alt: "A pull-quote and an aside: before, both look like the text around them; after, the pull-quote sits between hairlines and the aside in a tinted box", sel: ".wp-block-pullquote", extraBelow: 260 },
 ];
 

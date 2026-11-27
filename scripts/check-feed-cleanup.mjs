@@ -74,11 +74,11 @@ for (const path of paths) {
 }
 
 assert.ok(
-	stylesheet.includes(".articleBody [data-calm-blank] {\n\tdisplay: none;"),
-	"blank feed blocks should take no space",
+	stylesheet.includes(".articleBody [data-calm-blank] {\n\tdisplay: none !important;"),
+	"blank feed blocks should take no space, even with an inline display (Ghost skeletons)",
 );
 assert.ok(
-	stylesheet.includes('.articleBody [data-calm-blank="clear"] {\n\tdisplay: block;\n\theight: 0;'),
+	stylesheet.includes('.articleBody [data-calm-blank="clear"] {\n\tdisplay: block !important;\n\theight: 0;'),
 	"blank clearing blocks should still clear floats",
 );
 assert.ok(

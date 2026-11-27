@@ -255,13 +255,15 @@ article {
 /*
  * Feed cleanup. The template script marks blocks with no text and no media
  * (an editor's blank line, Blogger's separators) so they add no gap.
+ * !important: some are drawn with an inline display, such as Ghost's
+ * "display: flex" embed skeletons.
  */
 .articleBody [data-calm-blank] {
-	display: none;
+	display: none !important;
 }
 
 .articleBody [data-calm-blank="clear"] {
-	display: block;
+	display: block !important;
 	height: 0;
 	margin: 0;
 	padding: 0;
@@ -1407,9 +1409,33 @@ sub {
 	display: none;
 }
 
-/* WordPress's "The post ... appeared first on ..." line (see hideFeedCredit). */
+/* A feed's closing credit line, such as WordPress's "The post ... appeared
+   first on ..." (see hideFeedCredit). */
 .articleBody [data-calm-feed-credit] {
 	display: none;
+}
+
+/* KaTeX sends each formula twice: as MathML, which WebKit draws itself, and
+   as HTML that only KaTeX's stylesheet can lay out (NetNewsWire strips it), so
+   without it the HTML copy runs as one unbroken line far off the page. Show
+   the MathML; let a wide display formula scroll inside the column. */
+.articleBody .katex-mathml + .katex-html {
+	display: none;
+}
+
+.articleBody .katex-display,
+.articleBody math[display="block"] {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+/* Text pasted from Google Docs (Blogger) wraps each picture in a span with a
+   fixed width and height; keep it inside the column. */
+.articleBody span[style*="inline-block"]:has(> img:only-child) {
+	max-width: 100%;
+	height: auto !important;
 }
 
 /*

@@ -289,30 +289,54 @@
 			return;
 		}
 
-		Array.prototype.forEach.call(body.querySelectorAll("sup a[href*='#'], a[rel='footnote'][href*='#']"), function (link) {
-			if (link.classList.contains("footnote")) {
-				return;
-			}
+		// Pandoc and GitHub mark the reference with role or data attributes, and
+		// GitHub prefixes ids with "user-content-". WordPress's footnotes block
+		// names notes by a random id inside sup[data-fn].
+		var references = "sup a[href*='#'], a[rel='footnote'][href*='#'], a[role='doc-noteref'][href*='#'], a.footnote-ref[href*='#'], a[data-footnote-ref][href*='#']";
+		Array.prototype.forEach.call(body.querySelectorAll(references), function (link) {
 			var hash = "";
 			try {
 				hash = link.hash ? decodeURIComponent(link.hash.slice(1)) : "";
 			} catch (error) {
 				return;
 			}
-			if (!/^(?:fn|footnote)/i.test(hash) || /^fnref/i.test(hash)) {
-				return;
-			}
-			var note = document.getElementById(hash);
-			if (note && body.contains(note) && !note.contains(link)) {
+			var key = hash.replace(/^user-content-/i, "");
+			var wordPressNote = link.closest("sup[data-fn]");
+			if (!link.classList.contains("footnote")) {
+				if (!wordPressNote && (!/^(?:fn|footnote)/i.test(key) || /^fnref/i.test(key))) {
+					return;
+				}
+				var note = document.getElementById(hash);
+				if (!note || !body.contains(note) || note.contains(link) || wordPressNote && !note.closest(".wp-block-footnotes")) {
+					return;
+				}
 				link.classList.add("footnote");
+			}
+			// Pandoc puts the <sup> inside the link, so a tap lands on the <sup>
+			// and NetNewsWire, which listens for taps on links, opens nothing.
+			// Turn <a><sup>1</sup></a> into <sup><a>1</a></sup>, as other
+			// platforms write it; it looks the same.
+			var inner = link.firstElementChild;
+			if (inner && inner.tagName === "SUP" && link.children.length === 1 && !link.closest("sup") && link.textContent.trim() === inner.textContent.trim()) {
+				link.parentNode.insertBefore(inner, link);
+				while (inner.firstChild) {
+					link.appendChild(inner.firstChild);
+				}
+				inner.appendChild(link);
 			}
 		});
 	}
 
 	// Many WordPress feeds end each post with "The post <title> appeared first
-	// on <site>.", a line the site itself never shows. Hide it when it is the
+	// on <site>." (WPBeginner: "first appeared on"), Medium with "<title> was
+	// originally published in <publication> on Medium, where people are
+	// continuing the conversation...", and OMG! Ubuntu with "You're reading
+	// <title>, a blog post from <site>. Do not reproduce elsewhere without
+	// permission." The sites never show these lines. Hide one when it is the
 	// article's last block and holds the two links, to the post and the site.
-	var feedCreditPattern = /^(?:The post|Der Beitrag|L['\u2019]article|La entrada|Il post|O post|Het bericht|Inl\u00e4gget|Indl\u00e6gget) [\s\S]{1,300} (?:appeared first on|erschien zuerst auf|est apparu en premier sur|apareci\u00f3 primero en|\u00e8 apparso per primo su|apareceu primeiro em|verscheen eerst op|d\u00f6k upp f\u00f6rst p\u00e5|dukkede op f\u00f8rst p\u00e5) [\s\S]{1,200}$/i;
+	var feedCreditPatterns = [/^(?:The post|Der Beitrag|L['\u2019]article|La entrada|Il post|O post|Het bericht|Inl\u00e4gget|Indl\u00e6gget) [\s\S]{1,300} (?:appeared first on|first appeared on|erschien zuerst auf|est apparu en premier sur|apareci\u00f3 primero en|\u00e8 apparso per primo su|apareceu primeiro em|verscheen eerst op|d\u00f6k upp f\u00f6rst p\u00e5|dukkede op f\u00f8rst p\u00e5) [\s\S]{1,200}$/i,
+		/^[\s\S]{1,300} was originally published in [\s\S]{1,200} on Medium, where people are continuing the conversation by highlighting and responding to this story\.?$/,
+		/^You['\u2019]re reading [\s\S]{1,300}, a blog post from [\s\S]{1,200}\. Do not reproduce elsewhere without permission\.?$/];
 
 	function hideFeedCredit() {
 		if (!body) {
@@ -351,8 +375,18 @@
 		if (!last || last.tagName !== "P" || last.querySelectorAll("a").length < 2) {
 			return;
 		}
-		if (feedCreditPattern.test((last.textContent || "").replace(/\s+/g, " ").trim())) {
-			last.setAttribute("data-calm-feed-credit", "");
+		var text = (last.textContent || "").replace(/\s+/g, " ").trim();
+		if (!feedCreditPatterns.some(function (pattern) { return pattern.test(text); })) {
+			return;
+		}
+		last.setAttribute("data-calm-feed-credit", "");
+		// Medium draws a rule above its line; with the line gone it would end the article.
+		var before = last.previousElementSibling;
+		while (before && !hasContent(before)) {
+			before = before.previousElementSibling;
+		}
+		if (before && before.tagName === "HR") {
+			before.setAttribute("data-calm-feed-credit", "");
 		}
 	}
 
@@ -680,33 +714,74 @@
 		c: "C", cpp: "C++", "c++": "C++", cs: "C#", csharp: "C#", java: "Java", kotlin: "Kotlin", kt: "Kotlin",
 		php: "PHP", sql: "SQL", html: "HTML", xml: "XML", css: "CSS", scss: "SCSS", json: "JSON", yaml: "YAML", yml: "YAML",
 		toml: "TOML", md: "Markdown", markdown: "Markdown", diff: "Diff", dockerfile: "Dockerfile", make: "Makefile", makefile: "Makefile",
-		lua: "Lua", r: "R", elixir: "Elixir", haskell: "Haskell", scala: "Scala", dart: "Dart", graphql: "GraphQL", powershell: "PowerShell", ps1: "PowerShell"
+		lua: "Lua", r: "R", elixir: "Elixir", haskell: "Haskell", hs: "Haskell", markup: "HTML", wl: "Wolfram", scala: "Scala", dart: "Dart", graphql: "GraphQL", powershell: "PowerShell", ps1: "PowerShell"
 	};
 	var plainCodeLanguages = /^(?:plain|plaintext|plain-text|text|txt|none|nohighlight|no-highlight|output|raw)$/;
 
+	// Where each platform names it: Markdown, Prism, highlight.js and Shiki put
+	// "language-x" on <code> or <pre>, Hugo adds data-lang, Jekyll's Rouge puts
+	// "language-x" on a wrapper two levels up, GitHub "highlight-source-x" on
+	// the wrapper, WordPress's SyntaxHighlighter "brush: x" on <pre>, Pandoc and
+	// Quarto "sourceCode x", and some blogs just "javascript".
+	var codeHelperClasses = /^(?:sourcecode|literate|numbersource|code-with-copy|cell-code|highlight|chroma|hljs|shiki|prettyprint|notranslate|wp-block-code)$/i;
+
+	function codeLanguageOf(node, wrapper) {
+		var value = wrapper ? "" : node.getAttribute("data-lang") || node.getAttribute("data-language") || "";
+		if (value) {
+			return value;
+		}
+		var classes = (node.getAttribute("class") || "") + " " + (node.getAttribute("data-sanitized-class") || "");
+		var match = wrapper ?
+			classes.match(/(?:^|\s)(?:language|highlight-source)-([\w+#.-]+)/) :
+			classes.match(/(?:^|\s)(?:language|lang|highlight-source)-([\w+#.-]+)/) || classes.match(/(?:^|\s)brush:\s*([\w+#-]+)/);
+		if (match) {
+			return match[1];
+		}
+		if (wrapper) {
+			return "";
+		}
+		var tokens = classes.trim().split(/\s+/);
+		var pandoc = /(?:^|\s)sourceCode(?:\s|$)/.test(classes);
+		for (var index = 0; index < tokens.length; index++) {
+			var token = tokens[index];
+			if (pandoc ? token && !codeHelperClasses.test(token) : token.length > 1 && codeLanguageNames[token.toLowerCase()]) {
+				return token;
+			}
+		}
+		return "";
+	}
+
 	function codeLanguage(pre) {
 		var code = pre.querySelector("code");
-		var nodes = [pre, code, pre.parentElement].filter(Boolean);
-		for (var index = 0; index < nodes.length; index++) {
-			var node = nodes[index];
-			var value = node === pre.parentElement ? "" : node.getAttribute("data-lang") || node.getAttribute("data-language") || "";
-			if (!value) {
-				var classes = (node.getAttribute("class") || "") + " " + (node.getAttribute("data-sanitized-class") || "");
-				var match = node === pre.parentElement ?
-					classes.match(/(?:^|\s)highlight-source-([\w+#.-]+)/) :
-					classes.match(/(?:^|\s)(?:language|lang|highlight-source)-([\w+#.-]+)/);
-				value = match ? match[1] : "";
+		var nodes = [pre, code].filter(Boolean);
+		// A wrapper names the language only when it holds just this block.
+		for (var parent = pre.parentElement, depth = 0; parent && parent !== body && depth < 2; parent = parent.parentElement, depth++) {
+			if (parent.getElementsByTagName("pre").length === 1) {
+				nodes.push(parent);
 			}
-			value = value.trim();
+		}
+		for (var index = 0; index < nodes.length; index++) {
+			var value = codeLanguageOf(nodes[index], index >= (code ? 2 : 1)).trim();
 			if (value) {
 				var key = value.toLowerCase();
-				if (plainCodeLanguages.test(key) || value.length > 24) {
+				// Plain text, or something that isn't a language name at all.
+				if (plainCodeLanguages.test(key) || !/^[a-z][\w+#.-]{0,23}$/i.test(value)) {
 					return "";
 				}
 				return codeLanguageNames[key] || value;
 			}
 		}
 		return "";
+	}
+
+	// The text Copy takes. Rouge and Chroma tables put line numbers in their own
+	// column; copy only the code column.
+	function codeText(pre) {
+		var columns = pre.querySelectorAll("td.code pre, td.rouge-code pre, td.lntd:last-child pre");
+		var parts = columns.length ? Array.prototype.slice.call(columns) : [pre];
+		return parts.map(function (part) {
+			return (part.innerText || part.textContent || "").replace(/\n$/, "");
+		}).join("\n");
 	}
 
 	// On the Mac, a code block shows a quiet Copy button while the pointer is
@@ -778,7 +853,7 @@
 			button.textContent = "Copy";
 			button.setAttribute("aria-label", "Copy code");
 			button.addEventListener("click", function () {
-				copyText((pre.innerText || pre.textContent || "").replace(/\n$/, ""), function () {
+				copyText(codeText(pre), function () {
 					button.textContent = "Copied";
 					setTimeout(function () {
 						button.textContent = "Copy";

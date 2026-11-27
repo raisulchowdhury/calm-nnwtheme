@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { extractInlineScript } from "../scripts/extract-inline-script.mjs";
 import { componentArticle, componentSteps, instrumentScript, stressArticle } from "./stress-fixtures.mjs";
+import { blankCases, breakCases, codeCases, creditCases, footnoteCases, layoutCases, withImages } from "./platform-fixtures.mjs";
 
 const stylesheet = readFileSync("Calm.nnwtheme/stylesheet.css", "utf8");
 const themeScript = extractInlineScript("Calm.nnwtheme/template.html");
@@ -1154,4 +1155,120 @@ test("@webkit hover tools, Copy and footnote popovers leave the text where it is
 	expect(withPopover.filter((rect) => !before.includes(rect))).toHaveLength(1);
 	await page.evaluate(() => document.querySelector(".newsfoot-footnote-popover").remove());
 	expect((await positions()).filter((rect) => !before.includes(rect))).toHaveLength(0);
+});
+
+// Across platforms: each feature runs over markup shaped the way the main publishing
+// platforms send it (tests/platform-fixtures.mjs, modelled on real feed items and
+// summarised in docs/compatibility.md), including cases where it must not trigger.
+// Every case is checked and reported by platform, so one gap names its platform.
+
+async function loadCase(page, html, width = 390) {
+	await page.setViewportSize({ width, height: 844 });
+	await loadFixture(page, { paragraphCount: 1, html: `${withImages(html, svg)}<p>${paragraph}</p>` });
+}
+
+test("@webkit labels code with its language on every platform, and copies only the code", async ({ page }) => {
+	for (const item of codeCases) {
+		await loadCase(page, item.html, 1280);
+		const state = await page.evaluate(() => ({
+			wrapped: document.querySelectorAll(".calmCode").length,
+			labels: Array.from(document.querySelectorAll(".calmCodeLanguage"), (label) => label.textContent),
+		}));
+		expect.soft(state.wrapped, `${item.platform}: Copy`).toBe(item.blocks ?? 1);
+		expect.soft(state.labels, `${item.platform}: label`).toEqual(item.language ? [item.language] : []);
+		if (item.copies) {
+			await page.evaluate(() => {
+				Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: (text) => ((window.__copied = text), Promise.resolve()) } });
+			});
+			await page.locator(".calmCode").hover();
+			await page.locator(".calmCopy").click();
+			expect.soft(await page.evaluate(() => window.__copied), `${item.platform}: copied text`).toBe(item.copies);
+		}
+	}
+});
+
+test("@webkit opens footnotes from every platform's markup, and only footnotes", async ({ page }) => {
+	for (const item of footnoteCases) {
+		await loadCase(page, item.html);
+		const state = await page.evaluate(({ marked, unmarked }) => {
+			const footnote = (id) => {
+				const link = document.getElementById(id);
+				return link ? link.classList.contains("footnote") : "missing";
+			};
+			return {
+				marked: marked.map(footnote),
+				unmarked: unmarked.map(footnote),
+				supWraps: marked.map((id) => document.getElementById(id)?.parentElement?.tagName),
+			};
+		}, item);
+		expect.soft(state.marked, `${item.platform}: references open the popover`).toEqual(item.marked.map(() => true));
+		expect.soft(state.unmarked, `${item.platform}: other links stay links`).toEqual(item.unmarked.map(() => false));
+		if (item.supWrapsLink) expect.soft(state.supWraps, `${item.platform}: <sup> moved outside the link`).toEqual(item.marked.map(() => "SUP"));
+	}
+});
+
+test("@webkit hides feed credit lines from every platform, and nothing like them", async ({ page }) => {
+	for (const item of creditCases) {
+		// The credit must be the article's last block, so no paragraph follows it.
+		await page.setViewportSize({ width: 390, height: 844 });
+		await loadFixture(page, { paragraphCount: 1, html: item.html });
+		const hidden = (ids) => page.evaluate((list) => list.map((id) => document.getElementById(id).hasAttribute("data-calm-feed-credit") && getComputedStyle(document.getElementById(id)).display === "none"), ids);
+		expect.soft(await hidden(item.hidden), `${item.platform}: hidden`).toEqual(item.hidden.map(() => true));
+		expect.soft(await hidden(item.kept), `${item.platform}: kept`).toEqual(item.kept.map(() => false));
+	}
+});
+
+test("@webkit removes stray line breaks from every platform, and keeps breaks inside text", async ({ page }) => {
+	for (const item of breakCases) {
+		await page.setViewportSize({ width: 390, height: 844 });
+		await loadFixture(page, { paragraphCount: 0, html: `<p>${paragraph}</p>${withImages(item.html, svg)}<p>${paragraph}</p>` });
+		const sent = (item.html.match(/<br\b/g) || []).length;
+		const left = await page.evaluate(() => document.querySelectorAll("#bodyContainer br").length);
+		expect.soft(sent - left, `${item.platform}: breaks removed`).toBe(item.removed);
+	}
+});
+
+test("@webkit hides empty blocks from every platform, and keeps ones that hold something", async ({ page }) => {
+	for (const item of blankCases) {
+		await loadCase(page, item.html);
+		const state = await page.evaluate(() => {
+			const block = document.querySelector("[data-t]");
+			return { marked: block.hasAttribute("data-calm-blank"), height: block.getBoundingClientRect().height };
+		});
+		expect.soft(state.marked, `${item.platform}: marked blank`).toBe(item.blank);
+		if (item.blank) expect.soft(state.height, `${item.platform}: takes no room`).toBe(0);
+	}
+});
+
+test("@webkit fits every platform's cards, embeds, math and tables in the iPhone column", async ({ page }) => {
+	for (const item of layoutCases) {
+		await loadCase(page, item.html, 390);
+		const state = await page.evaluate((check) => {
+			const docWidth = document.documentElement.clientWidth;
+			const body = document.getElementById("bodyContainer");
+			const sticking = [];
+			for (const node of body.querySelectorAll("*")) {
+				const rect = node.getBoundingClientRect();
+				if (rect.width === 0 || rect.right <= docWidth + 1) continue;
+				let clipped = false;
+				for (let up = node.parentElement; up && up !== body; up = up.parentElement) {
+					if (/auto|scroll|hidden|clip/.test(getComputedStyle(up).overflowX)) { clipped = true; break; }
+				}
+				if (!clipped) sticking.push(`${node.tagName.toLowerCase()} +${Math.round(rect.right - docWidth)}px`);
+			}
+			let styled = true;
+			if (check) {
+				const target = document.querySelector(check.selector);
+				const style = target && getComputedStyle(target);
+				if (!target) styled = "missing";
+				else if (check.hidden) styled = style.display === "none";
+				else if (check.css) styled = style[check.css[0].replace(/-(\w)/g, (_, c) => c.toUpperCase())] === check.css[1];
+				else if (check.notCss) styled = style[check.notCss[0].replace(/-(\w)/g, (_, c) => c.toUpperCase())] !== check.notCss[1];
+			}
+			return { pageOverflow: document.documentElement.scrollWidth - docWidth, sticking: sticking.slice(0, 3), styled };
+		}, item.check || null);
+		expect.soft(state.pageOverflow, `${item.platform}: page scrolls sideways`).toBeLessThanOrEqual(0);
+		expect.soft(state.sticking, `${item.platform}: wider than the column`).toEqual([]);
+		expect.soft(state.styled, `${item.platform}: Calm's style`).toBe(true);
+	}
 });
