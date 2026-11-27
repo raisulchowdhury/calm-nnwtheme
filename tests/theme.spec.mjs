@@ -1523,3 +1523,11 @@ test("@webkit puts a paper backing behind line art in dark mode only, not behind
 		}
 	}
 });
+
+test("@webkit fills a button with the code-block tint and gives it a full-size target", async ({ page }) => {
+	await loadCase(page, `<p class="button-wrapper"><a class="button" id="b" href="https://example.com/subscribe">Subscribe</a></p>`);
+	const tint = await page.evaluate(() => { const probe = document.createElement("div"); probe.style.background = "var(--reader-code-bg)"; document.body.append(probe); const c = getComputedStyle(probe).backgroundColor; probe.remove(); return c; });
+	const state = await page.evaluate(() => { const b = document.getElementById("b"); return { background: getComputedStyle(b).backgroundColor, height: b.getBoundingClientRect().height }; });
+	expect(state.background).toBe(tint);
+	expect(state.height).toBeGreaterThanOrEqual(40);
+});

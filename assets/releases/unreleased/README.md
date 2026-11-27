@@ -205,3 +205,11 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### line-art-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/line-art-dark.jpg" width="720" alt="A transparent line chart and a photo in dark mode on iPhone: before, the chart's black lines vanish into the dark page; after, the chart sits on a soft paper tone and the photo is unchanged">
+
+### button-tinted
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-tinted.jpg" width="720" alt="Publishers' buttons on iPhone: before, a thin outlined pill; after, a pill filled with the code-block tint, larger to tap">
+
+### button-tinted-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/button-tinted-dark.jpg" width="720" alt="The same buttons in dark mode">
