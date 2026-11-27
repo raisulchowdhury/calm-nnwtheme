@@ -87,17 +87,17 @@ Recorded as he makes them on the options page (docs/design-pass-options.html).
 | Block quotes | Proposal A, upright, text colour | "Rest go with you reco" (2026-11-27) |
 | Heading scale | Proposal A, clearer steps | "Rest go with you reco" (2026-11-27) |
 | Paragraph spacing at large text | Proposal A, scales with text | "Rest go with you reco" (2026-11-27) |
-| Pictures in dark mode | Proposal A, paper backing for line art | "Rest go with you reco" (2026-11-27) |
+| Dark-mode pictures | Dropped (flash while loading; Raisul, 2026-11-27) | Proposal A was built in bcf070a, then removed |
 | Footnotes | Proposal A's plain number closed; open note as option B, muted text under one hairline, no card or shadow | "Opened should be more minimal", then "Ok with your footnote reco" (2026-11-27) |
 
 ### Built
 
-All six picks are in the theme, one commit each: link cards b050171, block quotes e76af33, headings aae7aa4, paragraph spacing 30c3089, dark-mode line art bcf070a, buttons 555d5b6, plus review fixes in the next commit. Images are in `assets/releases/unreleased/`: link-card-quiet(-dark), quote-upright(-dark), heading-steps(-dark), paragraph-gaps-large-text, line-art-dark, button-tinted(-dark).
+Five of the six picks are in the theme, one commit each: link cards b050171, block quotes e76af33, headings aae7aa4, paragraph spacing 30c3089, buttons 555d5b6, plus review fixes in the next commit. Dark-mode line art (bcf070a) was built and then dropped. Images are in `assets/releases/unreleased/`: link-card-quiet(-dark), quote-upright(-dark), heading-steps(-dark), paragraph-gaps-large-text, button-tinted(-dark).
 
 - **Footnotes** (built after the six): the marker is a plain muted raised number; the open note is muted text on the page colour under one hairline, with no card, shadow or arrow. A page-coloured fade about one line tall under the note hides the half-covered line below instead of slicing it, and the hairline uses the faint colour so it reads on white. Back arrows from Daring Fireball and the WordPress footnotes block are now hidden in the note too. Images: footnote-minimal(-dark).
 - **Known limit: a note opened near the bottom of the screen runs below it.** The page grows and the reader can scroll; bringing it into view would need script after a tap.
 - **Paragraph spacing** is written against the reader's chosen size, so the default size renders exactly as before and the Linux `@visual` reference did not need regenerating.
-- **Known flaw, for Raisul.** In dark mode a PNG, GIF or SVG that is still loading shows as a paper-coloured box until the picture arrives. Before, the box was the page colour and invisible. The mockup listed this cost and it was picked with it. Removing it would need a load handler, which the no-swap rule forbids. The alternative is to drop the backing.
+- **Dark-mode pictures: dropped.** The paper backing showed as a light box while a PNG loaded and could hide white logos, so Raisul dropped it (2026-11-27). **Known limit:** black line art on a transparent background can still vanish on the dark page.
 
 ## Left alone, and why
 
