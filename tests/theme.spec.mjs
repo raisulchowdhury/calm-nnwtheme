@@ -1672,6 +1672,22 @@ test("@webkit raises Substack's bare footnote number and keeps the note's number
 	expect(marker.raised, "the number's box ends above the text's").toBeGreaterThan(3);
 	expect(marker.size).toBeLessThan(0.65);
 	expect(marker.decoration).toBe("none");
+	// In the app, NetNewsWire's main.js adds class "footnote" and its core.css makes
+	// that an inline block: the number must keep a box, and must not stretch its line.
+	const inApp = await page.evaluate(() => {
+		const link = document.getElementById("footnote-anchor-1");
+		const host = document.getElementById("host");
+		const before = host.getBoundingClientRect().height;
+		link.classList.add("footnote");
+		link.style.display = "inline-block";
+		const box = link.getBoundingClientRect();
+		const state = { height: box.height, grew: host.getBoundingClientRect().height - before };
+		link.style.display = "";
+		link.classList.remove("footnote");
+		return state;
+	});
+	expect(inApp.height, "the number keeps a box as an inline block").toBeGreaterThan(6);
+	expect(inApp.grew, "and doesn't stretch its line").toBeLessThan(1);
 	await page.locator("#footnote-anchor-1").click();
 	const note = await page.evaluate(() => {
 		const number = document.querySelector(".calmNote .calmNoteNumber");

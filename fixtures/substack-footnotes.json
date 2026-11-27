@@ -1,0 +1,6 @@
+{
+ "title": "Notes Written on Substack",
+ "feedTitle": "Example Substack",
+ "url": "https://example.substack.com/p/notes",
+ "contentHTML": "<p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.</p><p>Substack writes its footnote number as a bare link, with no superscript around it<a class=\"footnote-anchor\" data-component-name=\"FootnoteAnchorToDOM\" id=\"footnote-anchor-1\" href=\"#footnote-1\" target=\"_self\">1</a>, and puts the note in its own block at the end of the post.</p><p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.</p><div class=\"footnote\" data-component-name=\"FootnoteToDOM\"><a id=\"footnote-1\" href=\"#footnote-anchor-1\" class=\"footnote-number\" contenteditable=\"false\" target=\"_self\">1</a><div class=\"footnote-content\"><p>A note that opens under its own line.</p><p>Its second paragraph stays with it.</p></div></div>"
+}

@@ -1,6 +1,6 @@
 # Before and after
 
-Made by `node scripts/before-after.mjs` against `origin/main`. The images named `*-in-app.jpg` are screenshots from the NetNewsWire app on the Mac, taken on 2026-11-26 before the design pass, so the text around each fix shows the older look. At release, rename the folder's files to `<version>-<slug>.jpg` and move them up into `assets/releases/`.
+Made by `node scripts/before-after.mjs` against `origin/main`. At release, rename the folder's files to `<version>-<slug>.jpg` and move them up into `assets/releases/`.
 
 ### Gallery row, in the NetNewsWire app (Mac)
 
@@ -201,3 +201,7 @@ Made by `node scripts/before-after.mjs` against `origin/main`. The images named 
 ### footnote-minimal-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/footnote-minimal-dark.jpg" width="720" alt="The same footnotes in dark mode">
+
+### footnote-substack
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/footnote-substack.jpg" width="720" alt="A Substack footnote on iPhone: before, the number sits on the line at full size like a stray digit; after, a small raised number, and a tap opens the note under its line">
