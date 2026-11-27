@@ -1495,3 +1495,18 @@ test("@webkit steps heading sizes clearly: h2 well above h3, h3 above the text",
 	expect(size.h2 / size.h3).toBeGreaterThan(1.2);
 	expect(size.h3 / size.p).toBeGreaterThan(1.05);
 });
+
+test("@webkit grows the gap between paragraphs with the reader's text size, and keeps it at the default size", async ({ page }) => {
+	for (const width of [390, 1280]) {
+		await page.setViewportSize({ width, height: 844 });
+		await loadFixture(page, { paragraphCount: 3 });
+		const gaps = await page.evaluate(() => {
+			const body = document.getElementById("bodyContainer");
+			const gap = (size) => { body.className = `articleBody ${size}`; return parseFloat(getComputedStyle(body.querySelector("p:nth-of-type(2)")).marginTop); };
+			return { small: gap("smallText"), medium: gap("mediumText"), xxlarge: gap("xxlargeText") };
+		});
+		expect(gaps.medium, `@${width}: default size keeps the 1rem gap`).toBeCloseTo(16, 1);
+		expect(gaps.xxlarge, `@${width}: largest size`).toBeGreaterThan(20);
+		expect(gaps.small, `@${width}: smallest size`).toBeLessThan(16);
+	}
+});

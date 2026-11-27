@@ -297,8 +297,11 @@ article {
 	font-family: var(--reader-serif-body);
 }
 
+/* The gap between paragraphs grows with the reader's text size: 1rem at the
+   default size, as before, plus 0.9 of every pixel larger (or smaller), so the
+   whole page grows together instead of the text crowding a fixed gap. */
 .articleBody p {
-	margin: 1rem 0;
+	margin: calc(1rem + (var(--reader-font-size, var(--reader-base-size)) - var(--reader-base-size)) * 0.9) 0;
 }
 
 .articleBody p,

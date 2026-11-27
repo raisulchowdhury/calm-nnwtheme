@@ -197,3 +197,7 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### heading-steps-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/heading-steps-dark.jpg" width="720" alt="The same headings in dark mode">
+
+### paragraph-gaps-large-text
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/paragraph-gaps-large-text.jpg" width="720" alt="Short paragraphs at NetNewsWire's largest text size on iPhone: before, the default-size gap between them; after, the gap grows with the text (the default size is unchanged)">
