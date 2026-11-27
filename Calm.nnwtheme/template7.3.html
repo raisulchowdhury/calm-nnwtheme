@@ -129,9 +129,10 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 
 	// Some feeds wrap every block in line breaks (MacRumors sends
 	// "<p><br><br><img><br><br>"), and each break adds a blank line around
-	// images and paragraphs. Remove breaks at the start or end of a block and
-	// next to an image shown on its own line. Breaks inside a run of text,
-	// such as a poem or an address, stay.
+	// images and paragraphs. Remove breaks at the start or end of a block,
+	// between two blocks (MacRumors' deal buttons), and next to an image shown
+	// on its own line. Breaks inside a run of text, such as a poem or an
+	// address, stay.
 	function removeStrayBreaks() {
 		if (!body) {
 			return;
@@ -147,6 +148,11 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 
 		function isBlockImage(node) {
 			return node && node.nodeType === 1 && node.tagName === "IMG" && !node.hasAttribute("data-calm-inline");
+		}
+
+		var blockTags = /^(?:P|DIV|FIGURE|BLOCKQUOTE|UL|OL|DL|PRE|TABLE|H[1-6]|HR|SECTION|ARTICLE|ASIDE|HEADER|FOOTER|DETAILS)$/;
+		function isBlock(node) {
+			return node && node.nodeType === 1 && blockTags.test(node.tagName);
 		}
 
 		function sibling(node, direction) {
@@ -173,7 +179,7 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 				run.unshift(before);
 				before = sibling(before, "previousSibling");
 			}
-			if (!before || !after || isBlockImage(before) || isBlockImage(after)) {
+			if (!before || !after || isBlockImage(before) || isBlockImage(after) || isBlock(before) && isBlock(after)) {
 				run.forEach(function (node) {
 					if (node.parentNode) {
 						node.parentNode.removeChild(node);
@@ -487,8 +493,10 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 			} catch (error) {
 				source = source.split(/[?#]/)[0];
 			}
-			// Image CDNs put resizing options in the path, so compare the file name.
-			return source.split("/").filter(Boolean).pop() || "";
+			// Image CDNs put resizing options in the path, so compare the file name,
+			// less a size suffix: Latent Space's lead is "cover-1400x1400.png" and
+			// the body's "cover.png".
+			return (source.split("/").filter(Boolean).pop() || "").replace(/-\d+x\d+(\.[a-z0-9]+)$/i, "$1");
 		}
 		var key = pictureKey(lead);
 		var first = body.querySelector("img");

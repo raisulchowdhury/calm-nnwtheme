@@ -768,3 +768,43 @@ test("@webkit keeps a malformed footnote link and an emoji story's screenshot fr
 	const height = await page.locator("#shot").evaluate((node) => node.getBoundingClientRect().height);
 	expect(height).toBeGreaterThan(200);
 });
+
+test("@webkit closes the gaps MacRumors leaves between deal buttons", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	// MacRumors' markup as it arrives: each button block opens inside a <p>, which the
+	// parser closes, so the break runs land between the blocks.
+	const button = (label) => `<div class="center-wrap"><a href="https://example.com/${label}"><div class="fancybutton"><div class="fancybadge">${label}</div>A deal</div></a></div>`;
+	await loadFixture(page, {
+		paragraphCount: 0,
+		html: `<p>${paragraph}<br><br/></p><p><br/><br>${button("A")}<br><br/><br>${button("B")}<br><br/><br>${button("C")}<br><br/></p><p><br/><br>After the deals.<br>Second line.</p>`,
+	});
+	const gaps = await page.evaluate(() => {
+		const boxes = [...document.querySelectorAll(".center-wrap")].map((node) => node.getBoundingClientRect());
+		return boxes.slice(1).map((box, index) => box.top - boxes[index].bottom);
+	});
+	for (const gap of gaps) {
+		expect(gap).toBeLessThan(12);
+	}
+	await expect(page.locator("p", { hasText: "After the deals." }).locator("br")).toHaveCount(1);
+});
+
+test("@webkit hides the lead picture when the body has the same file without its size suffix", async ({ page }) => {
+	await page.setViewportSize({ width: 1180, height: 800 });
+	// Latent Space's Linear episode: the lead is the 1400x1400 rendition, the body the original.
+	const page73 = (lead, inBody) => `<html dir="auto">
+		<head><style>${stylesheet}</style></head>
+		<body>
+			<header class="articleHeader" id="readerTop"><div class="articleTitle"><h1><a href="#">${articleTitle}</a></h1></div></header>
+			<article>
+				<div class="nnw-primary-media"><div class="nnw-primary-image"><img id="lead" src="https://media.example.com/uploads/asset/file/aaa/${lead}?t=1" alt=""></div></div>
+				<div id="bodyContainer" class="articleBody mediumText"><div><a href="https://youtu.be/x"><img src="https://media.example.com/cdn-cgi/image/quality=80/uploads/asset/file/bbb/${inBody}?t=2" alt=""></a></div><p>${paragraph}</p></div>
+			</article>
+			<script>${themeScript}</script>
+		</body>
+		</html>`;
+	await page.setContent(page73("v2-thumbnail-cristina-1400x1400.png", "v2-thumbnail-cristina.png"));
+	await expect(page.locator(".nnw-primary-media")).toHaveAttribute("hidden", "");
+
+	await page.setContent(page73("thumb-a.png", "thumb.png"));
+	await expect(page.locator(".nnw-primary-media")).not.toHaveAttribute("hidden", "");
+});
