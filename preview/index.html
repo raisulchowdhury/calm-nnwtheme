@@ -1703,8 +1703,8 @@
 
 		// Where the line holding the marker ends: the first character after it
 		// that sits on a lower line. The note goes there, so the lines above it
-		// keep their words. If that point is inside a link that began on the
-		// marker's line, the note goes after the paragraph instead.
+		// keep their words. If that point is inside a link, the link ends at
+		// the line's end and continues after the note.
 		function place(link, note) {
 			var marker = link.closest("sup") || link;
 			var block = marker.closest(blocks);
@@ -1740,33 +1740,77 @@
 						low = middle + 1;
 					}
 				}
-				var inline = text.parentNode;
-				while (inline !== block && inline.parentNode !== block) {
-					inline = inline.parentNode;
+				// The new line starts at this character, or at the outermost
+				// element that begins with it.
+				var point = text;
+				if (low === 0) {
+					while (point.parentNode !== block && !point.previousSibling) {
+						point = point.parentNode;
+					}
 				}
-				// Inside emphasis or a span the note can go in place too; only a
-				// link would carry its tap and underline into the note.
-				var inLink = false;
-				for (var up = text.parentNode; up !== block; up = up.parentNode) {
-					inLink = inLink || up.tagName === "A";
+				var inText = point === text && low > 0;
+				// Inside emphasis or a span the note can go in place; a link
+				// would carry its tap and underline into the note.
+				var anchor = null;
+				for (var up = point.parentNode; up !== block; up = up.parentNode) {
+					if (up.tagName === "A") {
+						anchor = up;
+					}
 				}
-				if (!inLink) {
-					if (low === 0) {
-						text.parentNode.insertBefore(note, text);
+				if (!anchor) {
+					if (!inText) {
+						point.parentNode.insertBefore(note, point);
 						return null;
 					}
 					var rest = text.splitText(low);
 					text.parentNode.insertBefore(note, rest);
 					return { before: text, rest: rest };
 				}
-				if (inline !== block && inline.getClientRects().length && inline.getClientRects()[0].top >= bottom) {
-					block.insertBefore(note, inline);
-					return null;
+				// The line ends inside a link: end the link there and carry on
+				// in a copy of it after the note. Closing joins them again.
+				var depth = 0;
+				for (var level = inText ? text.parentNode : point.parentNode; level !== anchor; level = level.parentNode) {
+					depth++;
 				}
-				break;
+				if (inText) {
+					range.setStart(text, low);
+				} else {
+					range.setStartBefore(point);
+				}
+				range.setEnd(anchor, anchor.childNodes.length);
+				var tail = anchor.cloneNode(false);
+				tail.appendChild(range.extractContents());
+				for (var copy = tail, i = 0; copy && copy.nodeType === 1 && i <= depth; copy = copy.firstChild, i++) {
+					copy.removeAttribute("id");
+				}
+				anchor.parentNode.insertBefore(tail, anchor.nextSibling);
+				anchor.parentNode.insertBefore(note, tail);
+				return { head: anchor, tail: tail, depth: depth, inText: inText };
 			}
 			block.appendChild(note);
 			return null;
+		}
+
+		// Puts back together a link that place() ended at a line's end: each
+		// copied level takes its children back, down to the split text.
+		function rejoin(head, tail, depth, inText) {
+			var seam = head.lastChild;
+			var first = tail.firstChild;
+			while (tail.firstChild) {
+				head.appendChild(tail.firstChild);
+			}
+			tail.remove();
+			if (!seam || !first) {
+				return;
+			}
+			if (depth > 0) {
+				if (seam.nodeType === 1 && first.nodeType === 1) {
+					rejoin(seam, first, depth - 1, inText);
+				}
+			} else if (inText && seam.nodeType === 3 && first.nodeType === 3) {
+				seam.appendData(first.data);
+				first.remove();
+			}
 		}
 
 		function reveal(link, note) {
@@ -1794,7 +1838,11 @@
 		function close(entry) {
 			entry.note.remove();
 			var split = entry.split;
-			if (split && split.rest.parentNode && split.rest.previousSibling === split.before) {
+			if (split && split.tail) {
+				if (split.tail.parentNode && split.head.nextSibling === split.tail) {
+					rejoin(split.head, split.tail, split.depth, split.inText);
+				}
+			} else if (split && split.rest.parentNode && split.rest.previousSibling === split.before) {
 				split.before.appendData(split.rest.data);
 				split.rest.remove();
 			}

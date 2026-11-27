@@ -41,7 +41,6 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 1. Raisul tests the iPhone build and reports anything slow or off.
 2. Nothing from the design pass has been checked inside NetNewsWire itself. Look at it in the Mac app.
 3. Known limits are listed in the report:
-   - When a line breaks inside a link, the note opens after the paragraph.
    - Black line art on a transparent background still disappears in dark mode.
    - A 1 px black line may appear under video in dark mode. It was seen in one render only.
 4. The plain-caption style costs +3 ms on 200 captions, against `AGENTS.md`'s "no rise". The cost equals a figcaption's. Raisul hasn't ruled on it.

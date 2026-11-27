@@ -1688,6 +1688,71 @@ test("@webkit scrolls a note opened near the bottom of the screen into view", as
 	expect(state.ref, "and its number still is").toBeGreaterThanOrEqual(0);
 });
 
+// A line that ends inside a link: the link ends at the line's end and carries on
+// after the note, so the note still opens under its own line. Closing joins the
+// link again, exactly.
+test("@webkit opens a note under its line when the line ends inside a link, and joins the link again", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	const notes = `<div class="footnotes"><ol><li id="fn:1"><p>The note. <a href="#fnref:1" class="reversefootnote">↩</a></p></li></ol></div>`;
+	const cases = {
+		"plain link": `<p id="host">Lead<sup id="fnref:1"><a id="ref" href="#fn:1" class="footnote">1</a></sup> <a id="long" href="https://example.com/a">${paragraph}</a> and on.</p>`,
+		"emphasis inside the link": `<p id="host">Lead<sup id="fnref:1"><a id="ref" href="#fn:1" class="footnote">1</a></sup> <a id="long" href="https://example.com/a"><em id="em">${paragraph}</em> <b>bold</b></a> and on.</p>`,
+		"link inside emphasis": `<p id="host"><em>Lead<sup id="fnref:1"><a id="ref" href="#fn:1" class="footnote">1</a></sup> <a id="long" href="https://example.com/a">${paragraph}</a> and on.</em></p>`,
+	};
+	for (const [name, html] of Object.entries(cases)) {
+		await loadFixture(page, { paragraphCount: 1, html: `${html}<p id="next">${paragraph}</p>${notes}` });
+		const closed = await noteState(page);
+		const before = await page.evaluate(() => ({ line: document.getElementById("ref").getBoundingClientRect().bottom, text: document.getElementById("host").textContent }));
+		await page.locator("#ref").click();
+		const opened = await page.evaluate(() => {
+			const note = document.querySelector(".calmNote");
+			const links = Array.from(document.querySelectorAll("#host a[href='https://example.com/a']"));
+			return {
+				top: note.getBoundingClientRect().top,
+				inLink: !!note.closest("a"),
+				links: links.length,
+				ids: document.querySelectorAll("[id='long']").length + document.querySelectorAll("[id='em']").length,
+				firstEndsAbove: links[0].getBoundingClientRect().bottom <= note.getBoundingClientRect().top + 1,
+				secondStartsBelow: links[1] && links[1].getBoundingClientRect().top >= note.getBoundingClientRect().bottom - 1,
+				text: document.getElementById("host").textContent.replace(note.textContent, ""),
+			};
+		});
+		expect.soft(opened.top - before.line, `${name}: right under the marker's line`).toBeLessThan(30);
+		expect.soft(opened.top, `${name}: below the marker's line`).toBeGreaterThanOrEqual(before.line);
+		expect.soft(opened, name).toMatchObject({ inLink: false, links: 2, firstEndsAbove: true, secondStartsBelow: true, text: before.text });
+		expect.soft(opened.ids, `${name}: no id is repeated`).toBe(name === "emphasis inside the link" ? 2 : 1);
+		await page.locator("#ref").click();
+		expect.soft(await noteState(page), `${name}: a second tap restores the text exactly`).toEqual(closed);
+		await page.locator("#ref").click();
+		await page.setViewportSize({ width: 420, height: 844 });
+		await page.waitForTimeout(150);
+		await page.keyboard.press("Escape");
+		await page.setViewportSize({ width: 390, height: 844 });
+		expect.soft((await noteState(page)).html, `${name}: resize then Escape restores it too`).toEqual(closed.html);
+	}
+});
+
+// A link that starts the next line is left whole: the note goes in front of it.
+test("@webkit puts a note in front of a link that starts the next line", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await loadFixture(page, {
+		paragraphCount: 1,
+		html: `<p id="host">Lead<sup id="fnref:1"><a id="ref" href="#fn:1" class="footnote">1</a></sup><br><a id="long" href="https://example.com/a">${paragraph}</a></p>
+			<div class="footnotes"><ol><li id="fn:1"><p>The note. <a href="#fnref:1" class="reversefootnote">↩</a></p></li></ol></div>`,
+	});
+	const closed = await noteState(page);
+	await page.locator("#ref").click();
+	const opened = await page.evaluate(() => ({
+		links: document.querySelectorAll("#host a[href='https://example.com/a']").length,
+		before: document.querySelector(".calmNote").nextElementSibling?.id,
+		gap: document.querySelector(".calmNote").getBoundingClientRect().top - document.getElementById("ref").getBoundingClientRect().bottom,
+	}));
+	expect(opened).toMatchObject({ links: 1, before: "long" });
+	expect(opened.gap).toBeLessThan(30);
+	await page.locator("#ref").click();
+	expect(await noteState(page)).toEqual(closed);
+});
+
 test("@webkit opens a note in place inside emphasis, sets its lists in the note's type, and stays put on resize", async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
 	await loadFixture(page, {
