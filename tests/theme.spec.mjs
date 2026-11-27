@@ -1651,6 +1651,37 @@ test("@webkit opens every platform's footnote in the text, without its back arro
 	}
 });
 
+// Substack, as its feed sends it: the number is a bare link with no <sup>, and the
+// note is a number link followed by div.footnote-content. Seen in NetNewsWire on
+// Nov 27, 2026: the number sat on the line, and the open note put its number on a
+// line of its own.
+test("@webkit raises Substack's bare footnote number and keeps the note's number on its first line", async ({ page }) => {
+	await loadCase(page, `<p id="host">${paragraph}<a class="footnote-anchor" data-component-name="FootnoteAnchorToDOM" id="footnote-anchor-1" href="#footnote-1" target="_self">1</a>. ${paragraph}</p>
+		<div class="footnote" data-component-name="FootnoteToDOM"><a id="footnote-1" href="#footnote-anchor-1" class="footnote-number" contenteditable="false" target="_self">1</a><div class="footnote-content"><p>A note.</p><p>Its second paragraph.</p></div></div>`);
+	const marker = await page.evaluate(() => {
+		const link = document.getElementById("footnote-anchor-1");
+		const range = document.createRange();
+		const text = link.previousSibling;
+		range.setStart(text, text.data.length - 1);
+		range.setEnd(text, text.data.length);
+		const letter = range.getBoundingClientRect();
+		const box = link.getBoundingClientRect();
+		const style = getComputedStyle(link);
+		return { raised: letter.bottom - box.bottom, size: parseFloat(style.fontSize) / parseFloat(getComputedStyle(link.parentNode).fontSize), decoration: style.textDecorationLine, lineHeight: document.getElementById("host").getBoundingClientRect().height };
+	});
+	expect(marker.raised, "the number's box ends above the text's").toBeGreaterThan(3);
+	expect(marker.size).toBeLessThan(0.65);
+	expect(marker.decoration).toBe("none");
+	await page.locator("#footnote-anchor-1").click();
+	const note = await page.evaluate(() => {
+		const number = document.querySelector(".calmNote .calmNoteNumber");
+		const range = document.createRange();
+		range.selectNodeContents(number.parentNode);
+		return { inParagraph: number.parentNode.tagName, sameLine: Math.abs(number.getBoundingClientRect().top - range.getClientRects()[1].top) < 4, text: document.querySelector(".calmNote").innerText.replace(/\s+/g, " ").trim(), numbers: document.querySelectorAll(".calmNote a").length };
+	});
+	expect(note).toEqual({ inParagraph: "P", sameLine: true, text: "1 A note. Its second paragraph.", numbers: 0 });
+});
+
 test("@webkit opens a long note with a link whole, and keeps the link a link", async ({ page }) => {
 	await loadCase(page, `<p>${paragraph}<sup id="fnref:1"><a id="ref" href="#fn:1" class="footnote">1</a></sup> ${paragraph}</p>
 		<div class="footnotes"><ol><li id="fn:1"><p>${paragraph}</p><p>See <a id="out" href="https://example.com/source">the source</a> for more. <a href="#fnref:1" class="reversefootnote">↩</a></p></li></ol></div>`);

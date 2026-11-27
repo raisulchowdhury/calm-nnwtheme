@@ -1685,11 +1685,22 @@
 			var number = document.createElement("span");
 			number.className = "calmNoteNumber";
 			number.textContent = link.textContent.trim().replace(/^\[(.*)\]$/, "$1");
-			var first = note.firstChild;
-			while (first && first.nodeType === 3 && !first.data.trim()) {
-				first = first.nextSibling;
+			// The number leads the note's first line: inside its first
+			// paragraph, also when a wrapper holds that paragraph (Substack's
+			// div.footnote-content).
+			var lead = note;
+			for (var first = note.firstChild; first; first = first.firstChild) {
+				while (first && first.nodeType === 3 && !first.data.trim()) {
+					first = first.nextSibling;
+				}
+				if (!first || first.nodeType !== 1 || !/^(?:P|DIV|SECTION)$/.test(first.tagName)) {
+					break;
+				}
+				lead = first;
+				if (first.tagName === "P") {
+					break;
+				}
 			}
-			var lead = first && first.tagName === "P" ? first : note;
 			while (lead.firstChild && lead.firstChild.nodeType === 3 && !lead.firstChild.data.trim()) {
 				lead.firstChild.remove();
 			}

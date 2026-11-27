@@ -971,7 +971,9 @@ sub {
  * as its background so the lines it covers don't show through.
  */
 .articleBody a.footnote,
-.articleBody a.footnote:visited {
+.articleBody a.footnote:visited,
+.articleBody a[id^="footnote-anchor-"],
+.articleBody a[id^="footnote-anchor-"]:visited {
 	margin-left: 0.1em;
 	padding: 0 0.1em;
 	background: none;
@@ -986,9 +988,19 @@ sub {
 
 .articleBody a.footnote:hover,
 .articleBody a.footnote[aria-expanded="true"],
+.articleBody a[id^="footnote-anchor-"]:is(:hover, [aria-expanded="true"]),
 .articleBody .newsfoot-footnote-popover + a.footnote {
 	background: none;
 	color: var(--reader-heading);
+}
+
+/* Substack's number is a bare link with no <sup> around it: raise it and
+   size it the way a <sup> would, so it doesn't sit on the line. */
+.articleBody a:is(.footnote, [id^="footnote-anchor-"]):not(sup a) {
+	position: relative;
+	top: -0.45em;
+	font-size: 0.58em;
+	line-height: 0;
 }
 
 .newsfoot-footnote-popover {
