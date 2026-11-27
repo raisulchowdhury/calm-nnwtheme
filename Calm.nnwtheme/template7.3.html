@@ -378,6 +378,121 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 		}
 	}
 
+	// A newsletter sign-up form can't work inside a reader, so the stylesheet
+	// hides it. Where the form says where to sign up, put one quiet pill in its
+	// place that opens that page: Mailchimp's hosted form, Substack's and
+	// Ghost's subscribe pages, or a sign-up link inside the block. No usable
+	// page, or a sign-up link already beside the form, means no pill. Labelled
+	// with the form's own button text.
+	// Most articles have no form or frame, so the cheap check runs first and the
+	// full selector, with its :has() tests, only when a candidate is there.
+	var signupWidgets = ".subscription-widget-wrap, .subscription-widget-wrap-editor, [data-component-name='SubscribeWidgetToDOM'], #mc_embed_signup, #mc_embed_shell, .formkit-form, .kg-signup-card, .wp-block-jetpack-subscriptions, .mailpoet_form";
+	var signupBlocks = signupWidgets + ", form[action*='list-manage.com']:has(input[type='email']), form[action*='subscribe' i]:has(input[type='email']), form[action*='signup' i]:has(input[type='email']), form[action*='newsletter' i]:has(input[type='email']), form[action*='convertkit']:has(input[type='email']), form[action*='buttondown']:has(input[type='email']), form[action*='beehiiv']:has(input[type='email']), form[action*='substack.com']:has(input[type='email']), iframe[src*='substack.com/embed']";
+	var signupWords = /\b(?:sign[\s-]?up|subscribe|newsletter|join)\b/i;
+
+	function signupPage(block) {
+		function isSignupLink(link) {
+			return /^https?:/i.test(link.href) && (signupWords.test(link.textContent || "") || /subscribe|sign-?up/i.test(link.pathname + link.hash));
+		}
+		var inside = Array.prototype.find.call(block.querySelectorAll("a[href]"), isSignupLink);
+		if (inside) {
+			return inside.href;
+		}
+		var form = block.matches("form") ? block : block.querySelector("form");
+		var action = block.matches("iframe") ? block.getAttribute("src") || "" : form ? form.getAttribute("action") || "" : "";
+		var url = null;
+		try {
+			url = action ? new URL(action, document.baseURI) : null;
+		} catch (error) {}
+		if (url && /^https?:$/.test(url.protocol)) {
+			// Mailchimp posts to /subscribe/post; /subscribe with the same list is its hosted form.
+			if (/(^|\.)list-manage\.com$/i.test(url.hostname) && /^\/subscribe\/post(?:-json)?\/?$/.test(url.pathname) && url.searchParams.get("u")) {
+				return url.origin + "/subscribe?u=" + encodeURIComponent(url.searchParams.get("u")) + (url.searchParams.get("id") ? "&id=" + encodeURIComponent(url.searchParams.get("id")) : "");
+			}
+			// Substack's own form posts to its API; the publication's /subscribe page signs up.
+			if (/(^|\.)substack\.com$/i.test(url.hostname) && url.hostname.toLowerCase() !== "substack.com") {
+				return url.origin + "/subscribe";
+			}
+		}
+		var page = null;
+		try {
+			page = new URL(document.baseURI);
+		} catch (error) {}
+		if (!page || !/^https?:$/.test(page.protocol)) {
+			return null;
+		}
+		if (block.matches(".subscription-widget-wrap, .subscription-widget-wrap-editor, [data-component-name='SubscribeWidgetToDOM']")) {
+			return page.origin + "/subscribe";
+		}
+		if (block.matches(".kg-signup-card")) {
+			return page.origin + "/#/portal/signup";
+		}
+		return null;
+	}
+
+	function hasSignupLinkBeside(block) {
+		// Read the text just before and just after the block in document order, so
+		// broken feed markup (MacRumors puts the form inside stray p and div
+		// wrappers, after a "Sign up" sentence) still counts as "beside".
+		function isSignupLink(node) {
+			return node.nodeType === 1 && node.matches("a[href]") && !block.contains(node) && !node.closest("[data-calm-signup]") &&
+				(signupWords.test(node.textContent || "") || /subscribe|sign-?up|eepurl\.com/i.test(node.href));
+		}
+		function scan(walker, step, limit) {
+			var seen = 0;
+			var node;
+			while ((node = walker[step]()) && seen < limit) {
+				if (node.nodeType === 3) {
+					seen += node.nodeValue.trim().length;
+				} else if (isSignupLink(node)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		var before = document.createTreeWalker(body, 5);
+		before.currentNode = block;
+		var after = document.createTreeWalker(body, 5);
+		after.currentNode = block.lastChild ? block.lastChild : block;
+		while (after.currentNode.lastChild) {
+			after.currentNode = after.currentNode.lastChild;
+		}
+		return scan(before, "previousNode", 240) || scan(after, "nextNode", 120);
+	}
+
+	function offerSignupPages() {
+		if (!body || !(body.getElementsByTagName("form").length || body.getElementsByTagName("iframe").length || body.querySelector(signupWidgets))) {
+			return;
+		}
+		var signups = Array.prototype.filter.call(body.querySelectorAll(signupBlocks), function (block) {
+			return !(block.parentElement && block.parentElement.closest(signupBlocks));
+		});
+		signups.forEach(function (block) {
+			if (hasSignupLinkBeside(block)) {
+				return;
+			}
+			var href = signupPage(block);
+			if (!href) {
+				return;
+			}
+			var submit = block.querySelector("button[type='submit'], form button:not([type]), input[type='submit']");
+			var label = submit ? (submit.matches("input") ? submit.value : submit.textContent) : "";
+			label = (label || "").replace(/\s+/g, " ").trim();
+			if (!label || label.length > 40) {
+				label = "Subscribe";
+			}
+			var wrapper = document.createElement("p");
+			wrapper.className = "button-wrapper";
+			wrapper.setAttribute("data-calm-signup", "");
+			var link = document.createElement("a");
+			link.className = "button";
+			link.href = href;
+			link.textContent = label;
+			wrapper.appendChild(link);
+			block.parentNode.insertBefore(wrapper, block);
+		});
+	}
+
 	// Bluesky, Mastodon, and micro.blog posts have no title. Drop the empty
 	// heading so the post starts right under its source and date.
 	function markUntitled() {
@@ -1512,6 +1627,7 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 	safely(markInlineImages);
 	safely(removeStrayBreaks);
 	safely(hideFeedCredit);
+	safely(offerSignupPages);
 	safely(restoreFootnoteIds);
 	safely(markFootnotes);
 	safely(markUntitled);

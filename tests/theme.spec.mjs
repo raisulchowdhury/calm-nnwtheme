@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { extractInlineScript } from "../scripts/extract-inline-script.mjs";
 import { componentArticle, componentSteps, instrumentScript, stressArticle } from "./stress-fixtures.mjs";
-import { blankCases, breakCases, buttonCases, captionCases, codeCases, codeTableCases, creditCases, footnoteCases, layoutCases, quietBoldCases, taskCases, withImages } from "./platform-fixtures.mjs";
+import { blankCases, breakCases, buttonCases, captionCases, codeCases, codeTableCases, creditCases, footnoteCases, layoutCases, quietBoldCases, signupCases, taskCases, withImages } from "./platform-fixtures.mjs";
 
 const stylesheet = readFileSync("Calm.nnwtheme/stylesheet.css", "utf8");
 const themeScript = extractInlineScript("Calm.nnwtheme/template.html");
@@ -1440,4 +1440,23 @@ test("@webkit leaves less space above an h3 than above an h2", async ({ page }) 
 	const gaps = await page.evaluate(() => ["h2", "h3", "h4"].map((tag) => parseFloat(getComputedStyle(document.querySelector(`#bodyContainer ${tag}`)).marginTop)));
 	expect(gaps[0]).toBeGreaterThan(gaps[1]);
 	expect(gaps[1]).toBeGreaterThan(gaps[2]);
+});
+
+test("@webkit puts one sign-up pill where a hidden form says where to sign up, and nowhere else", async ({ page }) => {
+	for (const item of signupCases) {
+		const html = (item.base ? `<base href="${item.base}">` : "") + item.html;
+		await page.goto("about:blank"); // a fresh document, so no earlier case's <base> carries over
+		await loadCase(page, html);
+		const state = await page.evaluate(({ hidden, kept }) => {
+			const shown = (id) => document.getElementById(id).getClientRects().length > 0;
+			const pills = Array.from(document.querySelectorAll("[data-calm-signup] a.button"), (a) => {
+				const style = getComputedStyle(a);
+				return { href: a.href, label: a.textContent, shown: a.getClientRects().length > 0, pill: parseFloat(style.borderTopLeftRadius) >= 100 };
+			});
+			return { pills, hidden: hidden ? shown(hidden) : false, kept: (kept || []).map(shown) };
+		}, item);
+		expect.soft(state.pills, `${item.platform}: pill`).toEqual(item.pill ? [{ ...item.pill, shown: true, pill: true }] : []);
+		expect.soft(state.hidden, `${item.platform}: form hidden`).toBe(false);
+		expect.soft(state.kept, `${item.platform}: kept`).toEqual((item.kept || []).map(() => true));
+	}
 });

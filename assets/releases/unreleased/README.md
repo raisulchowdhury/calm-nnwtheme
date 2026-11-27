@@ -165,3 +165,11 @@ Made by `node scripts/before-after.mjs` against `origin/main`. At release, renam
 ### task-list-dark
 
 <img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/task-list-dark.jpg" width="720" alt="The same task lists in dark mode">
+
+### signup-form-pill
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/signup-form-pill.jpg" width="720" alt="A Substack subscribe box and a Mailchimp form on iPhone: before, email fields and buttons that can't work in a reader; after, each form is one quiet pill that opens the publisher's sign-up page">
+
+### signup-form-pill-dark
+
+<img src="https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/assets/releases/unreleased/signup-form-pill-dark.jpg" width="720" alt="The same sign-up pills in dark mode">
