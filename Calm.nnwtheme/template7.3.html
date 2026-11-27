@@ -734,16 +734,30 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 			}
 		}
 
+		// Read every block before changing any, and count lines from the text and
+		// its <br>s (Medium breaks lines with <br>), not innerText: innerText lays
+		// out the page, and doing that between changes would lay it out once per
+		// block.
+		var blocks = [];
 		Array.prototype.forEach.call(body.querySelectorAll("pre"), function (pre) {
-			var text = (pre.innerText || pre.textContent || "").replace(/\n$/, "");
-			if (pre.closest("table") || text.split("\n").length < 2 && text.length < 40) {
+			if (pre.closest("table")) {
 				return;
 			}
-			// Read the language first: GitHub names it on the block's wrapper.
-			var language = codeLanguage(pre);
+			var text = (pre.textContent || "").replace(/\n$/, "");
+			var lines = text.split("\n").length + pre.getElementsByTagName("br").length;
+			if (lines < 2 && text.length < 40) {
+				return;
+			}
+			// Read the language before wrapping: GitHub names it on the block's wrapper.
+			blocks.push({ pre: pre, language: codeLanguage(pre), oneLine: lines < 2 });
+		});
+
+		blocks.forEach(function (block) {
+			var pre = block.pre;
+			var language = block.language;
 			var wrap = document.createElement("div");
 			// A one-line command gets a full-height Copy cap (see .calmCodeOneLine).
-			wrap.className = text.indexOf("\n") < 0 ? "calmCode calmCodeOneLine" : "calmCode";
+			wrap.className = block.oneLine ? "calmCode calmCodeOneLine" : "calmCode";
 			pre.parentNode.insertBefore(wrap, pre);
 			wrap.appendChild(pre);
 			var button = document.createElement("button");

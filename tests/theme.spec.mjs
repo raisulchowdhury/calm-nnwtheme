@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { extractInlineScript } from "../scripts/extract-inline-script.mjs";
+import { componentArticle, componentSteps, instrumentScript, stressArticle } from "./stress-fixtures.mjs";
 
 const stylesheet = readFileSync("Calm.nnwtheme/stylesheet.css", "utf8");
 const themeScript = extractInlineScript("Calm.nnwtheme/template.html");
@@ -927,4 +928,230 @@ test("@webkit gives Ghost video cards their thumbnail as the poster instead of a
 		real: "https://example.com/images/d-poster.jpg",
 		none: gif,
 	});
+});
+
+// Performance. Calm does all its work in one pass before the page shows, so the
+// checks are: the pass is fast on huge articles and on many copies of each component;
+// it doesn't lay the page out once per element; the first frame already has Calm's
+// changes; and nothing moves after that first frame. Each check also runs once on a
+// deliberately slowed or shifting copy of the script, to prove it can fail.
+
+function perfPage(bodyHtml, script) {
+	return `<html dir="auto">
+		<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>${stylesheet}</style></head>
+		<body>
+			<nav class="readerToc" aria-label="Article sections" hidden>
+				<div class="readerTocTitle">Sections</div>
+				<div class="readerTocContext" aria-hidden="true"></div>
+				<ol id="readerTocList"></ol>
+			</nav>
+			<header class="articleHeader" id="readerTop">
+				<div class="articleTitle"><h1><a href="#">${articleTitle}</a></h1></div>
+				<div class="articleMeta"><span class="feedName"><a href="#">Field Notes</a></span><span class="metaDate"><a href="#">Nov 27, 2026</a></span><span class="readingTime" id="readingTime" hidden></span></div>
+				<div class="externalLink" hidden></div>
+			</header>
+			<article><div id="bodyContainer" class="articleBody mediumText">${bodyHtml}</div></article>
+			<script>${script}</script>
+		</body>
+		</html>`;
+}
+
+// Serves the page from a URL so init scripts run first; blocks the network.
+async function openPerfPage(page, html) {
+	await page.route(/^https?:/, (route) =>
+		route.request().url() === "https://calm.test/" ? route.fulfill({ body: html, contentType: "text/html; charset=utf-8" }) : route.abort(),
+	);
+	await page.goto("https://calm.test/", { waitUntil: "load" });
+}
+
+// Wastes `ms` milliseconds at the start of one step, to prove a budget can fail.
+const slowed = (script, step, ms) => script.replace(`function ${step}() {`, `function ${step}() { var __until = performance.now() + ${ms}; while (performance.now() < __until) {}`);
+
+async function passTimes(page, bodyHtml, script = themeScript) {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await openPerfPage(page, perfPage(bodyHtml, instrumentScript(script)));
+	return page.evaluate(() => ({ pass: window.__calmPass, steps: window.__calmSteps }));
+}
+
+// Measured on an M-series Mac (Playwright 1.59; WebKit timers have 1 ms resolution),
+// 1280 wide so the rail is built too: the stress article's pass took 87-102 ms in
+// WebKit and 27-41 ms in Chrome. Most of it is the page's first layout, forced by the
+// reading-time count, which the page needs before it shows anyway. Before the Copy
+// buttons were batched, the same pass took about 40 ms more. Budget: about 4x.
+const STRESS_PASS_BUDGET = 400;
+
+test("@webkit runs Calm's first pass on a huge article within its budget", async ({ page }) => {
+	const times = await passTimes(page, stressArticle());
+	expect(times.pass).toBeLessThan(STRESS_PASS_BUDGET);
+	// The budget would catch a slower pass.
+	const slow = await passTimes(page, stressArticle(), slowed(themeScript, "enableCodeCopy", STRESS_PASS_BUDGET));
+	expect(slow.pass).toBeGreaterThan(STRESS_PASS_BUDGET);
+});
+
+// Each component's own step, on 400 copies of it among 400 paragraphs. Measured
+// (ms, four runs each, WebKit / Chrome): code Copy and language 4-10 / 4-4.6;
+// footnote repair and marking 1-3 / 1.4-2; break cleanup 4-5 / 15-19; gallery rows
+// 1-2 / 0.7-0.9; X theme 0 / 0-0.1; Ghost video posters 1-2 / 2.4-4.7; inline images
+// and emoji 1-2 / 0.5-1.2; blank blocks 0-1 / 0.6-0.8; rail markers 4-7 / 3.2-5.4;
+// Mastodon frames 0 / 0.2-0.3. Each budget is about 4-5x the slowest run, with a
+// 10 ms floor for WebKit's 1 ms timer.
+const componentBudgets = {
+	code: 40,
+	footnotes: 15,
+	breaks: 80,
+	galleries: 10,
+	xEmbeds: 10,
+	ghostCards: 20,
+	emoji: 10,
+	images: 10,
+	blanks: 10,
+	headings: 30,
+	iframes: 10,
+};
+
+for (const [name, budget] of Object.entries(componentBudgets)) {
+	test(`@webkit keeps the ${name} step within its budget on 400 copies`, async ({ page }) => {
+		const { steps } = await passTimes(page, componentArticle(name, 400));
+		const own = componentSteps[name].reduce((sum, step) => sum + steps[step], 0);
+		expect(own).toBeLessThan(budget);
+	});
+}
+
+test("@webkit component budgets fail when a step is slowed", async ({ page }) => {
+	const { steps } = await passTimes(page, componentArticle("galleries", 50), slowed(themeScript, "layoutGalleries", componentBudgets.galleries + 5));
+	expect(steps.layoutGalleries).toBeGreaterThan(componentBudgets.galleries);
+});
+
+// Chromium counts layouts. Calm's pass may lay the page out a few times (the
+// reading-time count and the rail read sizes), but never once per element.
+// Measured: 3 layouts with or without 200 code blocks; before batching, about 200.
+test("@webkit doesn't lay the page out once per element", async ({ page, browserName }) => {
+	test.skip(browserName !== "chromium", "layout counts come from Chromium's DevTools protocol");
+	async function layouts(script) {
+		const cdp = await page.context().newCDPSession(page);
+		await cdp.send("Performance.enable");
+		await openPerfPage(page, perfPage(componentArticle("code", 200) + componentArticle("footnotes", 100) + componentArticle("breaks", 100), script));
+		const { metrics } = await cdp.send("Performance.getMetrics");
+		await cdp.detach();
+		return metrics.find((metric) => metric.name === "LayoutCount").value;
+	}
+	await page.setViewportSize({ width: 1280, height: 800 });
+	const withCalm = await layouts(themeScript);
+	expect(withCalm).toBeLessThan(10);
+	// Reading each block's innerText between changes, the old way, lays out per block.
+	const thrashing = themeScript.replace("blocks.forEach(function (block) {", "blocks.forEach(function (block) { block.pre.innerText;");
+	expect(thrashing).not.toBe(themeScript);
+	expect(await layouts(thrashing)).toBeGreaterThan(100);
+});
+
+// The first frame the reader sees already has Calm's changes. WebKit, NetNewsWire's
+// engine, parses an article like this one before it paints. (Chromium paints parts of
+// a long page while still parsing, so this check is WebKit's.)
+test("@webkit shows the first frame with Calm's changes already made", async ({ page, browserName }) => {
+	test.skip(browserName !== "webkit", "Chromium paints long pages before the parser reaches the script");
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.addInitScript(() => {
+		window.__firstFrame = null;
+		requestAnimationFrame(() => {
+			window.__firstFrame = { ran: window.__calmPass !== undefined, blankHidden: !!document.querySelector("[data-calm-blank]") };
+		});
+	});
+	const body = Array.from({ length: 300 }, (_, i) => `<p>${paragraph}</p>${i % 10 ? "" : '<p>&nbsp;</p><pre><code class="language-js">a\nb</code></pre>'}`).join("");
+	await openPerfPage(page, perfPage(body, instrumentScript(themeScript)));
+	await page.waitForFunction(() => window.__firstFrame);
+	expect(await page.evaluate(() => window.__firstFrame)).toEqual({ ran: true, blankHidden: true });
+	// A version that does its work on a timer would be caught.
+	await page.unroute(/^https?:/);
+	await openPerfPage(page, perfPage(body, `setTimeout(function () { ${instrumentScript(themeScript)} }, 200);`));
+	await page.waitForFunction(() => window.__firstFrame);
+	expect((await page.evaluate(() => window.__firstFrame)).ran).toBe(false);
+});
+
+// Nothing moves after the first frame: every block of the article sits where it was
+// first drawn. The page stays hidden until Calm's script has run, the way WebKit
+// first paints after it, so this measures only what happens after the first frame.
+// Images carry width and height, as the feed's do when it gives them.
+async function blocksMoveAfterFirstFrame(page, bodyHtml, script, width) {
+	await page.setViewportSize({ width, height: 844 });
+	const reveal = `${script}\n;document.documentElement.style.visibility = "";`;
+	const html = perfPage(bodyHtml, reveal).replace("<html dir=\"auto\">", '<html dir="auto" style="visibility: hidden">');
+	await page.addInitScript(() => {
+		const snapshot = () =>
+			Array.from(document.querySelectorAll("#bodyContainer > *, #readerTop, #readerTop *"), (node) => {
+				const rect = node.getBoundingClientRect();
+				return [Math.round(rect.top + scrollY), Math.round(rect.left), Math.round(rect.height)];
+			});
+		const wait = () => {
+			if (document.documentElement.style.visibility === "hidden" || !document.getElementById("bodyContainer")) {
+				requestAnimationFrame(wait);
+				return;
+			}
+			window.__first = snapshot();
+			addEventListener("load", () => setTimeout(() => requestAnimationFrame(() => (window.__settled = snapshot())), 600));
+			if (document.readyState === "complete") setTimeout(() => requestAnimationFrame(() => (window.__settled = snapshot())), 600);
+		};
+		requestAnimationFrame(wait);
+	});
+	await openPerfPage(page, html);
+	await page.waitForFunction(() => window.__settled, null, { timeout: 10000 });
+	return page.evaluate(() => window.__first.filter((rect, index) => JSON.stringify(rect) !== JSON.stringify(window.__settled[index])).length);
+}
+
+const shiftComponents = ["paragraphs", "images", "code", "footnotes", "tables", "breaks", "lists", "galleries", "linkCards", "xEmbeds", "iframes", "videos", "wpEmbeds", "ghostCards", "pullquotes", "headings", "emoji", "blanks"];
+for (const width of [390, 1280]) {
+	test(`@webkit moves nothing after the first frame at ${width} wide, for every component`, async ({ page }) => {
+		const body = shiftComponents.map((name) => componentArticle(name, 6)).join("");
+		expect(await blocksMoveAfterFirstFrame(page, body, themeScript, width)).toBe(0);
+	});
+}
+
+test("@webkit the first-frame check catches a late change", async ({ page }) => {
+	const late = `${themeScript}\n;setTimeout(function () { var p = document.createElement("p"); p.textContent = "Late"; document.getElementById("bodyContainer").prepend(p); }, 50);`;
+	expect(await blocksMoveAfterFirstFrame(page, componentArticle("paragraphs", 20), late, 390)).toBeGreaterThan(0);
+});
+
+// Hovering a code block, pressing Copy and opening a footnote change only the tools
+// and the popover, which float above the text: nothing around them moves. Measured
+// (WebKit): hover to visible tools and click to "Copied" well under one frame plus
+// the 120 ms fade; the budget is the fade plus 200 ms.
+test("@webkit hover tools, Copy and footnote popovers leave the text where it is", async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await page.context().grantPermissions(["clipboard-read", "clipboard-write"]).catch(() => {});
+	await loadFixture(page, {
+		paragraphCount: 6,
+		html: `<pre id="code"><code class="language-swift">let a = 1\nlet b = 2</code></pre><p id="after-code">${paragraph}</p>
+			<p id="fn-paragraph">${paragraph}<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> ${paragraph}</p><p id="after-note">${paragraph}</p>
+			<div class="footnotes"><ol><li id="fn:1"><p>The note. <a href="#fnref:1" class="reversefootnote">↩</a></p></li></ol></div>`,
+	});
+	await page.addStyleTag({ content: newsfootCore });
+	const positions = () =>
+		page.evaluate(() => Array.from(document.querySelectorAll("#bodyContainer p, #code"), (node) => JSON.stringify(node.getBoundingClientRect())));
+	const before = await positions();
+
+	const started = Date.now();
+	await page.locator("#code").hover();
+	await expect(page.locator(".calmCopy")).toHaveCSS("opacity", "1");
+	await page.locator(".calmCopy").click();
+	await expect(page.locator(".calmCopy")).toHaveText(/Copy|Copied/);
+	expect(Date.now() - started).toBeLessThan(120 + 200 + 400); // fade + budget + Playwright's own steps
+	expect(await positions()).toEqual(before);
+
+	// The popover the way newsfoot.js builds it, inside the reference's <sup>.
+	await page.evaluate(() => {
+		const link = document.querySelector("a.footnote");
+		const container = document.createElement("div");
+		container.className = "newsfoot-footnote-container";
+		link.parentElement.insertBefore(container, link);
+		container.appendChild(link);
+		const popover = document.createElement("div");
+		popover.className = "newsfoot-footnote-popover";
+		popover.innerHTML = '<div class="newsfoot-footnote-popover-inner"><p>The note.</p></div><div class="newsfoot-footnote-popover-arrow"></div>';
+		container.insertBefore(popover, link);
+	});
+	await expect(page.locator(".newsfoot-footnote-popover-inner")).toBeVisible();
+	const withPopover = await positions();
+	// Only the popover's own paragraph is new; every other block stays put.
+	expect(withPopover.filter((rect) => !before.includes(rect))).toHaveLength(1);
+	await page.evaluate(() => document.querySelector(".newsfoot-footnote-popover").remove());
+	expect((await positions()).filter((rect) => !before.includes(rect))).toHaveLength(0);
 });
