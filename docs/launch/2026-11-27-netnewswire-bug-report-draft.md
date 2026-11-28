@@ -24,7 +24,7 @@ When I move to the next article with the down arrow in dark mode, the incoming a
 Timed from a 60 fps screen recording, counting from the first frame of the slide:
 
 - 0 ms: the incoming panel appears at the right edge. It is black, with a white strip behind the top bar and another behind the bottom toolbar.
-- By about 80 ms the white strips are gone and the panel is plain black.
+- About 100 ms: the white strips are gone and the panel is plain black.
 - About 170 ms: the article's title and text appear all at once. The panel already covers about three quarters of the screen.
 - About 380 ms: the slide ends.
 
