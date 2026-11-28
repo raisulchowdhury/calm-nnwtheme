@@ -1,8 +1,8 @@
 # Draft bug report for NetNewsWire
 
-Status: draft for Raisul. Not posted. It goes on
-https://github.com/Ranchero-Software/NetNewsWire/issues under his name, so
-he posts it. The only [bracket] left is the attachment.
+Status: filed by Raisul on 2026-11-27 as
+https://github.com/Ranchero-Software/NetNewsWire/issues/5587, with the
+slow-motion clip attached.
 
 No open issue covers this (searched 2026-11-27). The closest are #5383 and
 #2272, both closed in 7.1.3.
@@ -45,7 +45,7 @@ The next article drawn from the start of the slide, or at least a panel in the a
 
 My guess is that the new article's web view is on screen before it has painted, and that it shows its default white background until the page's dark background arrives.
 
-[Attach the slow-motion clip, or the full recording. The full recording shows text from your subscriptions; the clip shows only two public feeds.]
+Slow-motion clip (1/8 speed) of two slides from the recording: attached to the issue.
 
 ---
 

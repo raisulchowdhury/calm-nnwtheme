@@ -12,7 +12,7 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 - **Tests:** `npm test`, then `npx playwright test --trace off --reporter=line`. On a Mac one `@visual` failure is expected, because the reference image is Linux-only; delete the `*darwin*.png` it leaves. CI on Linux passes everything.
 - **Release notes:** `docs/releases/2026-11-30-calm-1.5.0.md`. **Launch plan with post drafts:** `docs/launch/2026-11-30-calm-1.5-launch-plan.md`.
 - **Before/after images:** `assets/releases/1.5.0-<slug>.jpg`, one per case in `scripts/before-after.mjs`, all remade against 1.4.4 on 2026-11-27. `assets/releases/unreleased/` is empty again for the next change.
-- **Gallery of every fix:** https://claude.ai/artifact/Qy8d9ts9shZ4kTierahtM1. Its source was in the old session's scratchpad. To update it from a new session, read the artifact first, then republish from that read.
+- **Gallery of every fix:** https://claude.ai/artifact/Qy8d9ts9shZ4kTierahtM1. Since Version 14 it is in five groups with a jump bar, one picture per fix with the rest folded, and the before and after stacked on phones; the first group is the order Raisul picked on 2026-11-27 (Substack's picture buttons from 1.4.4, sign-up pill, link cards, gallery row, podcast captions). Its source was in the old session's scratchpad. To update it from a new session, read the artifact first, then republish from that read.
 - **Design pass record:** `docs/design-pass-2026-11-27.md`, with Raisul's picks and the two independent reviews.
 - **iPhone test build:** branch `preview/calmdev`, built from the 1.5.0 candidate. Install by pasting this into Safari and choosing Overwrite: `netnewswire://theme/add?url=https%3A%2F%2Fraw.githubusercontent.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Fpreview%2Fcalmdev%2FCalmDev.nnwtheme.zip`. Delete the branch once testing is done; Raisul was promised this.
 - **Mac test install:** `~/Library/Containers/com.ranchero.NetNewsWire-Evergreen/Data/Library/Application Support/NetNewsWire/Themes/CalmDev.nnwtheme/`, same build.
@@ -51,4 +51,4 @@ The next-article glitch on iPhone is NetNewsWire's. Measured on 2026-11-27 from 
 - **Calm:** 1 of 6 slides glitched: white only behind the top and bottom bars for about 100 ms, text at about 170 ms.
 - The slide itself eases in normally and doesn't stall. One Calm sample is too little to say whether Calm adds to the wait.
 
-Draft bug report, written on the Default-theme recording: `docs/launch/2026-11-27-netnewswire-bug-report-draft.md`. He posts it. Every detail is filled in (NetNewsWire 7.3.1 build 7244, iPhone 17, iOS 27.2.1, light mode shows it too); it only needs the slow-motion clip attached.
+Raisul filed it on 2026-11-27 as https://github.com/Ranchero-Software/NetNewsWire/issues/5587, with the slow-motion clip. The text is in `docs/launch/2026-11-27-netnewswire-bug-report-draft.md`. Watch the issue for replies; any answer there is his to post.
