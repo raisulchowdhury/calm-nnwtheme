@@ -51,4 +51,4 @@ The next-article glitch on iPhone is NetNewsWire's. Measured on 2026-11-27 from 
 - **Calm:** 1 of 6 slides glitched: white only behind the top and bottom bars for about 100 ms, text at about 170 ms.
 - The slide itself eases in normally and doesn't stall. One Calm sample is too little to say whether Calm adds to the wait.
 
-Draft bug report, written on the Default-theme recording: `docs/launch/2026-11-27-netnewswire-bug-report-draft.md`. He posts it. It still needs his NetNewsWire version and build, iPhone model, iOS version, and whether light mode shows the blank panel.
+Draft bug report, written on the Default-theme recording: `docs/launch/2026-11-27-netnewswire-bug-report-draft.md`. He posts it. It has his NetNewsWire version (7.3.1, build 7244); it still needs his iPhone model, iOS version, and whether light mode shows the blank panel.

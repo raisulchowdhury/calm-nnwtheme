@@ -38,7 +38,7 @@ The next article drawn from the start of the slide, or at least a panel in the a
 
 **Details**
 
-- NetNewsWire [version and build, from Settings > About] on [iPhone model], iOS [version]
+- NetNewsWire 7.3.1 (build 7244) on [iPhone model], iOS [version]
 - Dark mode, Default theme. A custom theme shows it too, so it isn't specific to a theme.
 - [Say whether you also see the blank panel in light mode. The white wouldn't show there.]
 - Possibly related: #5383 and #2272.
