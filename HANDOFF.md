@@ -5,7 +5,7 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 ## Where things are
 
 - **Branch:** `calm-roadmap-fixes`. **PR:** https://github.com/raisulchowdhury/calm-nnwtheme/pull/31.
-- **The release is prepared, not published.** Merging the PR to `main` publishes it: `release.yml` tags `v1.5.0` and uploads `Calm.nnwtheme.zip` once Validate passes. Merging needs Raisul's go.
+- **The release is prepared, not published.** Merging the PR to `main` publishes it: `release.yml` tags `v1.5.0` and uploads `Calm.nnwtheme.zip` once Validate passes. Raisul said on 2026-11-27: "Release on Monday Nov 30". Merge on that day, not before.
 - **Version:** 1.5.0, theme version 16, dated 2026-11-30.
   - If the merge happens on another day, change the date in three places: the `CHANGELOG.md` heading, the release-notes filename `docs/releases/2026-11-30-calm-1.5.0.md`, and the two lines that name it in `scripts/check-release-sync.mjs`. Then run `node scripts/updates-json.mjs --write`.
   - The build number lives in `Info.plist` and in `var BUILD` in all three script copies. `check-release-sync.mjs` now fails if they differ.
@@ -25,7 +25,7 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 - **Footnotes:** a plain number; tapping it opens the note in mono below the line and pushes the text down. Chosen after an overlay version kept cutting the line underneath.
 - **Dark-mode paper backing for line art:** dropped, because it flashed a light box while PNGs loaded.
 - **Late updates:** articles never wait on Calm. This is a rule in `AGENTS.md`.
-- **No yellow:** "i don't love the yellow color you're using as placeholder/ accent. Should be some version of light/dark grey depending on light/dark theme". The light-mode tint and hairlines are grey (3b129fa). The selection and `<mark>` highlight were left amber and reported to him.
+- **No yellow:** "i don't love the yellow color you're using as placeholder/ accent. Should be some version of light/dark grey depending on light/dark theme". The light-mode tint and hairlines are grey (3b129fa). The selection and `<mark>` highlight stay amber: he said to keep them as they are.
 - **CI speed budget:** the headings step gets 100 ms on Linux; the Mac stays at 30 ms.
 
 ## After the merge
@@ -45,4 +45,4 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 
 ## Not Calm's
 
-The next-article glitches on iPhone (a black panel, a stalled slide, pictures popping in) also happen in NetNewsWire's default theme. A bug report for NetNewsWire's GitHub was offered; posting it needs Raisul's OK.
+The next-article glitches on iPhone (a black panel, a stalled slide, pictures popping in) also happen in NetNewsWire's default theme. Measured on his recording: the next article's panel is blank for the first 170 ms of the slide, with white strips under the bars at the start; the slide itself eases in normally and doesn't stall. He asked for a draft bug report: `docs/launch/2026-11-27-netnewswire-bug-report-draft.md`. He posts it; it still needs his versions and a Default-theme recording.
