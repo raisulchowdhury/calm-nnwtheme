@@ -1,8 +1,9 @@
 {
   "name": "calm-nnwtheme",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "private": true,
   "scripts": {
+    "before-after": "node scripts/before-after.mjs",
     "test": "scripts/validate.sh",
     "test:browser": "playwright test"
   },

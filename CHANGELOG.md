@@ -1,5 +1,98 @@
 # Changelog
 
+## 1.5.0 - 2026-11-28
+
+Footnotes
+
+- A footnote is a plain small number. Tapping it opens the note in the text
+  under that line and moves the text below down; another tap, or Escape on a
+  Mac, closes it. The note opens under its line even when the line ends
+  inside a link.
+- Footnotes from Substack, Ghost, WordPress, Jekyll, Hugo, Pandoc, GitHub
+  Markdown and Daring Fireball open this way, as do feeds read through
+  FreshRSS.
+
+Reading
+
+- Headings step down clearly: a larger h2 over a smaller h3, and an h3 sits
+  closer to its section.
+- Block quotes are upright in the text colour, set off by their rule.
+- Bold words in a quote, aside or caption keep the block's colour.
+- The gap between paragraphs, and an opened footnote, grow with the text
+  size: NetNewsWire's setting on the Mac, the system text size on iPhone and
+  iPad. The default size is unchanged.
+- Increase Contrast gets stronger text, muted text and rules in light and
+  dark.
+- In light mode the tint behind code, buttons, callouts and asides, and the
+  thin rules, are grey instead of cream. Dark mode is unchanged.
+- Japanese, Chinese, Korean, Arabic and Hebrew articles get a fitting serif
+  and line rules.
+
+What feeds send
+
+- An email sign-up form becomes one quiet button to the publisher's sign-up
+  page, labelled with the form's own words. A form with no usable address is
+  hidden, and a sign-up link already beside the form means no second button.
+- Links styled as buttons (Substack, Ghost, WordPress, Jekyll, Squarespace)
+  show as one tinted pill.
+- Linked posts (Substack, Ghost, WordPress) show as one quiet card.
+- WordPress's "appeared first on" line and Medium's "originally published"
+  line are hidden when they end the post.
+- Untitled posts (Mastodon, Bluesky, micro.blog) lose the empty title line.
+- A lead picture that the body repeats shows once, even when the two are
+  different sizes of the same file.
+- Podcast captions show the length ("1 hr 24 min"), not a file name or byte
+  size.
+- Captions sent as plain blocks (WordPress classic, Jekyll, Blogger) are
+  styled as captions.
+- Ghost galleries stay rows of pictures at one height.
+- Ghost toggles read as a question and its answer, callouts get a tint,
+  pull quotes sit between hairlines and asides sit in a tinted box.
+- Task lists get a text-size checkbox in the muted text colour.
+- KaTeX math no longer shows twice.
+- Mastodon's custom emoji stay in the sentence at text size instead of
+  dropping onto a line of their own. Real pictures over 64px are never
+  shrunk.
+- Floated pictures take at most half the column, headings clear them, and
+  they stack on iPhone.
+- Stray line breaks at block edges, Instagram's empty placeholder rows and
+  the gaps between MacRumors' deal buttons are removed.
+
+Video and embeds
+
+- A video player with no size stays inside its box. In dark mode the box is
+  black from the first frame.
+- A Ghost video card copied from the site's web page (as full-text
+  extraction does) shows its thumbnail.
+- X posts drawn by X's script follow dark mode. X frames embedded directly
+  stay white, since making them dark needed a reload.
+- In dark mode the page shows outside the rounded corners of an X or
+  Bluesky post, instead of white tips.
+
+Mac
+
+- Code blocks get a Copy button on hover, with the block's language beside
+  it. On a one-line block both sit in a cap at the line's end.
+- Line-numbered code from Jekyll's Rouge is one block with muted
+  numbers, on every device.
+- Clicking a large picture opens it larger. Escape, Space or a click closes
+  it and focus returns.
+
+Known limits
+
+- X posts embedded as a plain frame are cut to a video-shaped box. Growing
+  them to their real height would move the text after the article shows.
+
+Under the hood
+
+- Each cleanup step runs on its own, so one malformed feed can't stop the
+  rest.
+- Calm makes its changes before an article shows. The one later change is
+  the update line at the end of a long article, at most once a week. No
+  article waits on Calm.
+  Speed and layout-shift tests guard both.
+- Theme version 16.
+
 ## 1.4.4 - 2026-11-24
 
 - Empty paragraphs and divs that feeds leave behind, such as an editor's

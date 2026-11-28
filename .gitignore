@@ -4,3 +4,4 @@
 .superpowers/
 node_modules/
 test-results/
+.corpus/

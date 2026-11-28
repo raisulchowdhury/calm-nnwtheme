@@ -1,0 +1,6 @@
+{
+ "title": "Notes Written in Pandoc",
+ "feedTitle": "Example Pandoc Blog",
+ "url": "https://example.com/platform-footnotes/",
+ "contentHTML": "<p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.</p><p>Pandoc writes its footnote references with the superscript inside the link<a href=\"#fn1\" class=\"footnote-ref\" id=\"fnref1\" role=\"doc-noteref\"><sup>1</sup></a>, and GitHub prefixes every id<sup><a href=\"#user-content-fn-2\" id=\"user-content-fnref-2\" data-footnote-ref=\"\">2</a></sup>.</p><p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.</p><section id=\"footnotes\" class=\"footnotes footnotes-end-of-document\" role=\"doc-endnotes\"><hr><ol><li id=\"fn1\"><p>A note that now opens in place. <a href=\"#fnref1\" class=\"footnote-back\" role=\"doc-backlink\">↩︎</a></p></li><li id=\"user-content-fn-2\"><p>A second note. <a href=\"#user-content-fnref-2\" data-footnote-backref=\"\">↩</a></p></li></ol></section>"
+}

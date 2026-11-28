@@ -1,0 +1,6 @@
+{
+ "title": "A Post Read Through FreshRSS",
+ "feedTitle": "Example Blog",
+ "url": "https://example.com/post/",
+ "contentHTML": "<p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.<sup data-sanitized-id=\"fnref1\"><a href=\"#fn1\" data-sanitized-class=\"footnote-ref\">1</a></sup></p><p>A calm reading surface gives the words enough room to establish their own rhythm without adding another layer of interface.</p><div data-sanitized-class=\"footnotes\"><hr><ol><li data-sanitized-id=\"fn1\"><p>FreshRSS renamed this note's id, so the reference pointed at nothing. <a href=\"#fnref1\" data-sanitized-class=\"footnote-back\">↩</a></p></li></ol></div>"
+}

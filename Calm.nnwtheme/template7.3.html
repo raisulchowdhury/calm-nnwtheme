@@ -127,6 +127,826 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 		});
 	}
 
+	// Some feeds wrap every block in line breaks (MacRumors sends
+	// "<p><br><br><img><br><br>"), and each break adds a blank line around
+	// images and paragraphs. Remove breaks at the start or end of a block,
+	// between two blocks (MacRumors' deal buttons), and next to an image shown
+	// on its own line. Breaks inside a run of text, such as a poem or an
+	// address, stay.
+	function removeStrayBreaks() {
+		if (!body) {
+			return;
+		}
+
+		function isBlank(node) {
+			return node && node.nodeType === 3 && !/[^\s ​﻿]/.test(node.textContent);
+		}
+
+		function isBreak(node) {
+			return node && node.nodeType === 1 && node.tagName === "BR";
+		}
+
+		function isBlockImage(node) {
+			return node && node.nodeType === 1 && node.tagName === "IMG" && !node.hasAttribute("data-calm-inline");
+		}
+
+		var blockTags = /^(?:P|DIV|FIGURE|BLOCKQUOTE|UL|OL|DL|PRE|TABLE|H[1-6]|HR|SECTION|ARTICLE|ASIDE|HEADER|FOOTER|DETAILS)$/;
+		function isBlock(node) {
+			return node && node.nodeType === 1 && blockTags.test(node.tagName);
+		}
+
+		function sibling(node, direction) {
+			var next = node[direction];
+			while (isBlank(next)) {
+				next = next[direction];
+			}
+			return next;
+		}
+
+		Array.prototype.forEach.call(body.querySelectorAll("br"), function (br) {
+			var parent = br.parentNode;
+			if (!parent || br.closest("pre, code, td, th") || (parent !== body && !/^(?:P|DIV|LI|BLOCKQUOTE|FIGURE|FIGCAPTION|SECTION|ARTICLE|DD|DT)$/.test(parent.tagName))) {
+				return;
+			}
+			var before = sibling(br, "previousSibling");
+			var after = sibling(br, "nextSibling");
+			var run = [br];
+			while (isBreak(after)) {
+				run.push(after);
+				after = sibling(after, "nextSibling");
+			}
+			while (isBreak(before)) {
+				run.unshift(before);
+				before = sibling(before, "previousSibling");
+			}
+			if (!before || !after || isBlockImage(before) || isBlockImage(after) || isBlock(before) && isBlock(after)) {
+				run.forEach(function (node) {
+					if (node.parentNode) {
+						node.parentNode.removeChild(node);
+					}
+				});
+			}
+		});
+	}
+
+	// Icons and emoji drawn as images (Daring Fireball's 1em menu icons,
+	// WordPress and Mastodon emoji) belong inside the line. Calm shows other
+	// images as blocks, so mark these to keep them at text size. NetNewsWire's
+	// image cleanup can't do it once Calm forces image heights, and Feedbin
+	// strips the class and style that would say so.
+	function markInlineImages() {
+		if (!body) {
+			return;
+		}
+
+		var emojiSource = /\/images\/core\/emoji\/|twemoji|\/custom_emojis\//i;
+		Array.prototype.forEach.call(body.querySelectorAll("img"), function (image) {
+			var height = (image.style && image.style.height) || "";
+			var sizedInEm = /^(?:0?\.\d+|1(?:\.\d+)?|2)(?:em|rem)$/.test(height);
+			var smallPixels = /^\d+(?:\.\d+)?px$/.test(height) && parseFloat(height) <= 32;
+			var attributeHeight = parseInt(image.getAttribute("height"), 10);
+			var attributeWidth = parseInt(image.getAttribute("width"), 10);
+			var smallAttributes = attributeHeight > 0 && attributeHeight <= 32 && (!attributeWidth || attributeWidth <= 64);
+			var emoji = /(?:^|\s)(?:emoji|wp-smiley|custom-emoji|twemoji)(?:\s|$)/.test(image.className || "") || emojiSource.test(image.getAttribute("src") || "");
+			if (attributeWidth > 64 || attributeHeight > 64) {
+				return;
+			}
+			if (attributeHeight === 1 && attributeWidth === 1) {
+				image.setAttribute("data-calm-blank", "");
+			} else if (sizedInEm || smallPixels || smallAttributes || emoji) {
+				image.setAttribute("data-calm-inline", "");
+			}
+		});
+	}
+
+	// FreshRSS renames every id in an article to data-sanitized-id, and Feedly
+	// drops ids altogether, so a footnote link points at nothing and opens no
+	// popover. Put back the ids that a link in the article points at. With
+	// Feedly, the note is the list item holding the back link: the item that
+	// links to #fnref-1 is the note #fn-1. An id already on the page stays
+	// where it is.
+	function restoreFootnoteIds() {
+		if (!body) {
+			return;
+		}
+
+		var targets = {};
+		Array.prototype.forEach.call(body.querySelectorAll("a[href*='#']"), function (link) {
+			var id = "";
+			try {
+				id = link.hash ? decodeURIComponent(link.hash.slice(1)) : "";
+			} catch (error) {
+				return;
+			}
+			if (id && !targets[id] && !document.getElementById(id)) {
+				targets[id] = link;
+			}
+		});
+
+		Array.prototype.forEach.call(body.querySelectorAll("[data-sanitized-id]"), function (element) {
+			var id = element.getAttribute("data-sanitized-id");
+			if (id && targets[id] && !element.id && !document.getElementById(id)) {
+				element.id = id;
+			}
+		});
+
+		Object.keys(targets).forEach(function (referenceId) {
+			if (!/fnref/i.test(referenceId) || document.getElementById(referenceId)) {
+				return;
+			}
+			var noteId = referenceId.replace(/fnref/i, "fn");
+			var reference = targets[noteId];
+			var note = targets[referenceId].closest("li");
+			if (!reference || !note || note.id || note.contains(reference) || document.getElementById(noteId)) {
+				return;
+			}
+			note.id = noteId;
+			var marker = reference.closest("sup");
+			if (marker && !marker.id) {
+				marker.id = referenceId;
+			}
+		});
+	}
+
+	// Six Colors and other WordPress sites link footnotes to the site's home
+	// page plus the note's id ("https://sixcolors.com#fn-1"), so NetNewsWire
+	// doesn't see them as footnotes and a tap leaves the app. When the note is
+	// in this article, mark the link so it opens NetNewsWire's popover.
+	function markFootnotes() {
+		if (!body) {
+			return;
+		}
+
+		// Pandoc and GitHub mark the reference with role or data attributes, and
+		// GitHub prefixes ids with "user-content-". WordPress's footnotes block
+		// names notes by a random id inside sup[data-fn].
+		var references = "sup a[href*='#'], a[rel='footnote'][href*='#'], a[role='doc-noteref'][href*='#'], a.footnote-ref[href*='#'], a[data-footnote-ref][href*='#']";
+		Array.prototype.forEach.call(body.querySelectorAll(references), function (link) {
+			var hash = "";
+			try {
+				hash = link.hash ? decodeURIComponent(link.hash.slice(1)) : "";
+			} catch (error) {
+				return;
+			}
+			var key = hash.replace(/^user-content-/i, "");
+			var wordPressNote = link.closest("sup[data-fn]");
+			if (!link.classList.contains("footnote")) {
+				if (!wordPressNote && (!/^(?:fn|footnote)/i.test(key) || /^fnref/i.test(key))) {
+					return;
+				}
+				var note = document.getElementById(hash);
+				if (!note || !body.contains(note) || note.contains(link) || wordPressNote && !note.closest(".wp-block-footnotes")) {
+					return;
+				}
+				link.classList.add("footnote");
+			}
+			// Pandoc puts the <sup> inside the link, so a tap lands on the <sup>
+			// and NetNewsWire, which listens for taps on links, opens nothing.
+			// Turn <a><sup>1</sup></a> into <sup><a>1</a></sup>, as other
+			// platforms write it; it looks the same.
+			var inner = link.firstElementChild;
+			if (inner && inner.tagName === "SUP" && link.children.length === 1 && !link.closest("sup") && link.textContent.trim() === inner.textContent.trim()) {
+				link.parentNode.insertBefore(inner, link);
+				while (inner.firstChild) {
+					link.appendChild(inner.firstChild);
+				}
+				inner.appendChild(link);
+			}
+		});
+	}
+
+	// Many WordPress feeds end each post with "The post <title> appeared first
+	// on <site>." (WPBeginner: "first appeared on"), Medium with "<title> was
+	// originally published in <publication> on Medium, where people are
+	// continuing the conversation...", and OMG! Ubuntu with "You're reading
+	// <title>, a blog post from <site>. Do not reproduce elsewhere without
+	// permission." The sites never show these lines. Hide one when it is the
+	// article's last block and holds the two links, to the post and the site.
+	var feedCreditPatterns = [/^(?:The post|Der Beitrag|L['\u2019]article|La entrada|Il post|O post|Het bericht|Inl\u00e4gget|Indl\u00e6gget) [\s\S]{1,300} (?:appeared first on|first appeared on|erschien zuerst auf|est apparu en premier sur|apareci\u00f3 primero en|\u00e8 apparso per primo su|apareceu primeiro em|verscheen eerst op|d\u00f6k upp f\u00f6rst p\u00e5|dukkede op f\u00f8rst p\u00e5) [\s\S]{1,200}$/i,
+		/^[\s\S]{1,300} was originally published in [\s\S]{1,200} on Medium, where people are continuing the conversation by highlighting and responding to this story\.?$/,
+		/^You['\u2019]re reading [\s\S]{1,300}, a blog post from [\s\S]{1,200}\. Do not reproduce elsewhere without permission\.?$/];
+
+	function hideFeedCredit() {
+		if (!body) {
+			return;
+		}
+
+		function hasContent(element) {
+			if (element.hasAttribute("data-calm-blank")) {
+				return false;
+			}
+			if ((element.textContent || "").trim()) {
+				return true;
+			}
+			var media = "img, video, audio, iframe, svg, hr";
+			return element.matches(media) || Array.prototype.some.call(element.querySelectorAll(media), function (node) {
+				return !node.hasAttribute("data-calm-blank");
+			});
+		}
+
+		var container = body;
+		var last = null;
+		while (container) {
+			last = null;
+			for (var child = container.lastElementChild; child; child = child.previousElementSibling) {
+				if (hasContent(child)) {
+					last = child;
+					break;
+				}
+			}
+			if (last && /^(?:DIV|SECTION|ARTICLE)$/.test(last.tagName) && !last.className) {
+				container = last;
+			} else {
+				container = null;
+			}
+		}
+		if (!last || last.tagName !== "P" || last.querySelectorAll("a").length < 2) {
+			return;
+		}
+		var text = (last.textContent || "").replace(/\s+/g, " ").trim();
+		if (!feedCreditPatterns.some(function (pattern) { return pattern.test(text); })) {
+			return;
+		}
+		last.setAttribute("data-calm-feed-credit", "");
+		// Medium draws a rule above its line; with the line gone it would end the article.
+		var before = last.previousElementSibling;
+		while (before && !hasContent(before)) {
+			before = before.previousElementSibling;
+		}
+		if (before && before.tagName === "HR") {
+			before.setAttribute("data-calm-feed-credit", "");
+		}
+	}
+
+	// A newsletter sign-up form can't work inside a reader, so the stylesheet
+	// hides it. Where the form says where to sign up, put one quiet pill in its
+	// place that opens that page: Mailchimp's hosted form, Substack's and
+	// Ghost's subscribe pages, or a sign-up link inside the block. No usable
+	// page, or a sign-up link already beside the form, means no pill. Labelled
+	// with the form's own button text.
+	// Most articles have no form or frame, so the cheap check runs first and the
+	// full selector, with its :has() tests, only when a candidate is there.
+	var signupWidgets = ".subscription-widget-wrap, .subscription-widget-wrap-editor, [data-component-name='SubscribeWidgetToDOM'], #mc_embed_signup, #mc_embed_shell, .formkit-form, .kg-signup-card, .wp-block-jetpack-subscriptions, .mailpoet_form";
+	var signupBlocks = signupWidgets + ", form[action*='list-manage.com']:has(input[type='email']), form[action*='subscribe' i]:has(input[type='email']), form[action*='signup' i]:has(input[type='email']), form[action*='newsletter' i]:has(input[type='email']), form[action*='convertkit']:has(input[type='email']), form[action*='buttondown']:has(input[type='email']), form[action*='beehiiv']:has(input[type='email']), form[action*='substack.com']:has(input[type='email']), iframe[src*='substack.com/embed']";
+	var signupWords = /\b(?:sign[\s-]?up|subscribe|newsletter|join (?:the|our|my) (?:list|newsletter|mailing list))\b/i;
+	// "subscribe" or "sign-up" as a whole path word, so /unsubscribe doesn't count.
+	var signupPath = /(?:^|[\/#._-])(?:subscribe|sign-?up)(?:$|[\/?#._-])/i;
+
+	function signupPage(block) {
+		function isSignupLink(link) {
+			return /^https?:/i.test(link.href) && (signupWords.test(link.textContent || "") || signupPath.test(link.pathname + link.hash));
+		}
+		var inside = Array.prototype.find.call(block.querySelectorAll("a[href]"), isSignupLink);
+		if (inside) {
+			return inside.href;
+		}
+		var form = block.matches("form") ? block : block.querySelector("form");
+		var action = block.matches("iframe") ? block.getAttribute("src") || "" : form ? form.getAttribute("action") || "" : "";
+		var url = null;
+		try {
+			url = action ? new URL(action, document.baseURI) : null;
+		} catch (error) {}
+		if (url && /^https?:$/.test(url.protocol)) {
+			// Mailchimp posts to /subscribe/post; /subscribe with the same list is its hosted form.
+			if (/(^|\.)list-manage\.com$/i.test(url.hostname) && /^\/subscribe\/post(?:-json)?\/?$/.test(url.pathname) && url.searchParams.get("u")) {
+				return url.origin + "/subscribe?u=" + encodeURIComponent(url.searchParams.get("u")) + (url.searchParams.get("id") ? "&id=" + encodeURIComponent(url.searchParams.get("id")) : "");
+			}
+			// Substack's own form posts to its API; the publication's /subscribe page signs up.
+			if (/(^|\.)substack\.com$/i.test(url.hostname) && url.hostname.toLowerCase() !== "substack.com") {
+				return url.origin + "/subscribe";
+			}
+		}
+		var page = null;
+		try {
+			page = new URL(document.baseURI);
+		} catch (error) {}
+		if (!page || !/^https?:$/.test(page.protocol)) {
+			return null;
+		}
+		if (block.matches(".subscription-widget-wrap, .subscription-widget-wrap-editor, [data-component-name='SubscribeWidgetToDOM']")) {
+			return page.origin + "/subscribe";
+		}
+		if (block.matches(".kg-signup-card")) {
+			return page.origin + "/#/portal/signup";
+		}
+		return null;
+	}
+
+	function hasSignupLinkBeside(block) {
+		// Read the text just before and just after the block in document order, so
+		// broken feed markup (MacRumors puts the form inside stray p and div
+		// wrappers, after a "Sign up" sentence) still counts as "beside".
+		function isSignupLink(node) {
+			return node.nodeType === 1 && node.matches("a[href]") && !block.contains(node) && !node.closest("[data-calm-signup]") &&
+				(signupWords.test(node.textContent || "") || (signupPath.test(node.pathname + node.hash) || /(?:^|\.)eepurl\.com$/i.test(node.hostname)));
+		}
+		function scan(walker, step, limit) {
+			var seen = 0;
+			var node;
+			while ((node = walker[step]()) && seen < limit) {
+				if (node.nodeType === 3) {
+					seen += node.nodeValue.trim().length;
+				} else if (isSignupLink(node)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		var before = document.createTreeWalker(body, 5);
+		before.currentNode = block;
+		var after = document.createTreeWalker(body, 5);
+		after.currentNode = block.lastChild ? block.lastChild : block;
+		while (after.currentNode.lastChild) {
+			after.currentNode = after.currentNode.lastChild;
+		}
+		return scan(before, "previousNode", 240) || scan(after, "nextNode", 120);
+	}
+
+	function offerSignupPages() {
+		if (!body || !(body.getElementsByTagName("form").length || body.getElementsByTagName("iframe").length || body.querySelector(signupWidgets))) {
+			return;
+		}
+		var signups = Array.prototype.filter.call(body.querySelectorAll(signupBlocks), function (block) {
+			return !(block.parentElement && block.parentElement.closest(signupBlocks));
+		});
+		signups.forEach(function (block) {
+			if (hasSignupLinkBeside(block)) {
+				return;
+			}
+			var href = signupPage(block);
+			if (!href) {
+				return;
+			}
+			var submit = block.querySelector("button[type='submit'], form button:not([type]), input[type='submit']");
+			var label = submit ? (submit.matches("input") ? submit.value : submit.textContent) : "";
+			label = (label || "").replace(/\s+/g, " ").trim();
+			if (!label || label.length > 40) {
+				label = "Subscribe";
+			}
+			var wrapper = document.createElement("p");
+			wrapper.className = "button-wrapper";
+			wrapper.setAttribute("data-calm-signup", "");
+			var link = document.createElement("a");
+			link.className = "button";
+			link.href = href;
+			link.textContent = label;
+			wrapper.appendChild(link);
+			block.parentNode.insertBefore(wrapper, block);
+		});
+	}
+
+	// Bluesky, Mastodon, and micro.blog posts have no title. Drop the empty
+	// heading so the post starts right under its source and date.
+	function markUntitled() {
+		if (!header || !title) {
+			return;
+		}
+		var text = title.textContent.trim();
+		if (!text || isPlaceholderValue(text)) {
+			header.classList.add("isUntitled");
+		}
+	}
+
+	// NetNewsWire leaves the page's language unset, so Chinese, Japanese,
+	// Korean, Arabic, and Hebrew articles get Latin line breaking and whatever
+	// font the system picks. When most of the opening text is one of those
+	// scripts, say so; the stylesheet then picks a serif for it.
+	function markArticleLanguage() {
+		if (!body || !body.closest || body.closest("[lang]")) {
+			return;
+		}
+		var sample = (body.textContent || "").slice(0, 1500);
+		var letters = sample.replace(/[\s\d\p{P}\p{S}]/gu, "").length;
+		if (letters < 20) {
+			return;
+		}
+		function share(pattern) {
+			return (sample.match(pattern) || []).length / letters;
+		}
+		var lang = "";
+		if (share(/[぀-ヿ]/g) > 0.1) {
+			lang = "ja";
+		} else if (share(/[가-힯]/g) > 0.3) {
+			lang = "ko";
+		} else if (share(/[一-鿿]/g) > 0.3) {
+			lang = "zh";
+		} else if (share(/[؀-ۿ]/g) > 0.3) {
+			lang = "ar";
+		} else if (share(/[֐-׿]/g) > 0.3) {
+			lang = "he";
+		}
+		if (lang) {
+			body.setAttribute("lang", lang);
+			if (header) {
+				header.setAttribute("lang", lang);
+			}
+		}
+	}
+
+	// Ghost galleries come as rows of images that Ghost's own script sizes.
+	// Give each image a share of its row in proportion to its shape, so a row
+	// lines up at one height the way it does on the site.
+	function layoutGalleries() {
+		if (!body) {
+			return;
+		}
+		Array.prototype.forEach.call(body.querySelectorAll(".kg-gallery-image"), function (cell) {
+			var image = cell.querySelector("img");
+			var width = image ? parseFloat(image.getAttribute("width")) : 0;
+			var height = image ? parseFloat(image.getAttribute("height")) : 0;
+			if (width > 0 && height > 0) {
+				cell.style.flex = (width / height).toFixed(4) + " 1 0%";
+			}
+		});
+	}
+
+	// Ghost's web pages give a video card a blank poster (a 1x1 GIF, or one
+	// from spacergif.org) and paint the real thumbnail as the video's inline
+	// background, which NetNewsWire strips. A full-text copy of such a page
+	// shows an empty box until the video plays. Give the video the thumbnail
+	// Ghost names on its card, or in that background, as its poster.
+	function showVideoThumbnails() {
+		if (!body) {
+			return;
+		}
+		var spacer = /^data:image\/gif|spacergif\.org/i;
+		Array.prototype.forEach.call(body.querySelectorAll(".kg-video-card video"), function (video) {
+			var poster = (video.getAttribute("poster") || "").trim();
+			if (poster && !spacer.test(poster)) {
+				return;
+			}
+			var card = video.closest(".kg-video-card");
+			var source = card ? (card.getAttribute("data-kg-custom-thumbnail") || card.getAttribute("data-kg-thumbnail") || "").trim() : "";
+			if (!source) {
+				var match = /url\(\s*(['"]?)([^'")]+)\1\s*\)/.exec(video.getAttribute("style") || "");
+				source = match ? match[2].trim() : "";
+			}
+			if (source && !spacer.test(source) && !/^\s*javascript:/i.test(source)) {
+				video.setAttribute("poster", source);
+				// Until the picture decodes, the video takes the shape of the
+				// 1x1 spacer it replaced, a square, and then shrinks. Its own
+				// width and height fix the box from the first frame.
+				// Plain numbers only: "100%" is not a shape.
+				var plain = /^\s*\d+(?:\.\d+)?\s*$/;
+				var width = plain.test(video.getAttribute("width") || "") ? parseFloat(video.getAttribute("width")) : 0;
+				var height = plain.test(video.getAttribute("height") || "") ? parseFloat(video.getAttribute("height")) : 0;
+				if (width > 0 && height > 0) {
+					video.style.aspectRatio = width + " / " + height;
+				}
+			}
+		});
+	}
+
+	// NetNewsWire captions a podcast player with "title · duration · size",
+	// and with the audio file's name when the feed gives no title. Keep the
+	// title and say the duration in words; drop the file name and size.
+	function quietAudioCaptions() {
+		var captions = document.querySelectorAll ? document.querySelectorAll(".nnw-enclosure-audio .nnw-enclosure-caption") : [];
+		Array.prototype.forEach.call(captions, function (caption) {
+			var parts = caption.innerHTML.split(" · ");
+			var kept = [];
+			parts.forEach(function (part) {
+				var text = part.replace(/<[^>]*>/g, "").trim();
+				var time = /^(?:(\d+):)?(\d{1,2}):(\d{2})$/.exec(text);
+				if (!text || /^[\d.,]+\s?(?:bytes|KB|MB|GB)$/i.test(text) || (/^<a\b/i.test(part.trim()) && /\.(?:mp3|m4a|aac|ogg|oga|opus|wav|flac|mp4|m4v|mov)$/i.test(text))) {
+					return;
+				}
+				if (time) {
+					var hours = Number(time[1] || 0);
+					var minutes = Math.round(Number(time[2]) + Number(time[3]) / 60);
+					if (minutes === 60) {
+						hours += 1;
+						minutes = 0;
+					}
+					kept.push(hours ? hours + " hr" + (minutes ? " " + minutes + " min" : "") : Math.max(minutes, 1) + " min");
+					return;
+				}
+				kept.push(part);
+			});
+			if (kept.length) {
+				caption.innerHTML = kept.join(" · ");
+			} else {
+				caption.hidden = true;
+			}
+		});
+	}
+
+	// On the Mac, a picture shown smaller than its real size opens larger on
+	// click, on a plain backdrop with its caption. iPhone and iPad have
+	// NetNewsWire's own image viewer, so this stays off there. Linked images
+	// keep their links.
+	function enableImageViewer() {
+		var fineHover = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)");
+		if (!body || !fineHover || !fineHover.matches || /iPhone|iPad/.test(navigator.userAgent) || ("ontouchend" in document && navigator.maxTouchPoints > 1)) {
+			return;
+		}
+
+		var viewer = null;
+		var lastFocus = null;
+
+		function isZoomable(image) {
+			return image.naturalWidth > image.getBoundingClientRect().width * 1.25 && image.naturalWidth >= 400;
+		}
+
+		function close() {
+			if (!viewer) {
+				return;
+			}
+			viewer.remove();
+			viewer = null;
+			document.removeEventListener("keydown", onKey, true);
+			if (lastFocus && lastFocus.focus) {
+				lastFocus.focus();
+			}
+		}
+
+		function onKey(event) {
+			if (event.key === "Escape" || event.key === " ") {
+				event.preventDefault();
+				close();
+			}
+		}
+
+		function open(image) {
+			lastFocus = document.activeElement;
+			viewer = document.createElement("div");
+			viewer.className = "calmViewer";
+			viewer.setAttribute("role", "dialog");
+			viewer.setAttribute("aria-modal", "true");
+			viewer.setAttribute("aria-label", image.alt || "Image");
+			viewer.tabIndex = -1;
+			var large = document.createElement("img");
+			large.src = image.currentSrc || image.src;
+			large.alt = image.alt || "";
+			viewer.appendChild(large);
+			var figure = image.closest("figure");
+			var captionSource = figure ? figure.querySelector("figcaption") : null;
+			var captionText = captionSource ? captionSource.textContent.trim() : "";
+			if (captionText) {
+				var caption = document.createElement("p");
+				caption.className = "calmViewerCaption";
+				caption.textContent = captionText;
+				viewer.appendChild(caption);
+			}
+			viewer.addEventListener("click", close);
+			document.body.appendChild(viewer);
+			document.addEventListener("keydown", onKey, true);
+			viewer.focus();
+		}
+
+		// Decide when the pointer reaches a picture, once it is laid out and
+		// loaded, so a resized window or a late image is judged correctly.
+		body.addEventListener("mouseover", function (event) {
+			var image = event.target;
+			if (!image || image.tagName !== "IMG" || image.closest("a, button") || image.hasAttribute("data-calm-inline")) {
+				return;
+			}
+			image.classList.toggle("isZoomable", image.complete && isZoomable(image));
+		});
+
+		body.addEventListener("click", function (event) {
+			var image = event.target && event.target.closest ? event.target.closest("img.isZoomable") : null;
+			if (image && isZoomable(image)) {
+				event.preventDefault();
+				open(image);
+			}
+		});
+	}
+
+	// NetNewsWire 7.3 can show a feed's own lead picture above the body as
+	// primary media. When the body opens with that same picture (Latent Space
+	// does), the reader sees it twice; keep the body's copy, which carries the
+	// feed's link and caption.
+	function dropDuplicateLeadImage() {
+		var lead = document.querySelector(".nnw-primary-image img");
+		if (!body || !lead) {
+			return;
+		}
+		function pictureKey(image) {
+			var source = image.getAttribute("data-nnw-src") || image.getAttribute("src") || "";
+			try {
+				source = decodeURIComponent(new URL(source, document.baseURI).pathname);
+			} catch (error) {
+				source = source.split(/[?#]/)[0];
+			}
+			// Image CDNs put resizing options in the path, so compare the file name,
+			// less a size suffix: Latent Space's lead is "cover-1400x1400.png" and
+			// the body's "cover.png".
+			return (source.split("/").filter(Boolean).pop() || "").replace(/-\d+x\d+(\.[a-z0-9]+)$/i, "$1");
+		}
+		var key = pictureKey(lead);
+		var first = body.querySelector("img");
+		if (!key || !first || pictureKey(first) !== key) {
+			return;
+		}
+		// Only when the picture opens the body, before any real text.
+		var range = document.createRange();
+		range.setStart(body, 0);
+		range.setEndBefore(first);
+		if (range.toString().trim().length > 40) {
+			return;
+		}
+		var media = lead.closest(".nnw-primary-media");
+		var image = lead.closest(".nnw-primary-image");
+		image.hidden = true;
+		if (media && !media.querySelector(".nnw-enclosure, video, audio, iframe")) {
+			media.hidden = true;
+		}
+	}
+
+	// X's embed script draws a white card unless the blockquote asks for dark.
+	// Ask before it draws. Never reload or redraw a card afterwards: the swap
+	// shows as a late, flickering card. A card X already drew stays as it is.
+	function matchTweetTheme() {
+		var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+		if (!body || !dark) {
+			return;
+		}
+		Array.prototype.forEach.call(body.querySelectorAll("blockquote.twitter-tweet"), function (quote) {
+			if (!quote.hasAttribute("data-theme")) {
+				quote.setAttribute("data-theme", "dark");
+			}
+		});
+	}
+
+	// The language a code block declares ("language-swift" from Markdown and
+	// Prism, "lang-js", GitHub's "highlight-source-js" on the wrapper, or a
+	// data-lang attribute), as a name to show beside Copy. Blocks that declare
+	// none, or only plain text, get no label.
+	var codeLanguageNames = {
+		bash: "Shell", sh: "Shell", shell: "Shell", zsh: "Shell", console: "Shell", shellsession: "Shell",
+		js: "JavaScript", javascript: "JavaScript", jsx: "JSX", ts: "TypeScript", typescript: "TypeScript", tsx: "TSX",
+		py: "Python", python: "Python", rb: "Ruby", ruby: "Ruby", rs: "Rust", rust: "Rust", go: "Go", golang: "Go",
+		swift: "Swift", objc: "Objective-C", objectivec: "Objective-C", "objective-c": "Objective-C",
+		c: "C", cpp: "C++", "c++": "C++", cs: "C#", csharp: "C#", java: "Java", kotlin: "Kotlin", kt: "Kotlin",
+		php: "PHP", sql: "SQL", html: "HTML", xml: "XML", css: "CSS", scss: "SCSS", json: "JSON", yaml: "YAML", yml: "YAML",
+		toml: "TOML", md: "Markdown", markdown: "Markdown", diff: "Diff", dockerfile: "Dockerfile", make: "Makefile", makefile: "Makefile",
+		lua: "Lua", r: "R", elixir: "Elixir", haskell: "Haskell", hs: "Haskell", markup: "HTML", wl: "Wolfram", scala: "Scala", dart: "Dart", graphql: "GraphQL", powershell: "PowerShell", ps1: "PowerShell"
+	};
+	var plainCodeLanguages = /^(?:plain|plaintext|plain-text|text|txt|none|nohighlight|no-highlight|output|raw)$/;
+
+	// Where each platform names it: Markdown, Prism, highlight.js and Shiki put
+	// "language-x" on <code> or <pre>, Hugo adds data-lang, Jekyll's Rouge puts
+	// "language-x" on a wrapper two levels up, GitHub "highlight-source-x" on
+	// the wrapper, WordPress's SyntaxHighlighter "brush: x" on <pre>, Pandoc and
+	// Quarto "sourceCode x", and some blogs just "javascript".
+	var codeHelperClasses = /^(?:sourcecode|literate|numbersource|code-with-copy|cell-code|highlight|chroma|hljs|shiki|prettyprint|notranslate|wp-block-code)$/i;
+
+	function codeLanguageOf(node, wrapper) {
+		var value = wrapper ? "" : node.getAttribute("data-lang") || node.getAttribute("data-language") || "";
+		if (value) {
+			return value;
+		}
+		var classes = (node.getAttribute("class") || "") + " " + (node.getAttribute("data-sanitized-class") || "");
+		var match = wrapper ?
+			classes.match(/(?:^|\s)(?:language|highlight-source)-([\w+#.-]+)/) :
+			classes.match(/(?:^|\s)(?:language|lang|highlight-source)-([\w+#.-]+)/) || classes.match(/(?:^|\s)brush:\s*([\w+#-]+)/);
+		if (match) {
+			return match[1];
+		}
+		if (wrapper) {
+			return "";
+		}
+		var tokens = classes.trim().split(/\s+/);
+		var pandoc = /(?:^|\s)sourceCode(?:\s|$)/.test(classes);
+		for (var index = 0; index < tokens.length; index++) {
+			var token = tokens[index];
+			if (pandoc ? token && !codeHelperClasses.test(token) : token.length > 1 && codeLanguageNames[token.toLowerCase()]) {
+				return token;
+			}
+		}
+		return "";
+	}
+
+	function codeLanguage(pre) {
+		var code = pre.querySelector("code");
+		var nodes = [pre, code].filter(Boolean);
+		// A wrapper names the language only when it holds just this block.
+		for (var parent = pre.parentElement, depth = 0; parent && parent !== body && depth < 2; parent = parent.parentElement, depth++) {
+			if (parent.getElementsByTagName("pre").length === 1) {
+				nodes.push(parent);
+			}
+		}
+		for (var index = 0; index < nodes.length; index++) {
+			var value = codeLanguageOf(nodes[index], index >= (code ? 2 : 1)).trim();
+			if (value) {
+				var key = value.toLowerCase();
+				// Plain text, or something that isn't a language name at all.
+				if (plainCodeLanguages.test(key) || !/^[a-z][\w+#.-]{0,23}$/i.test(value)) {
+					return "";
+				}
+				return codeLanguageNames[key] || value;
+			}
+		}
+		return "";
+	}
+
+	// The text Copy takes. Rouge and Chroma tables put line numbers in their own
+	// column; copy only the code column.
+	function codeText(pre) {
+		var columns = pre.querySelectorAll("td.code pre, td.rouge-code pre, td.lntd:last-child pre");
+		var parts = columns.length ? Array.prototype.slice.call(columns) : [pre];
+		return parts.map(function (part) {
+			return (part.innerText || part.textContent || "").replace(/\n$/, "");
+		}).join("\n");
+	}
+
+	// On the Mac, a code block shows a quiet Copy button while the pointer is
+	// over it, beside the block's language when it names one. Touch screens
+	// select text instead, so they get neither.
+	function enableCodeCopy() {
+		var fineHover = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)");
+		if (!body || !fineHover || !fineHover.matches) {
+			return;
+		}
+
+		function copyText(text, done) {
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text).then(done, function () {
+					copyWithSelection(text, done);
+				});
+			} else {
+				copyWithSelection(text, done);
+			}
+		}
+
+		function copyWithSelection(text, done) {
+			var area = document.createElement("textarea");
+			area.value = text;
+			area.setAttribute("readonly", "");
+			area.style.position = "fixed";
+			area.style.opacity = "0";
+			document.body.appendChild(area);
+			area.select();
+			var copied = false;
+			try {
+				copied = document.execCommand("copy");
+			} catch (error) {}
+			area.remove();
+			if (copied) {
+				done();
+			}
+		}
+
+		// Read every block before changing any, and count lines from the text and
+		// its <br>s (Medium breaks lines with <br>), not innerText: innerText lays
+		// out the page, and doing that between changes would lay it out once per
+		// block.
+		var blocks = [];
+		Array.prototype.forEach.call(body.querySelectorAll("pre"), function (pre) {
+			if (pre.closest("table")) {
+				return;
+			}
+			var text = (pre.textContent || "").replace(/\n$/, "");
+			var lines = text.split("\n").length + pre.getElementsByTagName("br").length;
+			if (lines < 2 && text.length < 40) {
+				return;
+			}
+			// Read the language before wrapping: GitHub names it on the block's wrapper.
+			blocks.push({ pre: pre, language: codeLanguage(pre), oneLine: lines < 2 });
+		});
+
+		blocks.forEach(function (block) {
+			var pre = block.pre;
+			var language = block.language;
+			var wrap = document.createElement("div");
+			// A one-line command gets a full-height Copy cap (see .calmCodeOneLine).
+			wrap.className = block.oneLine ? "calmCode calmCodeOneLine" : "calmCode";
+			pre.parentNode.insertBefore(wrap, pre);
+			wrap.appendChild(pre);
+			var button = document.createElement("button");
+			button.type = "button";
+			button.className = "calmCopy";
+			button.textContent = "Copy";
+			button.setAttribute("aria-label", "Copy code");
+			button.addEventListener("click", function () {
+				copyText(codeText(pre), function () {
+					button.textContent = "Copied";
+					setTimeout(function () {
+						button.textContent = "Copy";
+					}, 1400);
+				});
+			});
+			var tools = document.createElement("div");
+			tools.className = "calmCodeTools";
+			if (language) {
+				var label = document.createElement("span");
+				label.className = "calmCodeLanguage";
+				label.textContent = language;
+				tools.appendChild(label);
+			}
+			tools.appendChild(button);
+			wrap.appendChild(tools);
+		});
+	}
+
+	// One odd feed shouldn't stop the reading map or the steps after it.
+	function safely(step) {
+		try {
+			step();
+		} catch (error) {}
+	}
+
 	function normalizeMetadata() {
 		Array.prototype.forEach.call(metadataItems, function (metadataItem) {
 			if (metadataItem === readingTime) {
@@ -268,7 +1088,8 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 
 		var rawHeadings = Array.prototype.slice.call(body.querySelectorAll("h1, h2, h3, h4, h5, h6"))
 			.filter(function (heading) {
-				return heading.textContent.trim().length > 0;
+				// A Ghost toggle card's heading is a question in an FAQ, not a section.
+				return heading.textContent.trim().length > 0 && !(heading.closest && heading.closest(".kg-toggle-card"));
 			});
 		var titleKey = normalizeHeadingText(titleText);
 		var seenHeadingKeys = {};
@@ -721,6 +1542,305 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 		}
 	}
 
+	// Footnotes open in the text. A tap on the number puts the note on its own
+	// lines right under the line that holds the number, pushing what follows
+	// down; another tap on the number, or Escape, closes it and the text goes
+	// back exactly as it was. NetNewsWire's own popover (newsfoot.js) floats
+	// over the lines below and covers them, so this takes the tap first. At
+	// load this adds one listener and touches no footnote; a note is built only
+	// when it is opened.
+	function enableFootnoteNotes() {
+		if (!body) {
+			return;
+		}
+
+		var openNotes = [];
+		var count = 0;
+		var blocks = "p, li, dd, dt, blockquote, td, th, figcaption, h1, h2, h3, h4, h5, h6";
+		var backLinks = "a[href*='#fnr'], a[href^='#'][href$='-link'], [role='doc-backlink'], [data-footnote-backref], .footnote-back, .footnote-backref, .footnote-return, .reversefootnote, .footnoteBackLink";
+
+		// A back link (to #fnref..., or one of the platforms' back-link
+		// classes) is never a marker, even where a platform calls it "footnote".
+		function isMarker(link) {
+			if (link.matches(backLinks) || /^#(?:user-content-)?fnref/i.test(link.hash)) {
+				return false;
+			}
+			return link.classList.contains("footnote") || link.matches("a[id^='footnote-anchor-']");
+		}
+
+		// The note's text, without the back arrow and without ids that would
+		// repeat ones already on the page.
+		function noteFor(link) {
+			var id = "";
+			try {
+				id = link.hash ? decodeURIComponent(link.hash.slice(1)) : "";
+			} catch (error) {
+				return null;
+			}
+			var target = id && document.getElementById(id);
+			if (!target || !body.contains(target) || target.contains(link)) {
+				return null;
+			}
+			var note = document.createElement("span");
+			if (link.matches("a[id^='footnote-anchor-']")) {
+				// Substack: the target is the note's own number, and its text
+				// follows in the elements after it.
+				for (var node = target.nextElementSibling; node && !node.matches("a[id^='footnote-']"); node = node.nextElementSibling) {
+					note.appendChild(node.cloneNode(true));
+				}
+			} else {
+				Array.prototype.forEach.call(target.childNodes, function (child) {
+					note.appendChild(child.cloneNode(true));
+				});
+			}
+			Array.prototype.forEach.call(note.querySelectorAll("a"), function (anchor) {
+				var href = anchor.getAttribute("href") || "";
+				if (anchor.matches(backLinks) || href.charAt(0) === "#" && /^[\s↩↑⏎⤴^︎️]*$/.test(anchor.textContent)) {
+					anchor.remove();
+				}
+			});
+			Array.prototype.forEach.call(note.querySelectorAll("[id]"), function (element) {
+				element.removeAttribute("id");
+			});
+			if (!note.textContent.trim()) {
+				return null;
+			}
+			var number = document.createElement("span");
+			number.className = "calmNoteNumber";
+			number.textContent = link.textContent.trim().replace(/^\[(.*)\]$/, "$1");
+			// The number leads the note's first line: inside its first
+			// paragraph, also when a wrapper holds that paragraph (Substack's
+			// div.footnote-content).
+			var lead = note;
+			for (var first = note.firstChild; first; first = first.firstChild) {
+				while (first && (first.nodeType === 8 || (first.nodeType === 3 && !first.data.trim()))) {
+					first = first.nextSibling;
+				}
+				if (!first || first.nodeType !== 1 || !/^(?:P|DIV|SECTION)$/.test(first.tagName)) {
+					break;
+				}
+				lead = first;
+				if (first.tagName === "P") {
+					break;
+				}
+			}
+			while (lead.firstChild && (lead.firstChild.nodeType === 8 || (lead.firstChild.nodeType === 3 && !lead.firstChild.data.trim()))) {
+				lead.firstChild.remove();
+			}
+			lead.insertBefore(document.createTextNode(" "), lead.firstChild);
+			lead.insertBefore(number, lead.firstChild);
+			note.className = "calmNote";
+			note.setAttribute("role", "note");
+			note.id = "calm-note-" + (++count);
+			return note;
+		}
+
+		// Where the line holding the marker ends: the first character after it
+		// that sits on a lower line. The note goes there, so the lines above it
+		// keep their words. If that point is inside a link, the link ends at
+		// the line's end and continues after the note.
+		function place(link, note) {
+			var marker = link.closest("sup") || link;
+			var block = marker.closest(blocks);
+			if (!block || !body.contains(block)) {
+				marker.parentNode.insertBefore(note, marker.nextSibling);
+				return null;
+			}
+			var bottom = marker.getBoundingClientRect().bottom;
+			var range = document.createRange();
+			var walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, null, false);
+			walker.currentNode = marker;
+			var text;
+			while ((text = walker.nextNode())) {
+				if (marker.contains(text) || !text.data.trim()) {
+					continue;
+				}
+				range.setStart(text, text.data.length - 1);
+				range.setEnd(text, text.data.length);
+				var last = range.getBoundingClientRect();
+				if (!last.height || last.top < bottom) {
+					continue;
+				}
+				var low = 0;
+				var high = text.data.length - 1;
+				while (low < high) {
+					var middle = (low + high) >> 1;
+					range.setStart(text, middle);
+					range.setEnd(text, middle + 1);
+					var rect = range.getBoundingClientRect();
+					if (rect.height && rect.top >= bottom) {
+						high = middle;
+					} else {
+						low = middle + 1;
+					}
+				}
+				// The new line starts at this character, or at the outermost
+				// element that begins with it.
+				var point = text;
+				if (low === 0) {
+					while (point.parentNode !== block && !point.previousSibling) {
+						point = point.parentNode;
+					}
+				}
+				var inText = point === text && low > 0;
+				// Inside emphasis or a span the note can go in place; a link
+				// would carry its tap and underline into the note.
+				var anchor = null;
+				for (var up = point.parentNode; up !== block; up = up.parentNode) {
+					if (up.tagName === "A") {
+						anchor = up;
+					}
+				}
+				if (!anchor) {
+					if (!inText) {
+						point.parentNode.insertBefore(note, point);
+						return null;
+					}
+					var rest = text.splitText(low);
+					text.parentNode.insertBefore(note, rest);
+					return { before: text, rest: rest };
+				}
+				// The line ends inside a link: end the link there and carry on
+				// in a copy of it after the note. Closing joins them again.
+				var depth = 0;
+				for (var level = inText ? text.parentNode : point.parentNode; level !== anchor; level = level.parentNode) {
+					depth++;
+				}
+				if (inText) {
+					range.setStart(text, low);
+				} else {
+					range.setStartBefore(point);
+				}
+				range.setEnd(anchor, anchor.childNodes.length);
+				var tail = anchor.cloneNode(false);
+				tail.appendChild(range.extractContents());
+				for (var copy = tail, i = 0; copy && copy.nodeType === 1 && i <= depth; copy = copy.firstChild, i++) {
+					copy.removeAttribute("id");
+				}
+				anchor.parentNode.insertBefore(tail, anchor.nextSibling);
+				anchor.parentNode.insertBefore(note, tail);
+				return { head: anchor, tail: tail, depth: depth, inText: inText };
+			}
+			block.appendChild(note);
+			return null;
+		}
+
+		// Puts back together a link that place() ended at a line's end: each
+		// copied level takes its children back, down to the split text.
+		function rejoin(head, tail, depth, inText) {
+			var seam = head.lastChild;
+			var first = tail.firstChild;
+			while (tail.firstChild) {
+				head.appendChild(tail.firstChild);
+			}
+			tail.remove();
+			if (!seam || !first) {
+				return;
+			}
+			if (depth > 0) {
+				if (seam.nodeType === 1 && first.nodeType === 1) {
+					rejoin(seam, first, depth - 1, inText);
+				}
+			} else if (inText && seam.nodeType === 3 && first.nodeType === 3) {
+				seam.appendData(first.data);
+				first.remove();
+			}
+		}
+
+		function reveal(link, note) {
+			var noteBox = note.getBoundingClientRect();
+			var overflow = noteBox.bottom + 16 - window.innerHeight;
+			if (overflow > 0) {
+				window.scrollBy(0, Math.min(overflow, Math.max(0, link.getBoundingClientRect().top - 16)));
+			}
+		}
+
+		function open(link, note, quietly) {
+			var entry = { link: link, note: note, split: place(link, note) };
+			openNotes.push(entry);
+			link.setAttribute("aria-expanded", "true");
+			link.setAttribute("aria-controls", note.id);
+			if (openNotes.length === 1) {
+				document.addEventListener("keydown", onKey, true);
+				window.addEventListener("resize", onResize);
+			}
+			if (!quietly) {
+				reveal(link, note);
+			}
+		}
+
+		// Notes opened later may sit inside this one's split (two numbers on
+		// one line), so they come out first, newest first, and go back after.
+		function close(entry) {
+			var later = openNotes.slice(openNotes.indexOf(entry) + 1);
+			later.slice().reverse().forEach(shut);
+			shut(entry);
+			later.forEach(function (item) {
+				open(item.link, item.note, true);
+			});
+		}
+
+		function shut(entry) {
+			entry.note.remove();
+			var split = entry.split;
+			if (split && split.tail) {
+				if (split.tail.parentNode && split.head.nextSibling === split.tail) {
+					rejoin(split.head, split.tail, split.depth, split.inText);
+				}
+			} else if (split && split.rest.parentNode && split.rest.previousSibling === split.before) {
+				split.before.appendData(split.rest.data);
+				split.rest.remove();
+			}
+			entry.link.setAttribute("aria-expanded", "false");
+			openNotes.splice(openNotes.indexOf(entry), 1);
+			if (!openNotes.length) {
+				document.removeEventListener("keydown", onKey, true);
+				window.removeEventListener("resize", onResize);
+			}
+		}
+
+		function onKey(event) {
+			if (event.key === "Escape" && openNotes.length) {
+				event.preventDefault();
+				openNotes.slice().reverse().forEach(shut);
+			}
+		}
+
+		// A new width moves the line ends, so put open notes back at their
+		// marker's new line end.
+		function onResize() {
+			var entries = openNotes.slice();
+			entries.slice().reverse().forEach(shut);
+			entries.forEach(function (entry) {
+				open(entry.link, entry.note, true);
+			});
+		}
+
+		document.addEventListener("click", function (event) {
+			var link = event.target && event.target.closest ? event.target.closest("a[href*='#']") : null;
+			if (!link || !body.contains(link) || link.closest(".calmNote") || !isMarker(link)) {
+				return;
+			}
+			var entry = null;
+			openNotes.forEach(function (item) {
+				if (item.link === link) {
+					entry = item;
+				}
+			});
+			var note = entry ? null : noteFor(link);
+			if (!entry && !note) {
+				return;
+			}
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			if (entry) {
+				close(entry);
+			} else {
+				open(link, note);
+			}
+		}, true);
+	}
+
 	function syncTocMode() {
 		if (!body || !toc || !tocList || shouldDisableRail()) {
 			if (tocCleanup) {
@@ -748,11 +1868,27 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 		}
 	}
 
+	safely(markInlineImages);
+	safely(removeStrayBreaks);
+	safely(hideFeedCredit);
+	safely(offerSignupPages);
+	safely(restoreFootnoteIds);
+	safely(markFootnotes);
+	safely(markUntitled);
+	safely(markArticleLanguage);
+	safely(layoutGalleries);
+	safely(showVideoThumbnails);
+	safely(quietAudioCaptions);
+	safely(dropDuplicateLeadImage);
+	safely(matchTweetTheme);
 	hideBlankBlocks();
 	normalizeMetadata();
 	hideEmptyExternalLink();
 	updateReadingTime();
 	updateMetadataVisibility();
+	safely(enableCodeCopy);
+	safely(enableImageViewer);
+	safely(enableFootnoteNotes);
 	observeCompactRail();
 	syncTocMode();
 })();
@@ -761,7 +1897,7 @@ Keep the new media tags out of this comment: NetNewsWire matches them anywhere.
 	// end with one faint line naming the new version and a link that installs
 	// it. Calm asks GitHub at most once a week, only from long articles, and
 	// sends nothing about what you read.
-	var BUILD = 15;
+	var BUILD = 16;
 	var SOURCE = "https://raw.githubusercontent.com/raisulchowdhury/calm-nnwtheme/main/updates.json";
 	var DAY = 24 * 60 * 60 * 1000;
 	var CHECK_EVERY = 7 * DAY;

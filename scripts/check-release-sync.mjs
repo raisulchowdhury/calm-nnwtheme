@@ -9,15 +9,20 @@ const specification = readFileSync(
 	"utf8",
 );
 const releaseNotes = readFileSync(
-	"docs/releases/2026-11-24-calm-1.4.4.md",
+	"docs/releases/2026-11-28-calm-1.5.0.md",
 	"utf8",
 );
 const workflow = readFileSync(".github/workflows/validate.yml", "utf8");
 const releaseWorkflow = readFileSync(".github/workflows/release.yml", "utf8");
 
-assert.match(info, /<key>Version<\/key>\s*<integer>15<\/integer>/, "theme version should be 15");
-assert.match(changelog, /^## 1\.4\.4 - 2026-11-24$/m, "changelog should include v1.4.4");
-assert.match(releaseNotes, /^# Calm 1\.4\.4$/m, "release notes should identify Calm 1.4.4");
+assert.match(info, /<key>Version<\/key>\s*<integer>16<\/integer>/, "theme version should be 16");
+// The update line compares updates.json's build with the BUILD in each script
+// copy. A copy left behind would tell its own readers to update forever.
+for (const file of ["Calm.nnwtheme/template.html", "Calm.nnwtheme/template7.3.html", "preview/index.html"]) {
+	assert.match(readFileSync(file, "utf8"), /var BUILD = 16;/, `${file} should carry build 16`);
+}
+assert.match(changelog, /^## 1\.5\.0 - 2026-11-28$/m, "changelog should include v1.5.0");
+assert.match(releaseNotes, /^# Calm 1\.5\.0$/m, "release notes should identify Calm 1.5.0");
 assert.match(
 	specification,
 	/All four checkpoints were implemented, accepted, and synchronized/,

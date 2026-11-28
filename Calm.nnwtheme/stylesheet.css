@@ -16,10 +16,11 @@
 	--reader-heading: #171514;
 	--reader-muted: #706b64;
 	--reader-faint: #ada59b;
-	--reader-rule: #eee5d4;
-	--reader-code-bg: #f7f0e4;
+	--reader-rule: #e6e4e1;
+	--reader-code-bg: #f3f2f0;
 	--reader-progress: rgba(36, 32, 29, 0.18);
 	--reader-selection: rgba(201, 154, 68, 0.22);
+	--reader-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.3 5 8.6 9.6 3.6' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 	--reader-popover-bg: #ffffff;
 	--reader-popover-shadow: 0 10px 30px rgba(36, 32, 29, 0.12), 0 1px 3px rgba(36, 32, 29, 0.1);
 
@@ -42,7 +43,7 @@
 	--feedlink-color: var(--reader-muted);
 	--header-color: var(--reader-muted);
 	--header-table-border-color: var(--reader-rule);
-	--system-message-color: var(--reader-faint);
+	--system-message-color: var(--reader-muted);
 	--table-cell-border-color: var(--reader-rule);
 	--block-quote-border-color: var(--reader-rule);
 }
@@ -58,8 +59,31 @@
 		--reader-code-bg: #1c1b1a;
 		--reader-progress: rgba(255, 252, 240, 0.18);
 		--reader-selection: rgba(218, 169, 95, 0.24);
+		--reader-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.3 5 8.6 9.6 3.6' fill='none' stroke='%23100f0f' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 		--reader-popover-bg: #1c1b1a;
 		--reader-popover-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+	}
+}
+
+/*
+ * Increase Contrast (Accessibility settings on Mac, iPhone, and iPad).
+ * Secondary text and rules get darker in light mode and lighter in dark mode.
+ */
+@media (prefers-contrast: more) {
+	:root {
+		--reader-text: #1a1714;
+		--reader-muted: #4d4842;
+		--reader-faint: #6f6a63;
+		--reader-rule: #c4c1bc;
+	}
+}
+
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+	:root {
+		--reader-text: #e6e4d9;
+		--reader-muted: #b7b5ac;
+		--reader-faint: #8f8d87;
+		--reader-rule: #5a5855;
 	}
 }
 
@@ -143,6 +167,15 @@ article {
 	line-height: 1.35;
 }
 
+/* Posts with no title (Bluesky, Mastodon, micro.blog) start at the source line. */
+.articleHeader.isUntitled .articleTitle {
+	display: none;
+}
+
+.articleHeader.isUntitled .articleMeta {
+	margin-top: 0;
+}
+
 .articleMeta > span:not([hidden]) ~ span:not([hidden])::before {
 	content: "·";
 	margin-right: 0.35rem;
@@ -224,13 +257,15 @@ article {
 /*
  * Feed cleanup. The template script marks blocks with no text and no media
  * (an editor's blank line, Blogger's separators) so they add no gap.
+ * !important: some are drawn with an inline display, such as Ghost's
+ * "display: flex" embed skeletons.
  */
 .articleBody [data-calm-blank] {
-	display: none;
+	display: none !important;
 }
 
 .articleBody [data-calm-blank="clear"] {
-	display: block;
+	display: block !important;
 	height: 0;
 	margin: 0;
 	padding: 0;
@@ -262,8 +297,11 @@ article {
 	font-family: var(--reader-serif-body);
 }
 
+/* The gap between paragraphs grows with the reader's text size: 1rem at the
+   default size, as before, plus 0.9 of every pixel larger (or smaller), so the
+   whole page grows together instead of the text crowding a fixed gap. */
 .articleBody p {
-	margin: 1rem 0;
+	margin: calc(1rem + (var(--reader-font-size, var(--reader-base-size)) - var(--reader-base-size)) * 0.9) 0;
 }
 
 .articleBody p,
@@ -301,17 +339,21 @@ article {
 	letter-spacing: -0.02em;
 }
 
+/* Clear steps between levels: readers tell a new section from a sub-point by
+   size, and at 1.3em over 1.225em the h2 and h3 read as one level. */
 .articleBody h2 {
 	margin: 1.8em 0 0.5em;
-	font-size: 1.3em;
+	font-size: 1.45em;
 	font-weight: 700;
 	line-height: 1.2;
 	letter-spacing: -0.015em;
 }
 
+/* 1.75em of the h3 is a little less space above it than an h2 gets, so the
+   gap before a heading follows its rank. */
 .articleBody h3 {
-	margin: 2em 0 0.5em;
-	font-size: 1.225em;
+	margin: 1.75em 0 0.5em;
+	font-size: 1.12em;
 	font-weight: 700;
 	line-height: 1.3;
 }
@@ -356,6 +398,46 @@ article {
 	color: var(--reader-muted);
 }
 
+/*
+ * Task lists: GitHub, kramdown and markdown-it (li.task-list-item), Obsidian
+ * (data-task), Pandoc (ul.task-list, the box in a label) and Hugo's bare
+ * disabled box at the start of an item. The bullet goes; a text-size box in
+ * the muted text colour, a little lighter than the text, takes its place in
+ * the gutter, on the first line. No colour of its own: a checklist is text.
+ * Drawn by hand because WebKit greys out the disabled boxes feeds send. A
+ * live checkbox in an interactive demo, in a list item or not, is left alone.
+ */
+.articleBody :is(li.task-list-item, li[data-task], ul.task-list > li),
+.articleBody li:has(> input[type="checkbox"][disabled]:first-child) {
+	list-style: none;
+}
+
+.articleBody :is(li.task-list-item, li[data-task], ul.task-list > li) > input[type="checkbox"]:first-child,
+.articleBody :is(li.task-list-item, li[data-task], ul.task-list > li) > :is(label, p):first-child > input[type="checkbox"]:first-child,
+.articleBody li > input[type="checkbox"][disabled]:first-child {
+	-webkit-appearance: none;
+	appearance: none;
+	display: inline-block;
+	width: 0.85em;
+	height: 0.85em;
+	margin: 0 0.5em 0 -1.35em;
+	font-size: inherit;
+	padding: 0;
+	border: 1.5px solid var(--reader-muted);
+	border-radius: 0.2em;
+	background: transparent center / 80% no-repeat;
+	vertical-align: -0.08em;
+	opacity: 1;
+	cursor: default;
+}
+
+.articleBody :is(li.task-list-item, li[data-task], ul.task-list > li) > input[type="checkbox"]:first-child:checked,
+.articleBody :is(li.task-list-item, li[data-task], ul.task-list > li) > :is(label, p):first-child > input[type="checkbox"]:first-child:checked,
+.articleBody li > input[type="checkbox"][disabled]:first-child:checked {
+	background-color: var(--reader-muted);
+	background-image: var(--reader-check);
+}
+
 .articleBody dl {
 	margin: 1.1em 0;
 }
@@ -372,13 +454,25 @@ article {
 .articleBody blockquote {
 	margin: 1.6em 0;
 	padding: 0 0 0 1em;
-	border-left: 2px solid var(--reader-rule);
-	color: var(--reader-muted);
-	font-style: italic;
+	border-left: 2px solid var(--reader-faint);
+	/* Upright, in the text colour: the rule and indent already say "quoted",
+	   and a quote can run for paragraphs (Daring Fireball), where muted
+	   italic tires the eye. */
+	color: var(--reader-text);
 }
 
 .articleBody blockquote > :first-child {
 	margin-top: 0;
+}
+
+/*
+ * Bold inside a quiet block (a quote, an aside, a caption) stays in that
+ * block's colour; the weight alone marks it. In the heading colour it jumped
+ * out of the muted text, brightest of all in dark mode. A pull-quote is drawn
+ * in the heading colour, so its bold inherits that.
+ */
+.articleBody :is(blockquote, aside, figcaption, .wp-caption-text, .wp-caption-dd, .thecap, td.tr-caption, .image-caption) :is(strong, b) {
+	color: inherit;
 }
 
 .articleBody blockquote > :last-child {
@@ -441,6 +535,55 @@ article {
 	text-decoration: none;
 }
 
+/*
+ * Icons and emoji drawn as images stay in the line at text size. The script
+ * marks them (data-calm-inline); the class and style selectors cover them
+ * when Article JavaScript is off. Without this, the forced image height
+ * above turns a 1em icon into a full-size image on its own line.
+ */
+.articleBody img[data-calm-inline],
+.articleBody img.wp-smiley,
+.articleBody img.emoji,
+.articleBody img[src*="/images/core/emoji/"],
+.articleBody img[style*="height: 1em"],
+.articleBody img[style*="height:1em"] {
+	display: inline;
+	width: auto;
+	height: 1em !important;
+	max-height: 1.25em;
+	margin: 0 0.05em;
+	border-radius: 0;
+	background: none;
+	vertical-align: -0.12em;
+}
+
+/*
+ * Floated images (align="left", WordPress's alignleft, an inline float) sit
+ * beside the text at no more than half the column, with room on the text
+ * side. Compact layouts unfloat them below.
+ */
+.articleBody img:is([align="left"], .alignleft, [style*="float: left"], [style*="float:left"]),
+.articleBody :is(figure, div).alignleft {
+	float: left;
+	max-width: 50%;
+	margin: 0.35em 1.5em 0.9em 0;
+}
+
+.articleBody img:is([align="right"], .alignright, [style*="float: right"], [style*="float:right"]),
+.articleBody :is(figure, div).alignright {
+	float: right;
+	max-width: 50%;
+	margin: 0.35em 0 0.9em 1.5em;
+}
+
+.articleBody :is(figure, div):is(.alignleft, .alignright) img {
+	margin: 0;
+}
+
+.articleBody :is(h1, h2, h3, hr, figure:not(.alignleft):not(.alignright)) {
+	clear: both;
+}
+
 .articleBody figure {
 	margin: 2.15em 0;
 }
@@ -465,6 +608,63 @@ article {
 	text-align: center;
 }
 
+/*
+ * Captions sent as plain blocks, not <figcaption>: WordPress classic
+ * (.wp-caption-text), Jekyll themes (.imgcap .thecap), Blogger's image tables
+ * (td.tr-caption) and MacStories (.media-wrapper .image-caption). They get the
+ * figcaption look, and the box around the picture acts like a figure, so the
+ * caption sits just under it. Matched by exact class, inside the box that
+ * holds the picture; a "caption" in any other class name is left alone.
+ */
+.articleBody :is(.wp-caption, .imgcap, .media-wrapper) {
+	margin: 2.15em auto;
+}
+
+.articleBody :is(.wp-caption, .imgcap, .media-wrapper) img {
+	margin: 0 auto;
+}
+
+/* Vertical margins only: an auto side margin here makes Chrome and WebKit lay
+   the page out again as each picture in the table loads. */
+.articleBody table.tr-caption-container {
+	margin-top: 2.15em;
+	margin-bottom: 2.15em;
+	font-size: 1em;
+}
+
+.articleBody table.tr-caption-container td {
+	padding: 0;
+	border: 0;
+	text-align: center;
+}
+
+.articleBody table.tr-caption-container img {
+	margin: 0 auto;
+}
+
+.articleBody .wp-caption > .wp-caption-text,
+.articleBody .wp-caption .wp-caption-dd,
+.articleBody .imgcap .thecap,
+.articleBody table.tr-caption-container td.tr-caption,
+.articleBody .media-wrapper > .image-caption {
+	margin: 0.7em 0 0;
+	color: var(--reader-muted);
+	font-family: var(--reader-sans);
+	font-size: 0.78em;
+	line-height: 1.35;
+	text-align: center;
+}
+
+.articleBody table.tr-caption-container td.tr-caption {
+	padding-top: 0.9em;
+}
+
+/* Squarespace and others put a paragraph inside the caption. */
+.articleBody figcaption p {
+	margin: 0;
+	font-family: inherit;
+}
+
 .articleBody iframe {
 	display: block;
 	width: 100%;
@@ -474,18 +674,53 @@ article {
 	border-radius: var(--reader-radius);
 }
 
+/* A video player paints black, but an embedded page with no colour scheme of
+   its own gets an opaque white canvas under Calm's "light dark", so in dark
+   mode it flashes white before the player draws. A light scheme makes that
+   canvas transparent and the box is black from the first frame. Only players:
+   a frame that paints no background of its own would put dark text on black,
+   so players are known by host. Full-screen and autoplay permissions don't
+   say "video": CodePen, Maps, Mastodon and audio embeds ask for them too.
+   (In light mode the scheme already matches, so nothing changes there.) */
+.articleBody iframe:is([src*="youtube.com/embed"], [src*="youtube-nocookie.com/embed"], [src*="player.vimeo.com/"], [src*="loom.com/embed"], [src*="fast.wistia."], [src*="dailymotion.com/embed"], [src*="player.twitch.tv"], [src*="embed.ted.com"]),
+.nnw-primary-media iframe,
+.nnw-enclosure iframe {
+	color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+	.articleBody iframe:is([src*="youtube.com/embed"], [src*="youtube-nocookie.com/embed"], [src*="player.vimeo.com/"], [src*="loom.com/embed"], [src*="fast.wistia."], [src*="dailymotion.com/embed"], [src*="player.twitch.tv"], [src*="embed.ted.com"]),
+	.nnw-primary-media iframe,
+	.nnw-enclosure iframe {
+		background: #000;
+	}
+}
+
+/* An X or Bluesky post draws its own card, white or dark, with rounded
+   corners. Under Calm's "light dark" its frame gets the same opaque white
+   canvas in dark mode, which shows as white tips outside the card's corners.
+   A light scheme makes the canvas transparent, so the page shows there
+   instead. Both cards paint their own background and still follow dark mode. */
+.articleBody iframe:is([src*="platform.twitter.com/embed"], [src*="platform.x.com/embed"], [src*="embed.bsky.app/embed"]) {
+	color-scheme: light;
+}
+
 .iframeWrap {
 	position: relative;
 	display: block;
+	margin: 2.15em 0;
 	padding-top: 56.25%;
 }
 
-.iframeWrap iframe {
+/* NetNewsWire pins an unsized video to its 16:9 box, so the spacing lives on
+   the box. A margin on the video itself would push it out over the next line. */
+.articleBody .iframeWrap iframe {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100% !important;
 	height: 100% !important;
+	margin: 0;
 }
 
 /*
@@ -585,6 +820,36 @@ pre code {
 	font-size: inherit;
 }
 
+/*
+ * Line-numbered code: Jekyll's Rouge (and any highlighter that lays its
+ * lines out as a table inside the code block) puts a table, and a <pre> per
+ * column, inside the block. Each took the full block and table styles, so the
+ * code shrank twice and sat in boxes inside a box with wide gaps. One box;
+ * the numbers in the muted colour. A table of code samples (a <pre> in a
+ * cell) keeps its boxes.
+ */
+.articleBody pre :is(pre, table, .nnw-overflow) {
+	max-width: none;
+	margin: 0;
+	padding: 0;
+	overflow: visible;
+	border-radius: 0;
+	background: transparent;
+	font-size: inherit;
+}
+
+.articleBody pre :is(td, th) {
+	padding: 0;
+	border: 0;
+	vertical-align: top;
+}
+
+.articleBody pre td:first-child:not(:last-child) {
+	padding-right: 1.25em;
+	color: var(--reader-muted);
+	text-align: right;
+}
+
 kbd {
 	padding: 0.12em 0.4em;
 	border: 1px solid var(--reader-rule);
@@ -640,33 +905,110 @@ sub {
 }
 
 /*
+ * An opened footnote sits in the text, under the line that holds its number
+ * (the theme script puts it there on a tap). It is set small in mono and
+ * muted, indented, with its number in the text colour: no box, rule or
+ * shadow, so it reads as an aside without hiding any of the article.
+ */
+.articleBody .calmNote {
+	display: block;
+	margin-block: 0.35em 0.9em;
+	margin-inline: 1.4em 0;
+	color: var(--reader-muted);
+	font-family: ui-monospace, var(--reader-mono);
+	/* 0.7 of the reader's text size, also when the number sits in a heading
+	   or a small table cell. */
+	font-size: calc(var(--reader-font-size, var(--reader-base-size)) * 0.7);
+	font-style: normal;
+	font-weight: 400;
+	letter-spacing: -0.01em;
+	line-height: 1.55;
+	text-align: start;
+	text-indent: 0;
+	text-transform: none;
+	overflow-wrap: anywhere;
+}
+
+.articleBody .calmNote * {
+	color: inherit;
+	font: inherit;
+	letter-spacing: inherit;
+}
+
+.articleBody .calmNote :is(p, ul, ol, blockquote, pre) {
+	margin: 0 0 0.6em;
+}
+
+.articleBody .calmNote :is(ul, ol) {
+	padding-inline-start: 1.4em;
+}
+
+.articleBody .calmNote blockquote {
+	padding-inline-start: 1em;
+	border-inline-start: 1px solid var(--reader-rule);
+}
+
+.articleBody .calmNote > :last-child {
+	margin-bottom: 0;
+}
+
+.articleBody .calmNoteNumber {
+	color: var(--reader-text);
+	font-weight: 500;
+}
+
+/*
  * NetNewsWire footnotes. newsfoot.js inserts the popover inside the reference's
  * <sup>, so it would inherit the superscript's size and zero line height.
- * Reset both, then give the popover Calm's surface, rule, and text colors.
+ * Reset both. The marker is a plain raised number in the muted colour: readers
+ * know a small number is a note, so it needs no pill. The opened note is
+ * muted text on the page itself under one hairline, with no card, shadow or
+ * arrow, the way a printed note sits under a rule. It keeps the page colour
+ * as its background so the lines it covers don't show through.
  */
 .articleBody a.footnote,
-.articleBody a.footnote:visited {
+.articleBody a.footnote:visited,
+.articleBody a[id^="footnote-anchor-"],
+.articleBody a[id^="footnote-anchor-"]:visited {
 	margin-left: 0.1em;
-	background: var(--reader-code-bg);
+	padding: 0 0.1em;
+	background: none;
 	color: var(--reader-muted);
 	font-family: var(--reader-sans);
+	font-size: 0.85em;
 	font-variant-numeric: lining-nums;
-	font-weight: 600;
+	font-weight: 500;
 	text-decoration: none;
-	transition: background-color 120ms ease, color 120ms ease;
+	transition: color 120ms ease;
 }
 
 .articleBody a.footnote:hover,
+.articleBody a.footnote[aria-expanded="true"],
+.articleBody a[id^="footnote-anchor-"]:is(:hover, [aria-expanded="true"]),
 .articleBody .newsfoot-footnote-popover + a.footnote {
-	background: var(--reader-rule);
+	background: none;
 	color: var(--reader-heading);
 }
 
+/* Substack's number is a bare link with no <sup> around it: raise it and
+   size it the way a <sup> would, so it doesn't sit on the line. NetNewsWire
+   makes it an inline block, so its line height is its box: 1 keeps a box to
+   tap and to ring on focus, and stays shorter than the line it sits in.
+   A link that holds its own <sup> is already raised. */
+.articleBody a:is(.footnote, [id^="footnote-anchor-"]):not(sup a):not(:has(sup)) {
+	position: relative;
+	top: -0.45em;
+	font-size: 0.58em;
+	line-height: 1;
+}
+
 .newsfoot-footnote-popover {
-	padding: 1px;
-	background: var(--reader-rule);
-	box-shadow: var(--reader-popover-shadow);
-	color: var(--reader-text);
+	padding: 0;
+	border-top: 1px solid var(--reader-faint);
+	border-radius: 0;
+	background: var(--reader-bg);
+	box-shadow: none;
+	color: var(--reader-muted);
 	font-family: var(--reader-serif-body);
 	font-size: calc(var(--reader-font-size, var(--reader-base-size)) * 0.9);
 	font-style: normal;
@@ -679,12 +1021,33 @@ sub {
 }
 
 .newsfoot-footnote-popover-inner {
-	background: var(--reader-popover-bg);
+	padding: 0.6em 0 0.5em;
+	border-radius: 0;
+	background: var(--reader-bg);
+}
+
+/* The note covers the lines below it. A page-coloured fade about one line tall
+   under it hides the half-covered line instead of slicing through it. */
+.newsfoot-footnote-popover::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	right: 0;
+	left: 0;
+	height: 2em;
+	background: linear-gradient(var(--reader-bg) 80%, transparent);
+	pointer-events: none;
 }
 
 .newsfoot-footnote-popover-arrow {
-	border: 1px solid var(--reader-rule);
-	background: var(--reader-popover-bg);
+	display: none;
+}
+
+.newsfoot-footnote-popover a[href*="#fnr"],
+.newsfoot-footnote-popover a[href^="#"][href$="-link"],
+.newsfoot-footnote-popover [role="doc-backlink"],
+.newsfoot-footnote-popover .footnoteBackLink {
+	display: none;
 }
 
 .newsfoot-footnote-popover-inner p {
@@ -1036,9 +1399,18 @@ sub {
 	.articleBody img,
 	.articleBody video,
 	.articleBody figure,
-	.articleBody iframe {
+	.articleBody iframe,
+	.articleBody .iframeWrap {
 		margin-top: 2rem;
 		margin-bottom: 2rem;
+	}
+
+	/* A float on a phone leaves a strip of a few words beside it. */
+	.articleBody img:is([align="left"], [align="right"], .alignleft, .alignright, [style*="float"]),
+	.articleBody :is(figure, div):is(.alignleft, .alignright) {
+		float: none !important;
+		max-width: 100%;
+		margin: 2rem auto !important;
 	}
 }
 
@@ -1091,10 +1463,22 @@ sub {
 /* iPhone and iPad follow the system text size (Dynamic Type), the way
    NetNewsWire's own theme does. On iOS, NetNewsWire replaces the font-size
    macro below with the system body size (17px at the default setting).
-   Anywhere else the declaration stays invalid and is ignored, so the Mac
-   keeps NetNewsWire's text size setting. The multipliers keep Calm's
-   default sizes: 17.5px on iPad and 18.5px on iPhone. */
+   The @supports test keeps this block off the Mac, which keeps
+   NetNewsWire's text size setting. The multipliers keep Calm's
+   default sizes: 17.5px on iPad and 18.5px on iPhone.
+   --reader-font-size follows the system size too, so paragraph gaps and
+   opened footnotes grow with it. It is 17.5px at the default setting, the
+   same as --reader-base-size, so the default page doesn't move; titles
+   stay on --reader-base-size. NetNewsWire also adds a text size class on
+   iOS: .articleBody[class] ties with .articleBody.mediumText and wins by
+   coming later, so this block must stay below the size classes. A page
+   that loads this file without NetNewsWire's macros (preview/index.html)
+   loses its paragraph gaps in iOS Safari. */
 @supports (-webkit-touch-callout: none) {
+	.articleBody[class] {
+		--reader-font-size: calc([[font-size]]px * 17.5 / 17);
+	}
+
 	.articleBody {
 		font-size: calc([[font-size]]px * 1.03);
 	}
@@ -1106,11 +1490,601 @@ sub {
 	}
 }
 
+/*
+ * Articles in Chinese, Japanese, Korean, Arabic, and Hebrew. Iowan has none
+ * of these scripts, so each gets a serif (or the closest book face) that
+ * the system has. The script sets lang when the feed doesn't.
+ */
+.articleBody:lang(ja),
+.articleHeader:lang(ja) .articleTitle h1 {
+	--reader-serif-body: "Iowan Old Style", "Hiragino Mincho ProN", "YuMincho", "Songti SC", serif;
+	--reader-serif-display: var(--reader-serif-body);
+	font-family: var(--reader-serif-body);
+	line-break: strict;
+}
+
+.articleBody:lang(zh),
+.articleHeader:lang(zh) .articleTitle h1 {
+	--reader-serif-body: "Iowan Old Style", "Songti SC", "Songti TC", "STSong", "Hiragino Mincho ProN", serif;
+	--reader-serif-display: var(--reader-serif-body);
+	font-family: var(--reader-serif-body);
+}
+
+.articleBody:lang(ko),
+.articleHeader:lang(ko) .articleTitle h1 {
+	--reader-serif-body: "Iowan Old Style", "AppleMyungjo", "Nanum Myeongjo", serif;
+	--reader-serif-display: var(--reader-serif-body);
+	font-family: var(--reader-serif-body);
+	word-break: keep-all;
+}
+
+.articleBody:lang(ar),
+.articleHeader:lang(ar) .articleTitle h1 {
+	--reader-serif-body: "Iowan Old Style", "Al Nile", "Geeza Pro", "Times New Roman", serif;
+	--reader-serif-display: var(--reader-serif-body);
+	font-family: var(--reader-serif-body);
+	line-height: 1.8;
+}
+
+.articleBody:lang(he),
+.articleHeader:lang(he) .articleTitle h1 {
+	--reader-serif-body: "Iowan Old Style", "Times New Roman", "Raanana", serif;
+	--reader-serif-display: var(--reader-serif-body);
+	font-family: var(--reader-serif-body);
+}
+
+.articleBody:is(:lang(ja), :lang(zh), :lang(ko)) :is(em, i) {
+	font-style: normal;
+	text-emphasis: filled sesame;
+	-webkit-text-emphasis: filled sesame;
+}
+
+/* Abbreviations with a meaning: a dotted underline, and the meaning on hover. */
+.articleBody abbr[title] {
+	text-decoration: underline dotted var(--reader-faint);
+	text-underline-offset: 0.18em;
+	cursor: help;
+}
+
+/*
+ * Galleries. Ghost sends rows of images and WordPress a group of figures;
+ * both stack as full-width images without their own styles. Lay them out
+ * as rows with a small gap, the way the site shows them.
+ */
+.articleBody .kg-gallery-container {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.articleBody .kg-gallery-row {
+	display: flex;
+	gap: 0.4rem;
+}
+
+.articleBody .kg-gallery-image {
+	flex: 1 1 0%;
+	min-width: 0;
+}
+
+.articleBody .kg-gallery-image img {
+	display: block;
+	width: 100%;
+	height: auto !important;
+	margin: 0;
+}
+
+.articleBody .wp-block-gallery {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+}
+
+.articleBody .wp-block-gallery > figure {
+	flex: 1 1 calc(50% - 0.2rem);
+	min-width: 0;
+	margin: 0;
+}
+
+.articleBody .wp-block-gallery > figure img {
+	width: 100%;
+	margin: 0;
+}
+
+.articleBody .wp-block-gallery > figcaption {
+	flex-basis: 100%;
+}
+
+/*
+ * Link cards: a post Substack embeds from another newsletter, and Ghost's
+ * bookmark cards. A linked post extends the article rather than starting a
+ * second one, so the card is quiet: the title in the body face and weight,
+ * two muted lines of its text, and the source. Likes, comment counts, and
+ * "Read more" stay on the site.
+ */
+.articleBody .embedded-post,
+.articleBody .kg-bookmark-container {
+	display: block;
+	margin: 1.4em 0;
+	padding: 0.75em 0.95em 0.8em;
+	border: 1px solid var(--reader-rule);
+	border-radius: var(--reader-radius);
+	color: inherit;
+	text-decoration: none !important;
+	transition: border-color 120ms ease;
+}
+
+.articleBody .embedded-post:hover,
+.articleBody .kg-bookmark-container:hover {
+	border-color: var(--reader-muted);
+	color: inherit;
+}
+
+.articleBody .embedded-post-header,
+.articleBody .kg-bookmark-metadata {
+	display: flex;
+	align-items: center;
+	gap: 0.45em;
+	margin-bottom: 0.45em;
+	color: var(--reader-muted);
+	font-family: var(--reader-sans);
+	font-size: 0.7em;
+	font-weight: 400;
+	line-height: 1.3;
+}
+
+.articleBody .kg-bookmark-metadata {
+	order: 3;
+	margin: 0.5em 0 0;
+}
+
+.articleBody .embedded-post-header img,
+.articleBody .kg-bookmark-icon {
+	width: 1.35em;
+	height: 1.35em !important;
+	margin: 0;
+	border-radius: 4px;
+	object-fit: cover;
+}
+
+.articleBody .embedded-post-title,
+.articleBody .kg-bookmark-title {
+	color: var(--reader-heading);
+	font-family: var(--reader-serif-body);
+	font-size: 0.95em;
+	font-weight: 400;
+	line-height: 1.35;
+}
+
+.articleBody .embedded-post-body,
+.articleBody .kg-bookmark-description {
+	display: -webkit-box;
+	margin-top: 0.25em;
+	overflow: hidden;
+	color: var(--reader-muted);
+	font-size: 0.82em;
+	line-height: 1.45;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.articleBody .kg-bookmark-content {
+	display: flex;
+	flex-direction: column;
+}
+
+.articleBody .kg-bookmark-content small {
+	font-size: inherit;
+}
+
+.articleBody .embedded-post-cta-wrapper,
+.articleBody .embedded-post-meta,
+.articleBody .kg-bookmark-thumbnail {
+	display: none;
+}
+
+/*
+ * Buttons publishers draw from a link: Substack (.button-wrapper a.button),
+ * Ghost (.kg-btn, the call-to-action card's .kg-cta-button), Jekyll themes
+ * (a.btn), WordPress (.wp-block-button__link) and Squarespace. One quiet
+ * pill filled with the code-block tint: it reads as something to tap
+ * without adding a colour, and the larger padding makes a full-size target
+ * on iPhone. The colours win over the inline white some send, which would
+ * vanish on Calm's page.
+ */
+.articleBody :is(a.button, a.btn, a.wp-block-button__link, a.kg-btn, a.kg-cta-button, a.sqs-block-button-element),
+.articleBody :is(a.button, a.btn, a.wp-block-button__link, a.kg-btn, a.kg-cta-button, a.sqs-block-button-element):visited {
+	display: inline-block;
+	max-width: 100%;
+	padding: 0.82em 1.3em;
+	border: 1px solid transparent;
+	border-radius: 999px;
+	background: var(--reader-code-bg) !important;
+	color: var(--reader-heading) !important;
+	font-family: var(--reader-sans);
+	font-size: 0.9rem;
+	font-weight: 600;
+	line-height: 1.3;
+	text-align: center;
+	text-decoration: none !important;
+	transition: border-color 120ms ease;
+}
+
+.articleBody :is(a.button, a.btn, a.wp-block-button__link, a.kg-btn, a.kg-cta-button, a.sqs-block-button-element):hover {
+	border-color: var(--reader-muted);
+}
+
+/* With Increase Contrast the faint tint alone is not enough: outline it. */
+@media (prefers-contrast: more) {
+	.articleBody :is(a.button, a.btn, a.wp-block-button__link, a.kg-btn, a.kg-cta-button, a.sqs-block-button-element) {
+		border-color: var(--reader-rule);
+	}
+}
+
+.articleBody :is(.button-wrapper, .kg-button-card, .wp-block-buttons) {
+	margin: 1.4em 0;
+}
+
+/*
+ * Newsletter sign-up forms inside the article: Substack's subscribe widget,
+ * Mailchimp, Kit (ConvertKit), Ghost's sign-up card, Jetpack and MailPoet,
+ * and any form with an email field that posts to a mailing service. In a
+ * reader the feed is already the subscription, and the form can't work here.
+ * A search box, a contact form, or a form with no mailing address to post to
+ * stays.
+ */
+.articleBody :is(.subscription-widget-wrap, .subscription-widget-wrap-editor, [data-component-name="SubscribeWidgetToDOM"], #mc_embed_signup, #mc_embed_shell, .formkit-form, .kg-signup-card, .wp-block-jetpack-subscriptions, .mailpoet_form),
+.articleBody form:has(input[type="email"]):is([action*="list-manage.com"], [action*="subscribe" i], [action*="signup" i], [action*="newsletter" i], [action*="convertkit"], [action*="buttondown"], [action*="beehiiv"], [action*="substack.com"]),
+.articleBody iframe:is([src*="substack.com/embed"], [src*="embeds.beehiiv.com"]) {
+	display: none !important;
+}
+
+/* A feed's closing credit line, such as WordPress's "The post ... appeared
+   first on ..." (see hideFeedCredit). */
+.articleBody [data-calm-feed-credit] {
+	display: none;
+}
+
+/* KaTeX sends each formula twice: as MathML, which WebKit draws itself, and
+   as HTML that only KaTeX's stylesheet can lay out (NetNewsWire strips it), so
+   without it the HTML copy runs as one unbroken line far off the page. Show
+   the MathML; let a wide display formula scroll inside the column. */
+.articleBody .katex-mathml + .katex-html {
+	display: none;
+}
+
+.articleBody .katex-display,
+.articleBody math[display="block"] {
+	display: block;
+	max-width: 100%;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+/* Text pasted from Google Docs (Blogger) wraps each picture in a span with a
+   fixed width and height; keep it inside the column. */
+.articleBody span[style*="inline-block"]:has(> img:only-child) {
+	max-width: 100%;
+	height: auto !important;
+}
+
+/*
+ * WordPress post embeds: a block quote linking to the post, then a frame
+ * that WordPress's own script reveals and resizes once it reports its
+ * height. Resizing after the page shows would make it jump, so the link
+ * shows as one quiet card and the frame stays out.
+ */
+.articleBody blockquote.wp-embedded-content {
+	margin: 1.8em 0;
+	padding: 1em 1.15em;
+	border: 1px solid var(--reader-rule);
+	border-radius: var(--reader-radius);
+	color: var(--reader-heading);
+	font-family: var(--reader-serif-display);
+	font-style: normal;
+	font-weight: 700;
+	line-height: 1.3;
+	overflow-wrap: anywhere;
+}
+
+.articleBody blockquote.wp-embedded-content a,
+.articleBody blockquote.wp-embedded-content a:visited {
+	color: inherit;
+	text-decoration: none;
+}
+
+.articleBody iframe.wp-embedded-content {
+	display: none !important;
+}
+
+/*
+ * Ghost cards. A toggle card shows open, its question styled like a summary
+ * line (Ghost's script, which collapses it, doesn't run here). A callout is a
+ * tinted box with its emoji. A video card keeps the video and drops Ghost's
+ * own player controls, which need its script; NetNewsWire adds the system's.
+ */
+.articleBody .kg-toggle-card {
+	margin: 1.6em 0;
+	padding: 0.7em 1em;
+	border: 1px solid var(--reader-rule);
+	border-radius: var(--reader-radius);
+}
+
+.articleBody .kg-toggle-heading-text {
+	margin: 0 0 0.5em;
+	color: var(--reader-heading);
+	font-family: var(--reader-sans);
+	font-size: 0.9em;
+	font-weight: 600;
+	letter-spacing: 0;
+	line-height: 1.35;
+	text-transform: none;
+}
+
+.articleBody .kg-toggle-card-icon {
+	display: none;
+}
+
+.articleBody .kg-toggle-content > :first-child,
+.articleBody .kg-callout-text > :first-child,
+.articleBody aside > :first-child {
+	margin-top: 0;
+}
+
+.articleBody .kg-toggle-content > :last-child,
+.articleBody .kg-callout-text > :last-child,
+.articleBody aside > :last-child {
+	margin-bottom: 0;
+}
+
+.articleBody .kg-callout-card {
+	display: flex;
+	gap: 0.65em;
+	margin: 1.6em 0;
+	padding: 0.85em 1.1em;
+	border-radius: var(--reader-radius);
+	background: var(--reader-code-bg);
+}
+
+.articleBody .kg-callout-emoji {
+	flex: none;
+}
+
+.articleBody .kg-callout-text {
+	min-width: 0;
+}
+
+.articleBody .kg-video-card video {
+	width: 100%;
+	margin: 0;
+}
+
+.articleBody .kg-video-overlay,
+.articleBody .kg-video-player-container {
+	display: none;
+}
+
+/*
+ * Pull-quotes repeat a line from the text, so they get a quieter turn than a
+ * magazine's: the line in the heading colour between two hairlines, upright,
+ * a little larger. A feed's <aside> is a side note: a tinted box in smaller,
+ * muted text.
+ */
+.articleBody :is(figure.wp-block-pullquote, div.pullquote, p.pullquote, figure.pullquote, aside.pullquote, blockquote.pullquote, blockquote.pull-quote) {
+	margin: 2em 0;
+	padding: 0.85em 0;
+	border: 0;
+	border-top: 1px solid var(--reader-rule);
+	border-bottom: 1px solid var(--reader-rule);
+	border-radius: 0;
+	background: none;
+	color: var(--reader-heading);
+	font-family: var(--reader-serif-display);
+	font-size: 1.08em;
+	font-style: normal;
+	line-height: 1.45;
+}
+
+.articleBody :is(.wp-block-pullquote, .pullquote) blockquote {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	color: inherit;
+	font-style: normal;
+}
+
+.articleBody :is(.wp-block-pullquote, .pullquote, .pull-quote) p {
+	margin: 0;
+}
+
+.articleBody :is(.wp-block-pullquote, .pullquote, .pull-quote) cite {
+	display: block;
+	margin-top: 0.55em;
+	color: var(--reader-muted);
+	font-family: var(--reader-sans);
+	font-size: 0.72em;
+	font-style: normal;
+	font-weight: 500;
+}
+
+.articleBody aside {
+	margin: 1.6em 0;
+	padding: 0.85em 1.1em;
+	border-radius: var(--reader-radius);
+	background: var(--reader-code-bg);
+	color: var(--reader-muted);
+	font-size: 0.92em;
+	line-height: 1.5;
+}
+
+/*
+ * NetNewsWire 7.3 podcast audio: the player, then the episode's title and
+ * length in one muted line (the script drops the file name and size).
+ */
+.nnw-enclosure-audio .nnw-enclosure-caption {
+	margin-top: 0.5rem;
+}
+
+.nnw-enclosure-caption[hidden] {
+	display: none;
+}
+
+/* Code copy button, Mac only (see enableCodeCopy), with the block's language
+   beside it when the feed names one. */
+.calmCode {
+	position: relative;
+}
+
+.calmCodeTools {
+	position: absolute;
+	top: 0.5rem;
+	right: 0.5rem;
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+}
+
+.calmCopy {
+	appearance: none;
+	-webkit-appearance: none;
+	padding: 0.2rem 0.5rem;
+	border: 1px solid var(--reader-rule);
+	border-radius: 6px;
+	background: var(--reader-bg);
+	color: var(--reader-muted);
+	font-family: var(--reader-sans);
+	font-size: 0.72rem;
+	font-weight: 500;
+	line-height: 1.3;
+	cursor: pointer;
+}
+
+/* The label sits over the end of the first line, so it takes the code's
+   background and hides what runs beneath it. */
+.calmCodeLanguage {
+	padding: 0.2rem 0.1rem 0.2rem 0.4rem;
+	border-radius: 4px;
+	background: var(--reader-code-bg);
+	color: var(--reader-muted);
+	font-family: var(--reader-sans);
+	font-size: 0.72rem;
+	font-weight: 500;
+	line-height: 1.3;
+	pointer-events: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+.calmCopy,
+.calmCodeLanguage {
+	opacity: 0;
+	transition: opacity 120ms ease;
+}
+
+/* A one-line command scrolls under the button, so the button becomes a
+   full-height cap at the line's end and hides what runs beneath it. */
+.calmCodeOneLine .calmCodeTools {
+	top: 0;
+	right: 0;
+	bottom: 0;
+	align-items: stretch;
+	gap: 0;
+}
+
+.calmCodeOneLine .calmCopy {
+	padding: 0 0.9rem;
+	border: 0;
+	border-left: 1px solid var(--reader-rule);
+	border-radius: 0 var(--reader-radius) var(--reader-radius) 0;
+	background: var(--reader-code-bg);
+}
+
+.calmCodeOneLine .calmCodeLanguage {
+	display: flex;
+	align-items: center;
+	padding: 0 0.7rem;
+	border-radius: 0;
+}
+
+.calmCode:hover :is(.calmCopy, .calmCodeLanguage),
+.calmCodeTools:focus-within > * {
+	opacity: 1;
+}
+
+.calmCopy:hover {
+	color: var(--reader-heading);
+}
+
+/* Click a picture to see it larger, Mac only (see enableImageViewer). */
+.articleBody img.isZoomable {
+	cursor: zoom-in;
+}
+
+.calmViewer {
+	position: fixed;
+	z-index: 10;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.9rem;
+	padding: 4vh 4vw;
+	background: color-mix(in srgb, var(--reader-bg) 96%, transparent);
+	cursor: zoom-out;
+	outline: 0;
+	animation: calmViewerIn 140ms ease-out;
+}
+
+.calmViewer img {
+	max-width: 100%;
+	max-height: calc(100% - 3rem);
+	object-fit: contain;
+	border-radius: var(--reader-radius);
+}
+
+.calmViewerCaption {
+	max-width: 40rem;
+	margin: 0;
+	color: var(--reader-muted);
+	font-family: var(--reader-sans);
+	font-size: 0.86rem;
+	line-height: 1.4;
+	text-align: center;
+}
+
+@keyframes calmViewerIn {
+	from {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.calmViewer {
+		animation: none;
+	}
+
+	.calmCopy,
+	.calmCodeLanguage,
+	.articleBody .embedded-post,
+	.articleBody .kg-bookmark-container,
+	.articleBody :is(a.button, a.btn, a.wp-block-button__link, a.kg-btn, a.kg-cta-button, a.sqs-block-button-element) {
+		transition: none;
+	}
+}
+
+@media print {
+	.calmCodeTools,
+	.calmViewer {
+		display: none !important;
+	}
+}
+
 /* Update line: after a long article, in the week after a Calm release. */
 .calmUpdate {
 	width: min(100%, var(--reader-measure));
 	margin: 3.5rem auto 0;
-	color: var(--reader-faint);
+	color: var(--reader-muted);
 	font-family: var(--reader-sans);
 	font-size: 0.86rem;
 	line-height: 1.4;
@@ -1122,7 +2096,7 @@ sub {
 
 .calmUpdate a,
 .calmUpdate a:visited {
-	color: var(--reader-muted);
+	color: inherit;
 	text-decoration: underline;
 	text-decoration-color: var(--reader-rule);
 	text-underline-offset: 0.25em;

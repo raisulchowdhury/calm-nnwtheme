@@ -51,6 +51,11 @@ Calm's typography sets the mood. The reading map is the product idea.
 - It keeps secondary information quiet. Source identity stays visible, reading
   time appears only for articles estimated at four minutes or longer, and
   there is no persistent progress bar, word count, or statistics footer.
+- It tidies what feeds send. Footnotes open in the text under their line,
+  sign-up forms that can't work in a reader become one quiet button, and
+  link cards, galleries, captions and code read the same whatever platform
+  published them. See
+  [what's new in 1.5](docs/releases/2026-11-28-calm-1.5.0.md).
 
 ## Screenshots
 
@@ -173,7 +178,7 @@ The theme includes:
 - one faint update line after long articles, only in a release's first two weeks
 - undistorted authored image colors in light and dark appearances
 - restrained code, table, blockquote, and figure styling
-- legible NetNewsWire footnote popovers in Calm's light and dark surfaces
+- footnotes that open in the text under their line
 - NetNewsWire 7.3 primary media and enclosures inside the reading measure
 
 ## Credits
