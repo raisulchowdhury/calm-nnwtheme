@@ -178,7 +178,7 @@ The theme includes:
 - one faint update line after long articles, only in a release's first two weeks
 - undistorted authored image colors in light and dark appearances
 - restrained code, table, blockquote, and figure styling
-- legible NetNewsWire footnote popovers in Calm's light and dark surfaces
+- footnotes that open in the text under their line
 - NetNewsWire 7.3 primary media and enclosures inside the reading measure
 
 ## Credits

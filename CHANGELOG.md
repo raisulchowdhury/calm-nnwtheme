@@ -18,7 +18,7 @@ Reading
   closer to its section.
 - Block quotes are upright in the text colour, set off by their rule.
 - Bold words in a quote, aside or caption keep the block's colour.
-- The gap between paragraphs grows with the reader's text size. The default
+- On the Mac, the gap between paragraphs grows with the text size setting. The default
   size is unchanged.
 - Increase Contrast gets stronger text, muted text and rules in light and
   dark.
@@ -72,7 +72,7 @@ Mac
 
 - Code blocks get a Copy button on hover, with the block's language beside
   it. On a one-line block both sit in a cap at the line's end.
-- Line-numbered code (Jekyll's Rouge, Pygments) is one block with muted
+- Line-numbered code from Jekyll's Rouge is one block with muted
   numbers, on every device.
 - Clicking a large picture opens it larger. Escape, Space or a click closes
   it and focus returns.

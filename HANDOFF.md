@@ -25,6 +25,13 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 - **Forum picture:** `assets/releases/1.5.0-highlights.gif`, a loop of five before and after pairs at 690x500.
 - **Site:** Saturday's run only bumps `RELEASE_VERSION`. A "New in 1.5" strip is an optional follow-up that needs a design study first.
 
+## For 1.5.1 (found by a Gemini 4 Neon review on 2026-11-27, not fixed before release)
+
+Both are theme changes, so they wait for Raisul's yes. Neither is worse than 1.4.4.
+
+- **iPhone and iPad Dynamic Type.** The iOS block in `stylesheet.css` (`@supports (-webkit-touch-callout: none)`) sets `font-size` from `[[font-size]]` but not `--reader-font-size`. So at larger system text sizes, paragraph gaps stay at the default and an opened footnote stays 12.25px. The notes now say the gap grows "on the Mac". A fix must not move `--reader-base-size`, which also sizes titles. Check on a device at a large Dynamic Type size.
+- **Ghost video thumbnail box.** NetNewsWire's `main.js` `stripStyles()` removes `aspect-ratio` from inline styles after Calm's script, so `showVideoThumbnails()`'s box guard may not hold while the thumbnail decodes. Only matters for Ghost video cards copied from the web page. Suggested fix: a custom property (`--calm-ratio`) read by CSS. Reproduce first.
+
 ## Decided by Raisul on 2026-11-27
 
 - **Sign-up forms:** hidden forms become one quiet button.
