@@ -55,7 +55,7 @@ Calm's typography sets the mood. The reading map is the product idea.
   sign-up forms that can't work in a reader become one quiet button, and
   link cards, galleries, captions and code read the same whatever platform
   published them. See
-  [what's new in 1.5](docs/releases/2026-11-30-calm-1.5.0.md).
+  [what's new in 1.5](docs/releases/2026-11-28-calm-1.5.0.md).
 
 ## Screenshots
 

@@ -9,7 +9,7 @@ const specification = readFileSync(
 	"utf8",
 );
 const releaseNotes = readFileSync(
-	"docs/releases/2026-11-30-calm-1.5.0.md",
+	"docs/releases/2026-11-28-calm-1.5.0.md",
 	"utf8",
 );
 const workflow = readFileSync(".github/workflows/validate.yml", "utf8");
@@ -21,7 +21,7 @@ assert.match(info, /<key>Version<\/key>\s*<integer>16<\/integer>/, "theme versio
 for (const file of ["Calm.nnwtheme/template.html", "Calm.nnwtheme/template7.3.html", "preview/index.html"]) {
 	assert.match(readFileSync(file, "utf8"), /var BUILD = 16;/, `${file} should carry build 16`);
 }
-assert.match(changelog, /^## 1\.5\.0 - 2026-11-30$/m, "changelog should include v1.5.0");
+assert.match(changelog, /^## 1\.5\.0 - 2026-11-28$/m, "changelog should include v1.5.0");
 assert.match(releaseNotes, /^# Calm 1\.5\.0$/m, "release notes should identify Calm 1.5.0");
 assert.match(
 	specification,

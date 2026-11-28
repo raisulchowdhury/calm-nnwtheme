@@ -1,21 +1,29 @@
-# Handoff: Calm 1.5.0, ready to release (2026-11-27)
+# Handoff: Calm 1.5.0, releasing Saturday 2026-11-28
 
 Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 
 ## Where things are
 
 - **Branch:** `calm-roadmap-fixes`. **PR:** https://github.com/raisulchowdhury/calm-nnwtheme/pull/31.
-- **The release is prepared, not published.** Merging the PR to `main` publishes it: `release.yml` tags `v1.5.0` and uploads `Calm.nnwtheme.zip` once Validate passes. Raisul said on 2026-11-27: "Release on Monday Nov 30". Merge on that day, not before.
-- **Version:** 1.5.0, theme version 16, dated 2026-11-30.
-  - If the merge happens on another day, change the date in three places: the `CHANGELOG.md` heading, the release-notes filename `docs/releases/2026-11-30-calm-1.5.0.md`, and the two lines that name it in `scripts/check-release-sync.mjs`. Then run `node scripts/updates-json.mjs --write`.
+- **The release is prepared, not published.** Merging the PR to `main` publishes it: `release.yml` tags `v1.5.0` and uploads `Calm.nnwtheme.zip` once Validate passes, with the dated release-notes file as the release page. Raisul chose on 2026-11-27 to release Saturday Nov 28 at 8:00 Pacific and post on Monday Nov 30 ("release tomorrow/asap and then post on monday"). A scheduled task in his Claude session (`trig_013no3jcwjWp6GVXQTVLpvv8`) does the merge then.
+- **Version:** 1.5.0, theme version 16, dated 2026-11-28.
+  - If the merge happens on another day, change the date in the `CHANGELOG.md` heading, the release-notes filename `docs/releases/2026-11-28-calm-1.5.0.md`, the two lines that name it in `scripts/check-release-sync.mjs`, and the README link. Then run `node scripts/updates-json.mjs --write`.
   - The build number lives in `Info.plist` and in `var BUILD` in all three script copies. `check-release-sync.mjs` now fails if they differ.
 - **Tests:** `npm test`, then `npx playwright test --trace off --reporter=line`. On a Mac one `@visual` failure is expected, because the reference image is Linux-only; delete the `*darwin*.png` it leaves. CI on Linux passes everything.
-- **Release notes:** `docs/releases/2026-11-30-calm-1.5.0.md`. **Launch plan with post drafts:** `docs/launch/2026-11-30-calm-1.5-launch-plan.md`.
+- **Release notes:** `docs/releases/2026-11-28-calm-1.5.0.md`. **Launch plan with post drafts:** `docs/launch/2026-11-30-calm-1.5-launch-plan.md` (posts go out Monday).
 - **Before/after images:** `assets/releases/1.5.0-<slug>.jpg`, one per case in `scripts/before-after.mjs`, all remade against 1.4.4 on 2026-11-27. `assets/releases/unreleased/` is empty again for the next change.
 - **Gallery of every fix:** https://claude.ai/artifact/Qy8d9ts9shZ4kTierahtM1. Since Version 17 it is ordered like release notes, on Raisul's word on 2026-11-27 ("more prominent, everyday felt features first. minor edge cases last"): Highlights (footnotes, headings, quotes, sign-up pill, link cards), Everyday reading, Dark mode, video and embeds, Code, Smaller fixes. It has a jump bar, one picture per fix with the rest folded, the before and after stacked on phones, and a "Shown:" line saying whether each picture is a real feed or a sample article. He also said: "dont highlgiht made up fix, check actuals (dont say its an improvement if its' already not broken)"; a separate session is auditing every 1.5.0 claim on real feeds into `docs/claims-audit-2026-11-28.md`. Its source was in the old session's scratchpad. To update it from a new session, read the artifact first, then republish from that read.
 - **Design pass record:** `docs/design-pass-2026-11-27.md`, with Raisul's picks and the two independent reviews.
-- **iPhone test build:** branch `preview/calmdev`, built from the 1.5.0 candidate. Install by pasting this into Safari and choosing Overwrite: `netnewswire://theme/add?url=https%3A%2F%2Fraw.githubusercontent.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Fpreview%2Fcalmdev%2FCalmDev.nnwtheme.zip`. Delete the branch once testing is done; Raisul was promised this.
+- **iPhone test build:** branch `preview/calmdev` at b2fea65, built from the final candidate (fe6c5f1). Install by pasting this into Safari and choosing Overwrite: `netnewswire://theme/add?url=https%3A%2F%2Fraw.githubusercontent.com%2Fraisulchowdhury%2Fcalm-nnwtheme%2Fpreview%2Fcalmdev%2FCalmDev.nnwtheme.zip`. Delete the branch once the release is out; Raisul was promised this.
 - **Mac test install:** `~/Library/Containers/com.ranchero.NetNewsWire-Evergreen/Data/Library/Application Support/NetNewsWire/Themes/CalmDev.nnwtheme/`, same build.
+
+## Last changes before release (2026-11-27 evening)
+
+- **Claims audit:** `docs/claims-audit-2026-11-28.md` checked every claim on real feeds. Raisul said "make calls"; the wording fixes are in fe6c5f1 (emoji, toggles, Ghost thumbnails, embed heights, footnote and podcast alt texts, "most changes have an image").
+- **Embedded posts no longer grow after load** (476000b). Calm grew X, Bluesky and Mastodon frames when they reported a height, which moved the text after the article showed. Removed under the AGENTS.md no-swap rule; the cut-off X frame is a known limit. Bluesky and Mastodon were already the right height in 1.4.4.
+- **Order:** release notes, gallery (Version 20) and post drafts follow Raisul's picks: sign-up forms, podcast file names, Substack picture buttons (labelled "since 1.4.4" in the forum draft), galleries, link cards, X dark mode, footnotes, cover once, captions; then more fixes, code, reading style, rare cases.
+- **Forum picture:** `assets/releases/1.5.0-highlights.gif`, a loop of five before and after pairs at 690x500.
+- **Site:** Saturday's run only bumps `RELEASE_VERSION`. A "New in 1.5" strip is an optional follow-up that needs a design study first.
 
 ## Decided by Raisul on 2026-11-27
 
