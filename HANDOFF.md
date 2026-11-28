@@ -45,4 +45,10 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 
 ## Not Calm's
 
-The next-article glitches on iPhone (a black panel, a stalled slide, pictures popping in) also happen in NetNewsWire's default theme. Measured on his recording: the next article's panel is blank for the first 170 ms of the slide, with white strips under the bars at the start; the slide itself eases in normally and doesn't stall. He asked for a draft bug report: `docs/launch/2026-11-27-netnewswire-bug-report-draft.md`. He posts it; it still needs his versions and a Default-theme recording.
+The next-article glitch on iPhone is NetNewsWire's. Measured on 2026-11-27 from his two 60 fps recordings in dark mode:
+
+- **Default theme:** 8 of 11 slides had a blank incoming panel (text 17 to 100 ms late); 4 of those started with the whole panel white for one or two frames. It also happens with the up arrow.
+- **Calm:** 1 of 6 slides glitched: white only behind the top and bottom bars for about 100 ms, text at about 170 ms.
+- The slide itself eases in normally and doesn't stall. One Calm sample is too little to say whether Calm adds to the wait.
+
+Draft bug report, written on the Default-theme recording: `docs/launch/2026-11-27-netnewswire-bug-report-draft.md`. He posts it. It still needs his NetNewsWire version and build, iPhone model, iOS version, and whether light mode shows the blank panel.
