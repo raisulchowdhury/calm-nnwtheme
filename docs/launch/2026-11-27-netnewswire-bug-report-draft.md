@@ -2,14 +2,14 @@
 
 Status: draft for Raisul. Not posted. It goes on
 https://github.com/Ranchero-Software/NetNewsWire/issues under his name, so
-he posts it. Fill the parts in [brackets] first.
+he posts it. The only [bracket] left is the attachment.
 
 No open issue covers this (searched 2026-11-27). The closest are #5383 and
 #2272, both closed in 7.1.3.
 
 ---
 
-**Title:** iOS: next article slides in blank in dark mode, starting with a white flash
+**Title:** iOS: next article slides in blank, starting with a white flash in dark mode
 
 When I move to the next article with the down arrow in dark mode, the incoming article is often blank for the first part of the slide. It starts as a white panel for one or two frames, turns plain black, and the article's text only appears once the panel is about two thirds of the way across.
 
@@ -38,9 +38,9 @@ The next article drawn from the start of the slide, or at least a panel in the a
 
 **Details**
 
-- NetNewsWire 7.3.1 (build 7244) on [iPhone model], iOS [version]
+- NetNewsWire 7.3.1 (build 7244) on iPhone 17, iOS 27.2.1
 - Dark mode, Default theme. A custom theme shows it too, so it isn't specific to a theme.
-- [Say whether you also see the blank panel in light mode. The white wouldn't show there.]
+- Light mode shows the same blank incoming panel.
 - Possibly related: #5383 and #2272.
 
 My guess is that the new article's web view is on screen before it has painted, and that it shows its default white background until the page's dark background arrives.
