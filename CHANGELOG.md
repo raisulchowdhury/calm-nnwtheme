@@ -45,12 +45,13 @@ What feeds send
 - Captions sent as plain blocks (WordPress classic, Jekyll, Blogger) are
   styled as captions.
 - Ghost galleries stay rows of pictures at one height.
-- WordPress and Ghost toggles open, callouts get a tint, pull quotes sit
-  between hairlines and asides in a tinted box.
+- Ghost toggles read as a question and its answer, callouts get a tint,
+  pull quotes sit between hairlines and asides sit in a tinted box.
 - Task lists get a text-size checkbox in the muted text colour.
 - KaTeX math no longer shows twice.
-- Emoji and small inline icons stay text size; real pictures over 64px are
-  never shrunk.
+- Mastodon's custom emoji stay in the sentence at text size instead of
+  dropping onto a line of their own. Real pictures over 64px are never
+  shrunk.
 - Floated pictures take at most half the column, headings clear them, and
   they stack on iPhone.
 - Stray line breaks at block edges, Instagram's empty placeholder rows and
@@ -60,13 +61,12 @@ Video and embeds
 
 - A video player with no size stays inside its box. In dark mode the box is
   black from the first frame.
-- A Ghost video card shows its thumbnail, and keeps its shape while the
-  thumbnail loads.
+- A Ghost video card copied from the site's web page (as full-text
+  extraction does) shows its thumbnail.
 - X posts drawn by X's script follow dark mode. X frames embedded directly
   stay white, since making them dark needed a reload.
 - In dark mode the page shows outside the rounded corners of an X or
   Bluesky post, instead of white tips.
-- X, Bluesky and Mastodon embeds take their real height.
 
 Mac
 
@@ -77,11 +77,18 @@ Mac
 - Clicking a large picture opens it larger. Escape, Space or a click closes
   it and focus returns.
 
+Known limits
+
+- X posts embedded as a plain frame are cut to a video-shaped box. Growing
+  them to their real height would move the text after the article shows.
+
 Under the hood
 
 - Each cleanup step runs on its own, so one malformed feed can't stop the
   rest.
-- Nothing changes after an article shows, and no article waits on Calm.
+- Calm makes its changes before an article shows. The one later change is
+  the update line at the end of a long article, at most once a week. No
+  article waits on Calm.
   Speed and layout-shift tests guard both.
 - Theme version 16.
 
