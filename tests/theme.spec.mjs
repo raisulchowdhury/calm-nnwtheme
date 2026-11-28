@@ -30,7 +30,7 @@ function fixtureBody({ headings = [], paragraphCount = 24, image = false, lateMe
 async function loadFixture(page, options = {}) {
 	// No doctype: NetNewsWire's page.html has none, so articles render in quirks mode.
 	await page.setContent(`<html dir="auto">
-		<head><meta name="viewport" content="width=device-width, initial-scale=1"><style>${stylesheet}</style></head>
+		<head><meta name="viewport" content="width=device-width, initial-scale=1"><style>${options.css ?? stylesheet}</style></head>
 		<body>
 			<nav class="readerToc" aria-label="Article sections" hidden>
 				<div class="readerTocTitle">Sections</div>
@@ -1508,6 +1508,35 @@ test("@webkit grows the gap between paragraphs with the reader's text size, and 
 		expect(gaps.medium, `@${width}: default size keeps the 1rem gap`).toBeCloseTo(16, 1);
 		expect(gaps.xxlarge, `@${width}: largest size`).toBeGreaterThan(20);
 		expect(gaps.small, `@${width}: smallest size`).toBeLessThan(16);
+	}
+});
+
+// NetNewsWire on iOS fills [[font-size]] with the system body size (17 at the
+// default Dynamic Type setting). The @supports test is swapped for one every
+// browser passes, so the iOS block applies here as it does on a phone.
+const iosStylesheet = (systemSize) =>
+	stylesheet.replaceAll("[[font-size]]", String(systemSize)).replaceAll("@supports (-webkit-touch-callout: none)", "@supports (display: block)");
+
+test("@webkit grows paragraph gaps and opened footnotes with the iPhone and iPad text size, and keeps the default page and titles", async ({ page }) => {
+	for (const width of [390, 1024]) {
+		await page.setViewportSize({ width, height: 844 });
+		const measure = async (systemSize) => {
+			await loadFixture(page, { paragraphCount: 3, css: iosStylesheet(systemSize), html: '<p>Text<span class="calmNote" id="note">A note.</span></p>' });
+			return page.evaluate(() => ({
+				gap: parseFloat(getComputedStyle(document.querySelector("#bodyContainer p:nth-of-type(2)")).marginTop),
+				note: parseFloat(getComputedStyle(document.getElementById("note")).fontSize),
+				text: parseFloat(getComputedStyle(document.getElementById("bodyContainer")).fontSize),
+				title: parseFloat(getComputedStyle(document.querySelector(".articleTitle h1")).fontSize),
+			}));
+		};
+		const standard = await measure(17);
+		const large = await measure(23);
+		expect(standard.gap, `@${width}: default size keeps the 1rem gap`).toBeCloseTo(16, 1);
+		expect(standard.note, `@${width}: default footnote size`).toBeCloseTo(12.25, 1);
+		expect(large.text, `@${width}: text follows the system size`).toBeGreaterThan(standard.text * 1.3);
+		expect(large.gap, `@${width}: gap grows with the system size`).toBeGreaterThan(20);
+		expect(large.note / standard.note, `@${width}: footnote grows with the system size`).toBeCloseTo(23 / 17, 2);
+		expect(large.title, `@${width}: titles stay on the base size`).toBe(standard.title);
 	}
 });
 

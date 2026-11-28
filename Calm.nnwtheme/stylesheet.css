@@ -1465,8 +1465,17 @@ sub {
    macro below with the system body size (17px at the default setting).
    Anywhere else the declaration stays invalid and is ignored, so the Mac
    keeps NetNewsWire's text size setting. The multipliers keep Calm's
-   default sizes: 17.5px on iPad and 18.5px on iPhone. */
+   default sizes: 17.5px on iPad and 18.5px on iPhone.
+   --reader-font-size follows the system size too, so paragraph gaps and
+   opened footnotes grow with it. It is 17.5px at the default setting, the
+   same as --reader-base-size, so the default page doesn't move; titles
+   stay on --reader-base-size. The [class] selector outranks the text size
+   classes NetNewsWire also adds on iOS. */
 @supports (-webkit-touch-callout: none) {
+	.articleBody[class] {
+		--reader-font-size: calc([[font-size]]px * 17.5 / 17);
+	}
+
 	.articleBody {
 		font-size: calc([[font-size]]px * 1.03);
 	}

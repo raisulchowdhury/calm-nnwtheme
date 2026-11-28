@@ -18,8 +18,9 @@ Reading
   closer to its section.
 - Block quotes are upright in the text colour, set off by their rule.
 - Bold words in a quote, aside or caption keep the block's colour.
-- On the Mac, the gap between paragraphs grows with the text size setting. The default
-  size is unchanged.
+- The gap between paragraphs, and an opened footnote, grow with the text
+  size: NetNewsWire's setting on the Mac, the system text size on iPhone and
+  iPad. The default size is unchanged.
 - Increase Contrast gets stronger text, muted text and rules in light and
   dark.
 - In light mode the tint behind code, buttons, callouts and asides, and the
