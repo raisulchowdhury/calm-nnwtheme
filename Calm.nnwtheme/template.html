@@ -501,54 +501,6 @@ body: The body of the article.
 		}
 	}
 
-	// Posts embedded from X, Bluesky, and Mastodon arrive as frames with no
-	// height, which NetNewsWire boxes at 16:9 and so cuts off. Each frame
-	// reports its real height in a message once it renders; use it.
-	function sizeEmbeddedPosts() {
-		if (!body || !window.addEventListener) {
-			return;
-		}
-
-		window.addEventListener("message", function (event) {
-			var data = event.data;
-			if (typeof data === "string") {
-				try {
-					data = JSON.parse(data);
-				} catch (error) {
-					return;
-				}
-			}
-			if (!data || typeof data !== "object") {
-				return;
-			}
-			// X sends twttr.private.resize, Bluesky sends { height }, and Mastodon
-			// sends { type: "setHeight", height } from whichever server hosts the post.
-			var origin = event.origin || "";
-			var twitter = origin === "https://platform.twitter.com" ? data["twttr.embed"] : null;
-			var height = NaN;
-			if (twitter && twitter.method === "twttr.private.resize" && twitter.params && twitter.params[0]) {
-				height = Number(twitter.params[0].height);
-			} else if (origin === "https://embed.bsky.app" || data.type === "setHeight") {
-				height = Number(data.height);
-			}
-			if (!(height >= 40 && height <= 5000)) {
-				return;
-			}
-			Array.prototype.some.call(body.querySelectorAll("iframe"), function (frame) {
-				if (frame.contentWindow !== event.source) {
-					return false;
-				}
-				var wrap = frame.parentElement;
-				if (wrap && wrap.classList.contains("iframeWrap")) {
-					wrap.classList.add("isSizedEmbed");
-				}
-				frame.classList.add("isSizedEmbed");
-				frame.style.setProperty("height", Math.ceil(height) + "px", "important");
-				return true;
-			});
-		});
-	}
-
 	// NetNewsWire leaves the page's language unset, so Chinese, Japanese,
 	// Korean, Arabic, and Hebrew articles get Latin line breaking and whatever
 	// font the system picks. When most of the opening text is one of those
@@ -979,25 +931,6 @@ body: The body of the article.
 			}
 			tools.appendChild(button);
 			wrap.appendChild(tools);
-		});
-	}
-
-	// Mastodon's embed page reports its height only when asked.
-	function askMastodonForHeights() {
-		if (!body) {
-			return;
-		}
-		Array.prototype.forEach.call(body.querySelectorAll("iframe"), function (frame, index) {
-			if (!/\/@[^\/]+\/\d+\/embed/.test(frame.getAttribute("src") || "")) {
-				return;
-			}
-			function ask() {
-				try {
-					frame.contentWindow.postMessage({ type: "setHeight", id: index }, "*");
-				} catch (error) {}
-			}
-			ask();
-			frame.addEventListener("load", ask);
 		});
 	}
 
@@ -1936,8 +1869,6 @@ body: The body of the article.
 	safely(restoreFootnoteIds);
 	safely(markFootnotes);
 	safely(markUntitled);
-	safely(sizeEmbeddedPosts);
-	safely(askMastodonForHeights);
 	safely(markArticleLanguage);
 	safely(layoutGalleries);
 	safely(showVideoThumbnails);

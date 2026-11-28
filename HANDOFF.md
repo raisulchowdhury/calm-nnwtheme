@@ -38,7 +38,7 @@ Start a fresh session here. Read `AGENTS.md` first: its rules bind every change.
 ## Known limits (also in the release notes)
 
 - Black line art on a transparent background still disappears in dark mode.
-- X frames embedded directly stay white in dark mode.
+- X frames embedded directly stay white in dark mode, and are cut to a video-shaped box (the resize was removed on 2026-11-28 under the no-swap rule).
 - Hugo `table.lntable` and Pygments line-number tables get no Copy button.
 - A 1 px black line may appear under a video in dark mode. It was seen in one render only.
 - A broken image keeps its box: hiding it after a failed load would be a swap after load.

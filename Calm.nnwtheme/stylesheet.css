@@ -723,19 +723,6 @@ article {
 	margin: 0;
 }
 
-/* An embedded post that reported its height (see sizeEmbeddedPosts). */
-.iframeWrap.isSizedEmbed {
-	padding-top: 0;
-}
-
-.iframeWrap.isSizedEmbed iframe,
-.articleBody iframe.isSizedEmbed {
-	position: static;
-	max-width: 550px;
-	margin-right: auto;
-	margin-left: auto;
-}
-
 /*
  * NetNewsWire 7.3 article media (template7.3.html). The primary image, audio,
  * or video sits above the body and other enclosures follow it, all inside the

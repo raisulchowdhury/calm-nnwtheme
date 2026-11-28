@@ -579,22 +579,25 @@ test("@webkit starts a post with no title at its source line", async ({ page }) 
 	await expect(page.locator(".articleTitle")).toBeVisible();
 });
 
-test("@webkit sizes embedded posts to the height they report", async ({ page }) => {
+// An embedded post that reports its height keeps its box: growing it after the
+// article shows would move the text below (AGENTS.md, "No visible swaps after
+// load"). Calm 1.5.0 grew X frames this way until the claims audit of
+// 2026-11-28 caught it; the cut-off X frame is a known limit instead.
+test("@webkit leaves an embedded post's box alone when it reports a height", async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
 	await loadFixture(page, {
 		paragraphCount: 1,
-		html: `<div class="iframeWrap"><iframe id="post" src="about:blank"></iframe></div><div class="iframeWrap"><iframe id="video" src="about:blank"></iframe></div>`,
+		html: `<div class="iframeWrap"><iframe id="post" src="about:blank"></iframe></div>`,
 	});
+	const before = await page.evaluate(() => document.getElementById("post").getBoundingClientRect().height);
 	await page.evaluate(() => {
 		const post = document.getElementById("post").contentWindow;
-		const video = document.getElementById("video").contentWindow;
 		const resize = { "twttr.embed": { method: "twttr.private.resize", params: [{ width: 358, height: 584 }] } };
 		window.dispatchEvent(new MessageEvent("message", { data: JSON.stringify(resize), origin: "https://platform.twitter.com", source: post }));
-		window.dispatchEvent(new MessageEvent("message", { data: { height: 900 }, origin: "https://www.youtube.com", source: video }));
 	});
-	const heights = await page.evaluate(() => ["post", "video"].map((id) => document.getElementById(id).getBoundingClientRect().height));
-	expect(heights[0]).toBeCloseTo(584, 0);
-	expect(heights[1]).toBeLessThan(260);
+	const after = await page.evaluate(() => document.getElementById("post").getBoundingClientRect().height);
+	expect(after).toBe(before);
+	expect(after).toBeLessThan(260);
 });
 
 test("@webkit keeps readable text above 4.5:1 and darkens it under Increase Contrast", async ({ page }) => {
@@ -1017,7 +1020,6 @@ const componentBudgets = {
 	images: 10,
 	blanks: 10,
 	headings: process.platform === "linux" ? 100 : 30,
-	iframes: 10,
 };
 
 for (const [name, budget] of Object.entries(componentBudgets)) {

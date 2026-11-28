@@ -97,7 +97,6 @@ export const componentSteps = {
 	images: ["markInlineImages"],
 	blanks: ["hideBlankBlocks"],
 	headings: ["syncTocMode"],
-	iframes: ["askMastodonForHeights"],
 };
 
 // An article of `count` copies of one component, among enough paragraphs to be long.
